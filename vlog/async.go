@@ -1,4 +1,4 @@
-package log
+package vlog
 
 import "fmt"
 import "sync"
