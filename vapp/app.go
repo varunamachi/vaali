@@ -1,19 +1,35 @@
 package vapp
 
-// //RegisterCommandProvider - registers a command provider
-// func (orek *OrekApp) RegisterCommandProvider(cmdProvider CliCommandProvider) {
-// 	if cmdProvider != nil {
-// 		orek.CommandProviders = append(orek.CommandProviders, cmdProvider)
-// 	}
-// }
+import (
+	"os"
+	"path/filepath"
+	"runtime"
+)
 
-// func fromOrekDir(relative string) (path string) {
-// 	home := os.Getenv("HOME")
-// 	if runtime.GOOS == "windows" {
-// 		home = os.Getenv("APPDATA")
-// 	}
-// 	return filepath.Join(home, ".orek", relative)
-// }
+//FromAppDir - gives a absolute path from a path relative to app directory
+func (app *App) FromAppDir(relPath string) (abs string) {
+	home := os.Getenv("HOME")
+	if runtime.GOOS == "windows" {
+		home = os.Getenv("APPDATA")
+	}
+	return filepath.Join(home, "."+app.Name, relPath)
+}
+
+//AddModule - registers a module with the app
+func (app *App) AddModule(module *Module) {
+	app.Modules = append(app.Modules, module)
+}
+
+//Init - initialize the application, it can initialized only once. Calling run
+//auto-initializes app with defaults
+func (app *App) Init() {
+
+}
+
+//Run - runs the applications
+func (app *App) Run(args []string) (err error) {
+	return err
+}
 
 // //Run - runs the application
 // func (orek *OrekApp) Run(args []string) (err error) {
