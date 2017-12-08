@@ -2,6 +2,7 @@ package vapp
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -20,7 +21,8 @@ func (v Version) String() string {
 	return fmt.Sprintf("%d.%d.%d", v.Major, v.Minor, v.Patch)
 }
 
-//FromAppDir - gives a absolute path from a path relative to app directory
+//FromAppDir - gives a absolute path from a path relative to
+//app directory
 func (app *App) FromAppDir(relPath string) (abs string) {
 	home := os.Getenv("HOME")
 	if runtime.GOOS == "windows" {
@@ -34,14 +36,11 @@ func (app *App) AddModule(module *Module) {
 	app.Modules = append(app.Modules, module)
 }
 
-//Init - initialize the application, it can initialized only once. Calling run
-//auto-initializes app with defaults
-func (app *App) Init() {
-
-}
-
 //Exec - runs the applications
 func (app *App) Exec(args []string) (err error) {
+	for _, module := range app.Modules {
+		app.Commands = append(app.Commands, module.Cmds...)
+	}
 	return err
 }
 
@@ -49,11 +48,17 @@ func (app *App) Exec(args []string) (err error) {
 func NewApplication(
 	name string,
 	version Version,
+	authors []cli.Author,
+	desc string,
 ) (app *App) {
 	app = &App{
 		App: cli.App{
-			Name:    name,
-			Version: version.String(),
+			Name:      name,
+			Commands:  make([]cli.Command, 0, 100),
+			Version:   version.String(),
+			Authors:   authors,
+			Usage:     desc,
+			ErrWriter: ioutil.Discard,
 		},
 		Modules: make([]*Module, 0, 10),
 	}
