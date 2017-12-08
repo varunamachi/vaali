@@ -1,10 +1,24 @@
 package vapp
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
+
+	cli "gopkg.in/urfave/cli.v1"
 )
+
+//Version - represents version of the application
+type Version struct {
+	Major int `json:"major" bson:"major"`
+	Minor int `json:"minor" bson:"minor"`
+	Patch int `json:"patch" bson:"patch"`
+}
+
+func (v Version) String() string {
+	return fmt.Sprintf("%d.%d.%d", v.Major, v.Minor, v.Patch)
+}
 
 //FromAppDir - gives a absolute path from a path relative to app directory
 func (app *App) FromAppDir(relPath string) (abs string) {
@@ -26,9 +40,24 @@ func (app *App) Init() {
 
 }
 
-//Run - runs the applications
-func (app *App) Run(args []string) (err error) {
+//Exec - runs the applications
+func (app *App) Exec(args []string) (err error) {
 	return err
+}
+
+//NewApplication - creates a new application
+func NewApplication(
+	name string,
+	version Version,
+) (app *App) {
+	app = &App{
+		App: cli.App{
+			Name:    name,
+			Version: version.String(),
+		},
+		Modules: make([]*Module, 0, 10),
+	}
+	return app
 }
 
 // //Run - runs the application
