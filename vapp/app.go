@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/varunamachi/vaali/vnet"
 	cli "gopkg.in/urfave/cli.v1"
 )
 
@@ -40,8 +41,9 @@ func (app *App) AddModule(module *Module) {
 func (app *App) Exec(args []string) (err error) {
 	for _, module := range app.Modules {
 		app.Commands = append(app.Commands, module.Cmds...)
+		vnet.AddEndpoints(module.Endpoints...)
 	}
-	return err
+	return app.Run(args)
 }
 
 //NewApplication - creates a new application
