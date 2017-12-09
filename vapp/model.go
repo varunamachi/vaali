@@ -5,12 +5,15 @@ import (
 	"gopkg.in/urfave/cli.v1"
 )
 
+//CmdProvider - gives all the commands for a module
+type CmdProvider func() []cli.Command
+
 //Module - represents an application module
 type Module struct {
 	Name        string           `json:"name"`
 	Description string           `json:"desc"`
 	Endpoints   []*vnet.Endpoint `json:"endpoints"`
-	Cmds        []cli.Command    `json:"command"`
+	CmdProvider CmdProvider      `json:"cmdProvider"`
 }
 
 //App - the application itself

@@ -1,4 +1,4 @@
-package vapp
+package vcmn
 
 import (
 	"bufio"
@@ -26,10 +26,19 @@ func askSecret() (secret string, err error) {
 //from commandline arguments or from reading from console. Also handles errors
 //when required arguments are not provided
 type ArgGetter struct {
-	Ctx *cli.Context
+	ctx *cli.Context
 	Err error
 }
 
+//NewArgGetter - creates a new argument retriever with given context
+func NewArgGetter(ctx *cli.Context) (argtr *ArgGetter) {
+	argtr = &ArgGetter{
+		ctx: ctx,
+	}
+	return argtr
+}
+
+//readInput - reads stdin
 func readInput(text *string) (err error) {
 	scanner := bufio.NewScanner(os.Stdin)
 	*text = ""
@@ -41,31 +50,14 @@ func readInput(text *string) (err error) {
 	return err
 }
 
-//GetString - gives a string argument either from commandline or from blocking
-//user input, this method doesnt complain even if the arg-value is empty
-func (retriever *ArgGetter) GetString(key string) (val string) {
-	if retriever.Err != nil {
-		return val
-	}
-	val = retriever.Ctx.String(key)
-	if !retriever.Ctx.IsSet(key) && len(val) == 0 {
-		fmt.Print(key + ": ")
-		err := readInput(&val)
-		if err != nil {
-			val = ""
-		}
-	}
-	return val
-}
-
 //GetRequiredString - gives a string argument either from commandline or from
 //blocking user input, this method sets the error if required arg-val is empty
 func (retriever *ArgGetter) GetRequiredString(key string) (val string) {
 	if retriever.Err != nil {
 		return val
 	}
-	val = retriever.Ctx.String(key)
-	if !retriever.Ctx.IsSet(key) && len(val) == 0 {
+	val = retriever.ctx.String(key)
+	if !retriever.ctx.IsSet(key) && len(val) == 0 {
 		fmt.Print(key + "*: ")
 		err := readInput(&val)
 		if err != nil || len(val) == 0 {
@@ -82,8 +74,8 @@ func (retriever *ArgGetter) GetRequiredSecret(key string) (val string) {
 	if retriever.Err != nil {
 		return val
 	}
-	val = retriever.Ctx.String(key)
-	if !retriever.Ctx.IsSet(key) && len(val) == 0 {
+	val = retriever.ctx.String(key)
+	if !retriever.ctx.IsSet(key) && len(val) == 0 {
 		fmt.Print(key + "*: ")
 		var err error
 		val, err = askSecret()
@@ -101,8 +93,8 @@ func (retriever *ArgGetter) GetRequiredInt(key string) (val int) {
 	if retriever.Err != nil {
 		return val
 	}
-	val = retriever.Ctx.Int(key)
-	if !retriever.Ctx.IsSet(key) && val == 0 {
+	val = retriever.ctx.Int(key)
+	if !retriever.ctx.IsSet(key) && val == 0 {
 		fmt.Print(key + ": ")
 		var strval string
 		err := readInput(&strval)
@@ -120,37 +112,14 @@ func (retriever *ArgGetter) GetRequiredInt(key string) (val int) {
 	return val
 }
 
-//GetInt - gives a Integer argument either from commandline or from blocking
-//user input, this method doesnt complain even if the arg-value is empty
-func (retriever *ArgGetter) GetInt(key string) (val int) {
-	if retriever.Err != nil {
-		return val
-	}
-	val = retriever.Ctx.Int(key)
-	if !retriever.Ctx.IsSet(key) && val == 0 {
-		fmt.Print(key + ": ")
-		var strval string
-		err := readInput(&strval)
-		if err != nil || len(strval) == 0 {
-			val = 0
-		} else {
-			val, err = strconv.Atoi(strval)
-			if err != nil {
-				val = 0
-			}
-		}
-	}
-	return val
-}
-
 //GetRequiredBool - gives a Boolean argument either from commandline or from
 //blocking user input, this method sets the error if required arg-val is empty
 func (retriever *ArgGetter) GetRequiredBool(key string) (val bool) {
 	if retriever.Err != nil {
 		return val
 	}
-	val = retriever.Ctx.Bool(key)
-	// if !retriever.Ctx.IsSet(key) {
+	val = retriever.ctx.Bool(key)
+	// if !retriever.ctx.IsSet(key) {
 	// 	fmt.Print(key + ": ")
 	// 	var strval string
 	// 	err := readInput(&strval)
@@ -169,14 +138,54 @@ func (retriever *ArgGetter) GetRequiredBool(key string) (val bool) {
 	return val
 }
 
+//GetInt - gives a Integer argument either from commandline or from blocking
+//user input, this method doesnt complain even if the arg-value is empty
+func (retriever *ArgGetter) GetInt(key string) (val int) {
+	if retriever.Err != nil {
+		return val
+	}
+	val = retriever.ctx.Int(key)
+	if !retriever.ctx.IsSet(key) && val == 0 {
+		fmt.Print(key + ": ")
+		var strval string
+		err := readInput(&strval)
+		if err != nil || len(strval) == 0 {
+			val = 0
+		} else {
+			val, err = strconv.Atoi(strval)
+			if err != nil {
+				val = 0
+			}
+		}
+	}
+	return val
+}
+
+//GetString - gives a string argument either from commandline or from blocking
+//user input, this method doesnt complain even if the arg-value is empty
+func (retriever *ArgGetter) GetString(key string) (val string) {
+	if retriever.Err != nil {
+		return val
+	}
+	val = retriever.ctx.String(key)
+	if !retriever.ctx.IsSet(key) && len(val) == 0 {
+		fmt.Print(key + ": ")
+		err := readInput(&val)
+		if err != nil {
+			val = ""
+		}
+	}
+	return val
+}
+
 //GetBool - gives a Boolean argument either from commandline or from blocking
 //user input, this method doesnt complain even if the arg-value is empty
 func (retriever *ArgGetter) GetBool(key string) (val bool) {
 	if retriever.Err != nil {
 		return val
 	}
-	val = retriever.Ctx.Bool(key)
-	// if !retriever.Ctx.IsSet(key) {
+	val = retriever.ctx.Bool(key)
+	// if !retriever.ctx.IsSet(key) {
 	// 	fmt.Print(key + ": ")
 	// 	var strval string
 	// 	err := readInput(&strval)

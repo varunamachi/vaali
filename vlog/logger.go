@@ -3,6 +3,7 @@ package vlog
 import (
 	"fmt"
 	"os"
+	"runtime"
 )
 
 //Level - gives log level
@@ -138,16 +139,18 @@ func Fatal(module, fmtStr string, args ...interface{}) {
 	os.Exit(-1)
 }
 
-//PrintError - error logs
-func PrintError(module string, err error) {
-	logger.Log(ErrorLevel, module, "%v", err)
-	Print(module, "%v", err)
+//LogError - error log
+func LogError(module string, err error) error {
+	_, file, line, _ := runtime.Caller(1)
+	logger.Log(ErrorLevel, module, "%v -- %s @ %d", err, file, line)
+	return err
 }
 
-//PrintFatal - error logs
-func PrintFatal(module string, err error) {
-	logger.Log(FatalLevel, module, "%v", err)
-	Print(module, "%v", err)
+//LogFatal - logs before exit
+func LogFatal(module string, err error) {
+	_, file, line, _ := runtime.Caller(1)
+	logger.Log(FatalLevel, module, "%v -- %s @ %d", err, file, line)
+	// Print(module, "%v", err)
 	os.Exit(-1)
 }
 
