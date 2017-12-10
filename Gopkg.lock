@@ -2,7 +2,7 @@
 
 
 [[projects]]
-  name = "github.com/dgrijalva/jwt-go.git"
+  name = "github.com/dgrijalva/jwt-go"
   packages = ["."]
   revision = "dbeaa9332f19a944acb5736b4456cfcc02140e29"
   version = "v3.1.0"
@@ -45,12 +45,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/varunamachi/vali"
-  packages = ["vapp","vlog","vsec"]
-  revision = "e6897551628872fc9c235d9361fc75bd3641bfce"
-
-[[projects]]
-  branch = "master"
   name = "golang.org/x/crypto"
   packages = ["acme","acme/autocert","ssh/terminal"]
   revision = "94eea52f7b742c7cbe0b03b22f0c4c8631ece122"
@@ -76,6 +70,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "916060087b8c96ce0520950f07dc71ded47208c1d0e7d96ca0c5b40e0e841e6d"
+  inputs-digest = "309d0e8b139d62cc00fae8de4bc7d8e30540304a7ee789943faa464ff810d87f"
   solver-name = "gps-cdcl"
   solver-version = 1

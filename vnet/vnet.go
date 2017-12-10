@@ -4,12 +4,13 @@ import (
 	"fmt"
 
 	"github.com/labstack/echo"
-	"github.com/varunamachi/vali/vsec"
+	"github.com/varunamachi/vaali/vsec"
 )
 
 var categories = make(map[string][]*Endpoint)
 var endpoints = make([]*Endpoint, 0, 200)
 var e = echo.New()
+var accessPos = 0
 
 // var groups = make
 
@@ -28,7 +29,9 @@ func AddEndpoints(eps ...*Endpoint) {
 
 //Init - initializes all the registered endpoints
 func Init(rootName, apiVersion string) {
-	root := e.Group("/api/v" + apiVersion + "/")
+	rootPath := rootName + "/api/v" + apiVersion + "/"
+	accessPos = len(rootPath) + len("in/")
+	root := e.Group(rootPath)
 	in := root.Group("in/")
 	for _, ep := range endpoints {
 		switch ep.Access {
@@ -40,7 +43,7 @@ func Init(rootName, apiVersion string) {
 			configure(in, "r2/", ep)
 		case vsec.Monitor:
 			configure(in, "r3/", ep)
-		case vsec.External:
+		case vsec.Public:
 			configure(root, "", ep)
 		}
 	}

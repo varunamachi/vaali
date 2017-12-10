@@ -2,7 +2,7 @@ package vnet
 
 import (
 	"github.com/labstack/echo"
-	"github.com/varunamachi/vali/vsec"
+	"github.com/varunamachi/vaali/vsec"
 	"gopkg.in/mgo.v2/bson"
 )
 
