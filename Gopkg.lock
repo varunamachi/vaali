@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  name = "github.com/dgrijalva/jwt-go.git"
+  packages = ["."]
+  revision = "dbeaa9332f19a944acb5736b4456cfcc02140e29"
+  version = "v3.1.0"
+
+[[projects]]
   name = "github.com/labstack/echo"
   packages = ["."]
   revision = "0473c51f1dbd83487effce00702571d19033a6e5"
@@ -58,7 +64,7 @@
 [[projects]]
   branch = "v2"
   name = "gopkg.in/mgo.v2"
-  packages = ["bson","internal/json"]
+  packages = [".","bson","internal/json","internal/sasl","internal/scram"]
   revision = "3f83fa5005286a7fe593b055f0d7771a7dce4655"
 
 [[projects]]
@@ -70,6 +76,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c7f6cfc00c549b5e1df992af3d45afca91ad715e888a36834a0c178b021c43ad"
+  inputs-digest = "916060087b8c96ce0520950f07dc71ded47208c1d0e7d96ca0c5b40e0e841e6d"
   solver-name = "gps-cdcl"
   solver-version = 1

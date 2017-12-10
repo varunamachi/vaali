@@ -1,6 +1,8 @@
 package vsec
 
 import (
+	"time"
+
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -20,8 +22,8 @@ const (
 	//Monitor - readonly user
 	Monitor
 
-	//External - external user without authentication
-	External
+	//Public - no authentication required
+	Public
 )
 
 //User - represents an user
@@ -33,6 +35,8 @@ type User struct {
 	FirstName string            `json:"firstName" bson:"firstName"`
 	LastName  string            `json:"lastName" bson:"lastName"`
 	Props     map[string]string `json:"props" bson:"props"`
+	Added     time.Time         `json:"created" bson:"created"`
+	Modified  time.Time         `json:"modified" bson:"modified"`
 }
 
 //Group - group of users
@@ -40,4 +44,21 @@ type Group struct {
 	OID   bson.ObjectId `json:"_id" bson:"_id"`
 	Name  string        `json:"name" bson:"name"`
 	Users []string      `json:"users" bson:"users"`
+}
+
+func (a AuthLevel) String() string {
+	switch a {
+	case Super:
+		return "Super"
+	case Admin:
+		return "Admin"
+	case Normal:
+		return "Normal"
+	case Monitor:
+		return "Monitor"
+	case Public:
+		return "Public"
+
+	}
+	return "Unknown"
 }

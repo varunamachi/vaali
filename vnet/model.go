@@ -7,7 +7,7 @@ import (
 )
 
 //EndpointFunc -
-type EndpointFunc func(ctx echo.Context) (err error)
+// type EndpointFunc func(ctx echo.Context) (err error)
 
 //Endpoint -
 type Endpoint struct {
@@ -16,5 +16,6 @@ type Endpoint struct {
 	URL      string         `json:"url"`
 	Access   vsec.AuthLevel `json:"access"`
 	Category string         `json:"cateogry"`
-	Func     EndpointFunc
+	Route    *echo.Route    `json:"route"`
+	Func     echo.HandlerFunc
 }
