@@ -97,5 +97,6 @@ func printConfig() {
 				ep.Access,
 				ep.Route.Path)
 		}
+		fmt.Println()
 	}
 }

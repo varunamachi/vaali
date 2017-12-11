@@ -9,6 +9,7 @@ import (
 )
 
 var mongoStore *store
+var defaultDB = "vaali"
 
 //MongoConnOpts - options for connecting to a mongodb instance
 type MongoConnOpts struct {
@@ -27,6 +28,11 @@ type store struct {
 //MongoConn - represents a mongdb connection
 type MongoConn struct {
 	*mgo.Database
+}
+
+//SetDefaultDB - sets the default DB
+func SetDefaultDB(defDB string) {
+	defaultDB = defDB
 }
 
 //Close - closes mongodb connection
@@ -91,6 +97,11 @@ func NewMongoConn(dbName string) (conn *MongoConn) {
 		Database: mongoStore.session.Copy().DB(dbName),
 	}
 	return conn
+}
+
+//DefaultMongoConn - creates a connection to default DB
+func DefaultMongoConn() *MongoConn {
+	return NewMongoConn(defaultDB)
 }
 
 //CloseMongoConn - closes the mongodb connection

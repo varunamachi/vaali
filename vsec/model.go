@@ -35,9 +35,9 @@ type User struct {
 	FirstName string            `json:"firstName" bson:"firstName"`
 	LastName  string            `json:"lastName" bson:"lastName"`
 	Props     map[string]string `json:"props" bson:"props"`
-	Added     time.Time         `json:"created" bson:"created"`
+	Created   time.Time         `json:"created" bson:"created"`
 	Modified  time.Time         `json:"modified" bson:"modified"`
-	PwdExpiry time.Time			`json:"pwdExpiry" bson:"pwdExpiry"`
+	PwdExpiry time.Time         `json:"pwdExpiry" bson:"pwdExpiry"`
 }
 
 //Group - group of users

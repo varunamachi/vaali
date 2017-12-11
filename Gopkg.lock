@@ -45,8 +45,14 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/varunamachi/vali"
+  packages = ["vapp","vlog"]
+  revision = "ccb977232ba3449222695d2abdce4d03026da57c"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/crypto"
-  packages = ["acme","acme/autocert","ssh/terminal"]
+  packages = ["acme","acme/autocert","bcrypt","blowfish","pbkdf2","scrypt","ssh/terminal"]
   revision = "94eea52f7b742c7cbe0b03b22f0c4c8631ece122"
 
 [[projects]]
@@ -54,6 +60,24 @@
   name = "golang.org/x/sys"
   packages = ["unix","windows"]
   revision = "8b4580aae2a0dd0c231a45d3ccb8434ff533b840"
+
+[[projects]]
+  name = "gopkg.in/hlandau/easymetric.v1"
+  packages = ["cexp"]
+  revision = "1c173222e345c2ba115e0f483821c6da2d3b0fa9"
+  version = "v1.0.0"
+
+[[projects]]
+  name = "gopkg.in/hlandau/measurable.v1"
+  packages = ["."]
+  revision = "d96a009bd9bda94dd1294105e67e8c1794e533d3"
+  version = "v1.0.1"
+
+[[projects]]
+  name = "gopkg.in/hlandau/passlib.v1"
+  packages = [".","abstract","hash/bcrypt","hash/bcryptsha256","hash/scrypt","hash/scrypt/raw","hash/sha2crypt","hash/sha2crypt/raw"]
+  revision = "933f1c3f63ffb0d17de04c3174f875ae683a33cd"
+  version = "v1.0.9"
 
 [[projects]]
   branch = "v2"
@@ -70,6 +94,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "309d0e8b139d62cc00fae8de4bc7d8e30540304a7ee789943faa464ff810d87f"
+  inputs-digest = "e325812dd3609d752ba44be45e6e42f5313a0e4d03bdfcbd44c25b5362523f24"
   solver-name = "gps-cdcl"
   solver-version = 1
