@@ -5,12 +5,13 @@ import (
 
 	"github.com/varunamachi/vaali/vdb"
 	"github.com/varunamachi/vaali/vlog"
+	"github.com/varunamachi/vaali/vsec"
 	passlib "gopkg.in/hlandau/passlib.v1"
 	"gopkg.in/mgo.v2/bson"
 )
 
 //CreateUser - creates user in database
-func CreateUser(user *User) (err error) {
+func CreateUser(user *vsec.User) (err error) {
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
 	_, err = conn.C("user").Upsert(bson.M{"id": user.ID}, user)
@@ -18,7 +19,7 @@ func CreateUser(user *User) (err error) {
 }
 
 //UpdateUser - updates user in database
-func UpdateUser(user *User) (err error) {
+func UpdateUser(user *vsec.User) (err error) {
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C("user").Update(bson.M{"id": user.ID}, user)
@@ -34,7 +35,7 @@ func DeleteUser(userID string) (err error) {
 }
 
 //GetUser - gets details of the user corresponding to ID
-func GetUser(userID string) (user *User, err error) {
+func GetUser(userID string) (user *vsec.User, err error) {
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C("user").Find(bson.M{"id": userID}).One(user)
@@ -42,10 +43,10 @@ func GetUser(userID string) (user *User, err error) {
 }
 
 //GetAllUsers - gets all users based on offset and limit
-func GetAllUsers(offset, limit int) (users []*User, err error) {
+func GetAllUsers(offset, limit int) (users []*vsec.User, err error) {
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
-	users = make([]*User, 0, limit)
+	users = make([]*vsec.User, 0, limit)
 	err = conn.
 		C("user").
 		Find(bson.M{}).

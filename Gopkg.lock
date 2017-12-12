@@ -45,12 +45,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/varunamachi/vali"
-  packages = ["vapp","vlog"]
-  revision = "ccb977232ba3449222695d2abdce4d03026da57c"
-
-[[projects]]
-  branch = "master"
   name = "golang.org/x/crypto"
   packages = ["acme","acme/autocert","bcrypt","blowfish","pbkdf2","scrypt","ssh/terminal"]
   revision = "94eea52f7b742c7cbe0b03b22f0c4c8631ece122"
@@ -94,6 +88,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e325812dd3609d752ba44be45e6e42f5313a0e4d03bdfcbd44c25b5362523f24"
+  inputs-digest = "8f635f7183ad7dbca514656973d92be33ae050a054143be7553d3230a89d1d57"
   solver-name = "gps-cdcl"
   solver-version = 1
