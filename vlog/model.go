@@ -8,12 +8,8 @@ type Level int
 //AuditFunc - takes a Event decriptor and writes to a sync
 type AuditFunc func(event *Event)
 
-// type AuditFunc func(
-// 	operation string,
-// 	userID string,
-// 	success bool,
-// 	data interface{}
-// )
+//M - map of string to interface for representing event data
+type M map[string]interface{}
 
 const (
 	//TraceLevel - low level debug message

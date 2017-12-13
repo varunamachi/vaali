@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo"
+	"github.com/varunamachi/vaali/vlog"
 )
 
 //GetOffsetLimit - retrieves offset and limit as integers provided in URL as
@@ -49,4 +50,22 @@ func GetUserID(ctx echo.Context) string {
 		return userID
 	}
 	return ""
+}
+
+//AuditedSend - sends result as JSON while logging it as event. The event data
+//is same as the data present in the result
+func AuditedSend(ctx echo.Context, res *Result) (err error) {
+	err = ctx.JSON(res.Status, res)
+	vlog.LogEvent(res.Op, GetUserID(ctx), res.OK, res.Err, res.Data)
+	return err
+}
+
+//AuditedSendX - sends result as JSON while logging it as event. This method
+//logs event data which is seperate from result data
+func AuditedSendX(ctx echo.Context,
+	data interface{},
+	res *Result) (err error) {
+	err = ctx.JSON(res.Status, res)
+	vlog.LogEvent(res.Op, GetUserID(ctx), res.OK, res.Err, data)
+	return err
 }
