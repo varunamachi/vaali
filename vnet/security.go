@@ -29,27 +29,6 @@ func getAccessLevel(path string) (access vsec.AuthLevel, err error) {
 	return access, err
 }
 
-//RetrieveUserInfo - retrieves user information from JWT token
-func RetrieveUserInfo(ctx echo.Context) (
-	user string,
-	role vsec.AuthLevel,
-	err error) {
-	success := false
-	if tkn, ok := ctx.Get("token").(*jwt.Token); ok {
-		if claims, ok := tkn.Claims.(jwt.MapClaims); ok {
-			var aok bool
-			user, aok = claims["user"].(string)
-			access, bok := claims["access"].(float64)
-			role = vsec.AuthLevel(access)
-			success = aok && bok
-		}
-	}
-	if !success {
-		err = errors.New("Could not find relevent information in JWT token")
-	}
-	return user, role, err
-}
-
 func authMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) (err error) {
 		var userRole, access vsec.AuthLevel
@@ -86,4 +65,42 @@ func authMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 		return vlog.LogError("Net", err)
 	}
+}
+
+func dummyAuthenticator(params map[string]interface{}) (
+	user *vsec.User, err error) {
+	user = nil
+	err = errors.New("No valid authenticator found")
+	return user, err
+}
+
+func dummyAuthorizer(userID string) (role vsec.AuthLevel, err error) {
+	err = errors.New("No valid authorizer found")
+	return role, err
+}
+
+func login(ctx echo.Context) (err error) {
+	//Implement JWT based login
+	return vlog.LogError("Net:Sec:API", err)
+}
+
+//RetrieveUserInfo - retrieves user information from JWT token
+func RetrieveUserInfo(ctx echo.Context) (
+	user string,
+	role vsec.AuthLevel,
+	err error) {
+	success := false
+	if tkn, ok := ctx.Get("token").(*jwt.Token); ok {
+		if claims, ok := tkn.Claims.(jwt.MapClaims); ok {
+			var aok bool
+			user, aok = claims["user"].(string)
+			access, bok := claims["access"].(float64)
+			role = vsec.AuthLevel(access)
+			success = aok && bok
+		}
+	}
+	if !success {
+		err = errors.New("Could not find relevent information in JWT token")
+	}
+	return user, role, err
 }

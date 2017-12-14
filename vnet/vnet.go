@@ -11,6 +11,12 @@ var categories = make(map[string][]*Endpoint)
 var endpoints = make([]*Endpoint, 0, 200)
 var e = echo.New()
 var accessPos = 0
+var opts = Options{
+	RootName:      "vaali",
+	APIVersion:    "0",
+	Authenticator: dummyAuthenticator,
+	Authorizer:    dummyAuthorizer,
+}
 
 // var groups = make
 
@@ -28,8 +34,9 @@ func AddEndpoints(eps ...*Endpoint) {
 }
 
 //Init - initializes all the registered endpoints
-func Init(rootName, apiVersion string) {
-	rootPath := rootName + "/api/v" + apiVersion + "/"
+func Init(opts Options) {
+	//Add middleware
+	rootPath := opts.RootName + "/api/v" + opts.APIVersion + "/"
 	accessPos = len(rootPath) + len("in/")
 	root := e.Group(rootPath)
 	in := root.Group("in/")
