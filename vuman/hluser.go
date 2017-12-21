@@ -1,4 +1,4 @@
-package vsec
+package vuman
 
 import (
 	"net/http"
@@ -15,14 +15,14 @@ func GetUserEndpoints() (endpoints []*vnet.Endpoint) {
 		&vnet.Endpoint{
 			Method:   echo.POST,
 			URL:      "/uman/user",
-			Access:   vsec.Admin,
+			Access:   vsec.Public,
 			Category: "user management",
 			Func:     createUser,
 		},
 		&vnet.Endpoint{
 			Method:   echo.PUT,
 			URL:      "/uman/user",
-			Access:   vsec.Admin,
+			Access:   vsec.Public,
 			Category: "user management",
 			Func:     updateUser,
 		},
@@ -71,6 +71,10 @@ func createUser(ctx echo.Context) (err error) {
 	var user vsec.User
 	err = ctx.Bind(&user)
 	if err == nil {
+		//Only admin can set a different role
+		if !IsAdmin(ctx) {
+			user.Auth = vsec.Normal
+		}
 		err = CreateUser(&user)
 		if err != nil {
 			msg = "Failed to create user in database"
@@ -96,6 +100,15 @@ func updateUser(ctx echo.Context) (err error) {
 	var user vsec.User
 	err = ctx.Bind(&user)
 	if err == nil {
+		if !IsAdmin(ctx) {
+			var al vsec.AuthLevel
+			user.Auth, err = GetAuthLevel(user.ID)
+			if err != nil {
+				return vlog.LogError("Sec:Hdl")
+			}
+		} else {
+
+		}
 		err = UpdateUser(&user)
 		if err != nil {
 			msg = "Failed to update user in database"

@@ -4,12 +4,31 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 	"github.com/varunamachi/vaali/vlog"
 	"github.com/varunamachi/vaali/vsec"
 )
+
+//SecurityEndpoints - Export app security related APIs
+func SecurityEndpoints() (endpoints []*Endpoint) {
+	endpoints = []*Endpoint{
+		&Endpoint{
+			Method:   echo.POST,
+			URL:      "/login",
+			Category: "security",
+			Func:     login,
+			Access:   vsec.Public,
+		},
+	}
+	return endpoints
+}
+
+func getKey() []byte {
+	return []byte("valrrwwssffgsdgfksdjfghsdlgnsda")
+}
 
 func getAccessLevel(path string) (access vsec.AuthLevel, err error) {
 	if len(path) > (accessPos+2) && path[accessPos] == 'r' {
@@ -80,8 +99,63 @@ func dummyAuthorizer(userID string) (role vsec.AuthLevel, err error) {
 }
 
 func login(ctx echo.Context) (err error) {
-	//Implement JWT based login
+	defer func() {
+		vlog.LogError("Net:Sec:API", err)
+	}()
+	msg := "Login successful"
+	status := http.StatusOK
+	var data map[string]interface{}
+	userID := ""
+	creds := make(map[string]string)
+	err = ctx.Bind(&creds)
+	if err == nil {
+		var user *vsec.User
+		userID = creds["userID"]
+		user, err = doLogin(userID, creds["password"])
+		if err == nil {
+			token := jwt.New(jwt.SigningMethodHS256)
+			claims := token.Claims.(jwt.MapClaims)
+			claims["userID"] = user.ID
+			claims["exp"] = time.Now().Add(time.Hour * 2).Unix()
+			claims["access"] = user.Auth
+			var signed string
+			signed, err = token.SignedString(getKey())
+			if err == nil {
+				data["token"] = signed
+				data["user"] = user
+			} else {
+				msg = "Failed to sign toke"
+				status = http.StatusInternalServerError
+			}
+		} else {
+			msg = "Login failed"
+			status = http.StatusUnauthorized
+		}
+	} else {
+		msg = "Failed to read credentials from request"
+		status = http.StatusBadRequest
+	}
+	AuditedSendX(ctx, userID, &Result{
+		Status: status,
+		Op:     "login",
+		Msg:    msg,
+		OK:     err == nil,
+		Data:   data["user"],
+		Err:    err,
+	})
 	return vlog.LogError("Net:Sec:API", err)
+}
+
+func doLogin(userID string, password string) (*vsec.User, error) {
+	//Check for password expiry and stuff
+	params := make(map[string]interface{})
+	params["userID"] = userID
+	params["password"] = password
+	user, err := opts.Authenticator(params)
+	if err == nil {
+		user.Auth, err = opts.Authorizer(user.ID)
+	}
+	return user, err
 }
 
 //RetrieveUserInfo - retrieves user information from JWT token
@@ -103,4 +177,34 @@ func RetrieveUserInfo(ctx echo.Context) (
 		err = errors.New("Could not find relevent information in JWT token")
 	}
 	return user, role, err
+}
+
+//IsAdmin - returns true if user associated with request is an admin
+func IsAdmin(ctx echo.Context) (yes bool) {
+	yes = false
+	_, role, err := RetrieveUserInfo(ctx)
+	if err == nil {
+		yes = role <= vsec.Admin
+	}
+	return yes
+}
+
+//IsSuperUser - returns true if user is a super user
+func IsSuperUser(ctx echo.Context) (yes bool) {
+	yes = false
+	_, role, err := RetrieveUserInfo(ctx)
+	if err == nil {
+		yes = role == vsec.Super
+	}
+	return yes
+}
+
+//IsNormalUser - returns true if user is a normal user
+func IsNormalUser(ctx echo.Context) (yes bool) {
+	yes = false
+	_, role, err := RetrieveUserInfo(ctx)
+	if err == nil {
+		yes = role <= vsec.Normal
+	}
+	return yes
 }

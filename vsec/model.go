@@ -47,6 +47,7 @@ type Group struct {
 	Users []string      `json:"users" bson:"users"`
 }
 
+//String - string representation of AuthLevel
 func (a AuthLevel) String() string {
 	switch a {
 	case Super:

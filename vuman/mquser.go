@@ -15,7 +15,7 @@ func CreateUser(user *vsec.User) (err error) {
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
 	_, err = conn.C("user").Upsert(bson.M{"id": user.ID}, user)
-	return vlog.LogError("Sec:Mongo", err)
+	return vlog.LogError("UMan:Mongo", err)
 }
 
 //UpdateUser - updates user in database
@@ -23,7 +23,7 @@ func UpdateUser(user *vsec.User) (err error) {
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C("user").Update(bson.M{"id": user.ID}, user)
-	return vlog.LogError("Sec:Mongo", err)
+	return vlog.LogError("UMan:Mongo", err)
 }
 
 //DeleteUser - deletes user with given user ID
@@ -31,7 +31,7 @@ func DeleteUser(userID string) (err error) {
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C("user").Remove(bson.M{"id": userID})
-	return vlog.LogError("Sec:Mongo", err)
+	return vlog.LogError("UMan:Mongo", err)
 }
 
 //GetUser - gets details of the user corresponding to ID
@@ -39,7 +39,7 @@ func GetUser(userID string) (user *vsec.User, err error) {
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C("user").Find(bson.M{"id": userID}).One(user)
-	return user, vlog.LogError("Sec:Mongo", err)
+	return user, vlog.LogError("UMan:Mongo", err)
 }
 
 //GetAllUsers - gets all users based on offset and limit
@@ -54,7 +54,7 @@ func GetAllUsers(offset, limit int) (users []*vsec.User, err error) {
 		Skip(offset).
 		Limit(limit).
 		All(&users)
-	return users, vlog.LogError("Sec:Mongo", err)
+	return users, vlog.LogError("UMan:Mongo", err)
 }
 
 //ResetPassword - sets password of a unauthenticated user
@@ -64,7 +64,7 @@ func ResetPassword(userID, oldPwd, newPwd string) (err error) {
 	conn := vdb.DefaultMongoConn()
 	defer func() {
 		conn.Close()
-		vlog.LogError("Sec:Mongo", err)
+		vlog.LogError("UMan:Mongo", err)
 	}()
 	if err != nil {
 		return err
@@ -102,5 +102,37 @@ func SetPassword(userID, newPwd string) (err error) {
 			bson.M{"phash": newHash},
 		)
 	}
-	return vlog.LogError("Sec:Mongo", err)
+	return vlog.LogError("UMan:Mongo", err)
+}
+
+//ValidateUser - validates user ID and password
+func ValidateUser(userID, password string) (err error) {
+	var inHash string
+	inHash, err = passlib.Hash(password)
+	conn := vdb.DefaultMongoConn()
+	defer conn.Close()
+	if err == nil {
+		var storedHash string
+		err = conn.C("secret").
+			Find(bson.M{"userID": userID}).
+			Select(bson.M{"phash": 1}).
+			One(&storedHash)
+		if err == nil {
+			if inHash != storedHash {
+				err = errors.New("Invalid password provided")
+			}
+		}
+	}
+	return vlog.LogError("UMan:Mongo", err)
+}
+
+//GetUserAuthLevel - gets user authorization level
+func GetUserAuthLevel(userID) (level vsec.AuthLevel, err error) {
+	conn := vdb.DefaultMongoConn()
+	defer conn.Close()
+	err = conn.C("user").
+		Find(bson.M{"userID": userID}).
+		Select(bson.M{"auth": 1}).
+		One(&level)
+	return level, vlog.LogError("UMan:Mongo", err)
 }
