@@ -15,9 +15,3 @@ type Module struct {
 	Endpoints   []*vnet.Endpoint `json:"endpoints"`
 	CmdProvider CmdProvider      `json:"cmdProvider"`
 }
-
-//App - the application itself
-type App struct {
-	cli.App
-	Modules []*Module `json:"modules"`
-}

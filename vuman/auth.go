@@ -1,14 +1,16 @@
-package uman
+package vuman
 
 import (
 	"errors"
+
+	"github.com/varunamachi/vaali/vlog"
 
 	"github.com/varunamachi/vaali/vsec"
 )
 
 func getUserIDPassword(params map[string]interface{}) (
 	userID string, password string, err error) {
-	aok, bok := false
+	var aok, bok bool
 	userID, aok = params["userID"].(string)
 	password, bok = params["password"].(string)
 	if !aok || !bok {
@@ -24,7 +26,10 @@ func MongoAuthenticator(params map[string]interface{}) (
 	var userID, password string
 	userID, password, err = getUserIDPassword(params)
 	if err == nil {
-
+		err = ValidateUser(userID, password)
+		if err == nil {
+			user, err = GetUser(userID)
+		}
 	}
-	return user, err
+	return user, vlog.LogError("UMan:Mongo:Auth", err)
 }

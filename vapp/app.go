@@ -7,9 +7,18 @@ import (
 	"runtime"
 
 	"github.com/varunamachi/vaali/vcmn"
+	"github.com/varunamachi/vaali/vlog"
 	"github.com/varunamachi/vaali/vnet"
+	"github.com/varunamachi/vaali/vuman"
 	cli "gopkg.in/urfave/cli.v1"
 )
+
+//App - the application itself
+type App struct {
+	cli.App
+	Modules    []*Module    `json:"modules"`
+	NetOptions vnet.Options `json:"netOptions"`
+}
 
 //FromAppDir - gives a absolute path from a path relative to
 //app directory
@@ -28,31 +37,54 @@ func (app *App) AddModule(module *Module) {
 
 //Exec - runs the applications
 func (app *App) Exec(args []string) (err error) {
+	vnet.AddEndpoints(vnet.GetEndpoints()...)
+	vnet.AddEndpoints(vuman.GetEndpoints()...)
+	app.Commands = append(app.Commands, vnet.GetCommands()...)
+	app.Commands = append(app.Commands, vuman.GetCommands()...)
+
 	for _, module := range app.Modules {
 		cmds := module.CmdProvider()
 		app.Commands = append(app.Commands, cmds...)
 		vnet.AddEndpoints(module.Endpoints...)
 	}
+	vnet.InitWithOptions(app.NetOptions)
 	return app.Run(args)
 }
 
-//NewApplication - creates a new application
-func NewApplication(
+//NewDefaultApp - creates a new application with default options
+func NewDefaultApp(
 	name string,
-	version vcmn.Version,
+	appVersion vcmn.Version,
+	apiVersion string,
 	authors []cli.Author,
-	desc string,
-) (app *App) {
+	desc string) (app *App) {
+	vlog.InitWithOptions(vlog.LoggerConfig{
+		Logger:      vlog.NewDirectLogger(),
+		LogConsole:  true,
+		FilterLevel: vlog.InfoLevel,
+		EventLogger: MongoAuditor,
+	})
 	app = &App{
 		App: cli.App{
 			Name:      name,
 			Commands:  make([]cli.Command, 0, 100),
-			Version:   version.String(),
+			Version:   appVersion.String(),
 			Authors:   authors,
 			Usage:     desc,
 			ErrWriter: ioutil.Discard,
 		},
+		NetOptions: vnet.Options{
+			RootName:      name,
+			APIVersion:    apiVersion,
+			Authenticator: vuman.MongoAuthenticator,
+			Authorizer:    nil,
+		},
 		Modules: make([]*Module, 0, 10),
 	}
+	return app
+}
+
+//NewAppWithOptions - creates app with non default options
+func NewAppWithOptions( /*****/ ) (app *App) {
 	return app
 }

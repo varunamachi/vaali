@@ -1,15 +1,28 @@
 package main
 
 import (
+	"os"
+
 	"github.com/varunamachi/vaali/vapp"
-	"github.com/varunamachi/vaali/vlog"
+	"github.com/varunamachi/vaali/vcmn"
+	"gopkg.in/urfave/cli.v1"
 )
 
 func main() {
-	vlog.InitWithOptions(vlog.LoggerConfig{
-		Logger:      vlog.NewDirectLogger(),
-		LogConsole:  true,
-		FilterLevel: vlog.InfoLevel,
-		EventLogger: vapp.MongoAuditor,
-	})
+	app := vapp.NewDefaultApp(
+		"vaali",
+		vcmn.Version{
+			Major: 0,
+			Minor: 0,
+			Patch: 0,
+		},
+		"0",
+		[]cli.Author{
+			cli.Author{
+				Name: "Varuna Amachi",
+			},
+		},
+		"Default app for Vaali",
+	)
+	app.Exec(os.Args)
 }

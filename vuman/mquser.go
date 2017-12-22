@@ -1,4 +1,4 @@
-package vsec
+package vuman
 
 import (
 	"errors"
@@ -127,7 +127,7 @@ func ValidateUser(userID, password string) (err error) {
 }
 
 //GetUserAuthLevel - gets user authorization level
-func GetUserAuthLevel(userID) (level vsec.AuthLevel, err error) {
+func GetUserAuthLevel(userID string) (level vsec.AuthLevel, err error) {
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C("user").

@@ -3,6 +3,8 @@ package vnet
 import (
 	"fmt"
 
+	"github.com/labstack/echo/middleware"
+
 	"github.com/labstack/echo"
 	"github.com/varunamachi/vaali/vsec"
 )
@@ -11,18 +13,13 @@ var categories = make(map[string][]*Endpoint)
 var endpoints = make([]*Endpoint, 0, 200)
 var e = echo.New()
 var accessPos = 0
-var opts = Options{
-	RootName:      "vaali",
-	APIVersion:    "0",
-	Authenticator: dummyAuthenticator,
-	Authorizer:    dummyAuthorizer,
-}
+var authenticator Authenticator
+var authorizer Authorizer
 
 // var groups = make
 
 //AddEndpoint - registers an REST endpoint
 func AddEndpoint(ep *Endpoint) {
-
 	endpoints = append(endpoints, ep)
 }
 
@@ -33,13 +30,25 @@ func AddEndpoints(eps ...*Endpoint) {
 	}
 }
 
-//Init - initializes all the registered endpoints
-func Init(opts Options) {
+//InitWithOptions - initializes all the registered endpoints
+func InitWithOptions(opts Options) {
+
 	//Add middleware
+	authenticator = opts.Authenticator
+	authorizer = opts.Authorizer
 	rootPath := opts.RootName + "/api/v" + opts.APIVersion + "/"
 	accessPos = len(rootPath) + len("in/")
 	root := e.Group(rootPath)
 	in := root.Group("in/")
+
+	//For checking token
+	in.Use(middleware.JWTWithConfig(middleware.JWTConfig{
+		SigningKey: getKey(),
+	}))
+
+	//For checking authorization level
+	in.Use(authMiddleware)
+
 	for _, ep := range endpoints {
 		switch ep.Access {
 		case vsec.Super:
@@ -87,19 +96,17 @@ func configure(grp *echo.Group, urlPrefix string, ep *Endpoint) {
 		route = grp.GET(urlPrefix+ep.URL, ep.Func)
 	}
 	ep.Route = route
-	eps, found := categories[ep.Category]
-	if !found {
-		eps = make([]*Endpoint, 0, 20)
-		categories[ep.Category] = eps
+	if _, found := categories[ep.Category]; !found {
+		categories[ep.Category] = make([]*Endpoint, 0, 20)
 	}
-	eps = append(eps, ep)
+	categories[ep.Category] = append(categories[ep.Category], ep)
 }
 
 func printConfig() {
 	for category, eps := range categories {
 		fmt.Println(category)
 		for _, ep := range eps {
-			fmt.Printf("\t%10s - %10v - %s",
+			fmt.Printf("\t%10s - %10v - %s\n",
 				ep.Method,
 				ep.Access,
 				ep.Route.Path)

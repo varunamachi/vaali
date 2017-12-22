@@ -12,20 +12,6 @@ import (
 	"github.com/varunamachi/vaali/vsec"
 )
 
-//SecurityEndpoints - Export app security related APIs
-func SecurityEndpoints() (endpoints []*Endpoint) {
-	endpoints = []*Endpoint{
-		&Endpoint{
-			Method:   echo.POST,
-			URL:      "/login",
-			Category: "security",
-			Func:     login,
-			Access:   vsec.Public,
-		},
-	}
-	return endpoints
-}
-
 func getKey() []byte {
 	return []byte("valrrwwssffgsdgfksdjfghsdlgnsda")
 }
@@ -151,9 +137,9 @@ func doLogin(userID string, password string) (*vsec.User, error) {
 	params := make(map[string]interface{})
 	params["userID"] = userID
 	params["password"] = password
-	user, err := opts.Authenticator(params)
-	if err == nil {
-		user.Auth, err = opts.Authorizer(user.ID)
+	user, err := authenticator(params)
+	if err == nil && authorizer != nil {
+		user.Auth, err = authorizer(user.ID)
 	}
 	return user, err
 }
