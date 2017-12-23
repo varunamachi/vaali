@@ -201,3 +201,23 @@ func (retriever *ArgGetter) GetBool(key string) (val bool) {
 	// }
 	return val
 }
+
+//GetOptionalString - retrieves string from commandline, if not provided
+//it wont ask again from stdin
+func (retriever *ArgGetter) GetOptionalString(key string) (val string) {
+	if retriever.Err != nil {
+		return val
+	}
+	val = retriever.ctx.String(key)
+	return val
+}
+
+//GetOptionalInt - retrieves int from commandline, if not provided
+//it wont ask again from stdin
+func (retriever *ArgGetter) GetOptionalInt(key string) (val int) {
+	if retriever.Err != nil {
+		return val
+	}
+	val = retriever.ctx.Int(key)
+	return val
+}

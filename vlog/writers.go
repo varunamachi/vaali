@@ -22,7 +22,7 @@ func (cw *ConsoleWriter) UniqueID() string {
 //Write - writes message to console
 func (cw *ConsoleWriter) Write(message string) {
 	if cw.enabled {
-		fmt.Printf(message)
+		fmt.Println(message)
 	}
 }
 

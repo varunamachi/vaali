@@ -2,6 +2,7 @@ package vdb
 
 import (
 	"github.com/varunamachi/vaali/vcmn"
+	"github.com/varunamachi/vaali/vlog"
 	"gopkg.in/urfave/cli.v1"
 )
 
@@ -30,6 +31,25 @@ var mongoFlags = []cli.Flag{
 }
 
 func requireMongo(ctx *cli.Context) (err error) {
+	ag := vcmn.NewArgGetter(ctx)
+	dbHost := ag.GetRequiredString("db-host")
+	dbPort := ag.GetRequiredInt("db-port")
+	dbUser := ag.GetOptionalString("db-user")
+	dbPassword := ""
+	if len(dbUser) != 0 {
+		dbPassword = ag.GetRequiredSecret("db-pass")
+	}
+	if err = ag.Err; err == nil {
+		err = ConnectSingle(&MongoConnOpts{
+			Host:     dbHost,
+			Port:     dbPort,
+			User:     dbUser,
+			Password: dbPassword,
+		})
+	}
+	if err != nil {
+		vlog.LogFatal("DB:Mongo", err)
+	}
 	return err
 }
 
@@ -53,20 +73,20 @@ func MakeRequireMongo(cmd *cli.Command) *cli.Command {
 }
 
 //GetMongoOpts - gets mongo db connection options from commandline
-func GetMongoOpts(ctx *cli.Context) (opts *MongoConnOpts, ag *vcmn.ArgGetter) {
-	ag = vcmn.NewArgGetter(ctx)
-	host := ag.GetRequiredString("db-host")
-	port := ag.GetRequiredInt("db-port")
-	user := ag.GetString("db-user")
-	pswd := ag.GetString("password")
-	opts = &MongoConnOpts{
-		Host:     host,
-		Port:     port,
-		User:     user,
-		Password: pswd,
-	}
-	return opts, ag
-}
+// func GetMongoOpts(ctx *cli.Context) (opts *MongoConnOpts, ag *vcmn.ArgGetter) {
+// 	ag = vcmn.NewArgGetter(ctx)
+// 	host := ag.GetRequiredString("db-host")
+// 	port := ag.GetRequiredInt("db-port")
+// 	user := ag.GetString("db-user")
+// 	pswd := ag.GetString("password")
+// 	opts = &MongoConnOpts{
+// 		Host:     host,
+// 		Port:     port,
+// 		User:     user,
+// 		Password: pswd,
+// 	}
+// 	return opts, ag
+// }
 
 //GetCommands - get list of commands for mongdb
 func GetCommands() (cmds []cli.Command) {
@@ -83,10 +103,6 @@ func GetCommands() (cmds []cli.Command) {
 
 //testMongoCmd - command for testing mongodb commands
 func testMongoCmd(ctx *cli.Context) (err error) {
-	opts, ag := GetMongoOpts(ctx)
-	if ag.Err == nil {
-		err = ConnectSingle(opts)
-		CloseMongoConn()
-	}
+	CloseMongoConn()
 	return err
 }

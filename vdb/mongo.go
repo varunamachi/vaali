@@ -2,6 +2,7 @@ package vdb
 
 import (
 	"bytes"
+	"fmt"
 	"strconv"
 
 	"github.com/varunamachi/vaali/vlog"
@@ -46,7 +47,7 @@ func toOptStr(options []*MongoConnOpts) string {
 	var buf bytes.Buffer
 	for i, opt := range options {
 		//userName:password@host:port[,userName:password@host:port...]
-		buf.WriteString("mongo://")
+		// buf.WriteString("mongo://")
 		if len(opt.User) != 0 {
 			buf.WriteString(opt.User)
 			buf.WriteString(":")
@@ -68,12 +69,22 @@ func toOptStr(options []*MongoConnOpts) string {
 			buf.WriteString(",")
 		}
 	}
-	return buf.String()
+	co := buf.String()
+	fmt.Println(co)
+	return co
 }
 
 //ConnectSingle - connects to single instance of mongodb server
 func ConnectSingle(opts *MongoConnOpts) (err error) {
-	return Connect([]*MongoConnOpts{opts})
+	err = Connect([]*MongoConnOpts{opts})
+	if err == nil {
+		vlog.Info("DB:Mongo", "Connected to mongo://%s:%d",
+			opts.Host, opts.Port)
+	} else {
+		vlog.Error("DB:Mongo", "Failed to connected to mongo://%s:%d",
+			opts.Host, opts.Port)
+	}
+	return err
 }
 
 //Connect - connects to one or more mirrors of mongodb server
@@ -87,6 +98,7 @@ func Connect(opts []*MongoConnOpts) (err error) {
 			session: sess,
 			opts:    opts,
 		}
+		vlog.Info("DB:Mongo", "Connected to mongoDB")
 	}
 	return vlog.LogError("DB:Mongo", err)
 }

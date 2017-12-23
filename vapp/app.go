@@ -39,8 +39,7 @@ func (app *App) AddModule(module *Module) {
 func (app *App) Exec(args []string) (err error) {
 	vnet.AddEndpoints(vnet.GetEndpoints()...)
 	vnet.AddEndpoints(vuman.GetEndpoints()...)
-	app.Commands = append(app.Commands, vnet.GetCommands()...)
-	app.Commands = append(app.Commands, vuman.GetCommands()...)
+	app.Commands = append(app.Commands, GetCommands()...)
 
 	for _, module := range app.Modules {
 		cmds := module.CmdProvider()
@@ -61,7 +60,7 @@ func NewDefaultApp(
 	vlog.InitWithOptions(vlog.LoggerConfig{
 		Logger:      vlog.NewDirectLogger(),
 		LogConsole:  true,
-		FilterLevel: vlog.InfoLevel,
+		FilterLevel: vlog.TraceLevel,
 		EventLogger: MongoAuditor,
 	})
 	app = &App{

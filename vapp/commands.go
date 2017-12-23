@@ -1,25 +1,24 @@
-package vnet
+package vapp
 
 import (
 	"github.com/varunamachi/vaali/vcmn"
+	"github.com/varunamachi/vaali/vdb"
+	"github.com/varunamachi/vaali/vnet"
 	"gopkg.in/urfave/cli.v1"
 )
 
 //GetCommands - gives commands related to HTTP networking
 func GetCommands() []cli.Command {
 	return []cli.Command{
-		cli.Command{
-			Name: "service",
-			Subcommands: []cli.Command{
-				serviceStart(),
-			},
-		},
+		*vdb.MakeRequireMongo(serviceStart()),
+		*vdb.MakeRequireMongo(makeAdmin()),
 	}
 }
 
-func serviceStart() cli.Command {
-	return cli.Command{
-		Name: "start",
+func serviceStart() *cli.Command {
+	return &cli.Command{
+		Name:  "serve",
+		Usage: "Starts the HTTP service",
 		Flags: []cli.Flag{
 			cli.IntFlag{
 				Name:  "port",
@@ -31,9 +30,18 @@ func serviceStart() cli.Command {
 			ag := vcmn.NewArgGetter(ctx)
 			port := ag.GetRequiredInt("port")
 			if err = ag.Err; err == nil {
-				Serve(port)
+				err = vnet.Serve(port)
 			}
 			return err
 		},
+		Subcommands: []cli.Command{},
+	}
+}
+
+//makeAdmin - makes an user admin
+func makeAdmin() *cli.Command {
+	return &cli.Command{
+		Name:  "make-admin",
+		Flags: []cli.Flag{},
 	}
 }

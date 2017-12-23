@@ -10,7 +10,7 @@ func GetEndpoints() (endpoints []*Endpoint) {
 	endpoints = []*Endpoint{
 		&Endpoint{
 			Method:   echo.POST,
-			URL:      "/login",
+			URL:      "login",
 			Category: "security",
 			Func:     login,
 			Access:   vsec.Public,

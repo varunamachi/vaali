@@ -2,6 +2,7 @@ package vnet
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/labstack/echo/middleware"
 
@@ -30,9 +31,51 @@ func AddEndpoints(eps ...*Endpoint) {
 	}
 }
 
+// ModifiedHTTPErrorHandler is the default HTTP error handler. It sends a JSON response
+// with status code.
+func ModifiedHTTPErrorHandler(err error, c echo.Context) {
+	var (
+		code = http.StatusInternalServerError
+		msg  interface{}
+	)
+
+	if he, ok := err.(*echo.HTTPError); ok {
+		code = he.Code
+		msg = he.Message
+		if he.Inner != nil {
+			msg = fmt.Sprintf("%v, %v", err, he.Inner)
+		}
+	} else if e.Debug {
+		msg = err.Error()
+	} else {
+		msg = http.StatusText(code)
+	}
+	if _, ok := msg.(string); ok {
+		msg = echo.Map{"message": msg}
+	}
+
+	e.Logger.Error(err)
+
+	// Send response
+	if !c.Response().Committed {
+		if c.Request().Method == echo.HEAD { // Issue #608
+			err = c.NoContent(code)
+		} else {
+			err = c.JSON(code, msg)
+		}
+		if err != nil {
+			e.Logger.Error(err)
+		}
+	}
+}
+
 //InitWithOptions - initializes all the registered endpoints
 func InitWithOptions(opts Options) {
-
+	// e.HTTPErrorHandler =
+	e.Use(middleware.Recover())
+	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Format: "method=${method}, uri=${uri}, status=${status}\n",
+	}))
 	//Add middleware
 	authenticator = opts.Authenticator
 	authorizer = opts.Authorizer

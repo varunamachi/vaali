@@ -33,6 +33,9 @@ func (level Level) String() string {
 //want default behavior, no need to call any init functions
 func InitWithOptions(lc LoggerConfig) {
 	lconf = lc
+	if lc.LogConsole {
+		lconf.Logger.RegisterWriter(NewConsoleWriter())
+	}
 }
 
 //SetLevel - sets the filter level
@@ -90,17 +93,21 @@ func Fatal(module, fmtStr string, args ...interface{}) {
 
 //LogError - error log
 func LogError(module string, err error) error {
-	_, file, line, _ := runtime.Caller(1)
-	lconf.Logger.Log(ErrorLevel, module, "%v -- %s @ %d", err, file, line)
+	if err != nil {
+		_, file, line, _ := runtime.Caller(1)
+		lconf.Logger.Log(ErrorLevel, module, "%v -- %s @ %d", err, file, line)
+	}
 	return err
 }
 
 //LogFatal - logs before exit
 func LogFatal(module string, err error) {
-	_, file, line, _ := runtime.Caller(1)
-	lconf.Logger.Log(FatalLevel, module, "%v -- %s @ %d", err, file, line)
-	// Print(module, "%v", err)
-	os.Exit(-1)
+	if err != nil {
+		_, file, line, _ := runtime.Caller(1)
+		lconf.Logger.Log(FatalLevel, module, "%v -- %s @ %d", err, file, line)
+		// Print(module, "%v", err)
+		os.Exit(-1)
+	}
 }
 
 //Print - prints the message on console
