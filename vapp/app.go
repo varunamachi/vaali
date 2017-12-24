@@ -1,6 +1,7 @@
 package vapp
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -37,6 +38,7 @@ func (app *App) AddModule(module *Module) {
 
 //Exec - runs the applications
 func (app *App) Exec(args []string) (err error) {
+	fmt.Printf("Starting %s v.%v\n", app.Name, app.Version)
 	vnet.AddEndpoints(vnet.GetEndpoints()...)
 	vnet.AddEndpoints(vuman.GetEndpoints()...)
 	app.Commands = append(app.Commands, GetCommands()...)

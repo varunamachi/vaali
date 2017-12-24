@@ -50,35 +50,35 @@ func GetLevel() (level Level) {
 
 //Trace - trace logs
 func Trace(module, fmtStr string, args ...interface{}) {
-	if TraceLevel <= lconf.FilterLevel {
+	if TraceLevel >= lconf.FilterLevel {
 		lconf.Logger.Log(TraceLevel, module, fmtStr, args...)
 	}
 }
 
 //Debug - debug logs
 func Debug(module, fmtStr string, args ...interface{}) {
-	if DebugLevel <= lconf.FilterLevel {
+	if DebugLevel >= lconf.FilterLevel {
 		lconf.Logger.Log(DebugLevel, module, fmtStr, args...)
 	}
 }
 
 //Info - information logs
 func Info(module, fmtStr string, args ...interface{}) {
-	if InfoLevel <= lconf.FilterLevel {
+	if InfoLevel >= lconf.FilterLevel {
 		lconf.Logger.Log(InfoLevel, module, fmtStr, args...)
 	}
 }
 
 //Warn - warning logs
 func Warn(module, fmtStr string, args ...interface{}) {
-	if WarnLevel <= lconf.FilterLevel {
+	if WarnLevel >= lconf.FilterLevel {
 		lconf.Logger.Log(WarnLevel, module, fmtStr, args...)
 	}
 }
 
 //Error - error logs
 func Error(module, fmtStr string, args ...interface{}) {
-	if ErrorLevel <= lconf.FilterLevel {
+	if ErrorLevel >= lconf.FilterLevel {
 		lconf.Logger.Log(ErrorLevel, module, fmtStr, args...)
 		Print(module, fmtStr, args...)
 	}
@@ -93,7 +93,7 @@ func Fatal(module, fmtStr string, args ...interface{}) {
 
 //LogError - error log
 func LogError(module string, err error) error {
-	if err != nil {
+	if err != nil && ErrorLevel >= lconf.FilterLevel {
 		_, file, line, _ := runtime.Caller(1)
 		lconf.Logger.Log(ErrorLevel, module, "%v -- %s @ %d", err, file, line)
 	}

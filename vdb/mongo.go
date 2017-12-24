@@ -2,7 +2,6 @@ package vdb
 
 import (
 	"bytes"
-	"fmt"
 	"strconv"
 
 	"github.com/varunamachi/vaali/vlog"
@@ -70,7 +69,6 @@ func toOptStr(options []*MongoConnOpts) string {
 		}
 	}
 	co := buf.String()
-	fmt.Println(co)
 	return co
 }
 

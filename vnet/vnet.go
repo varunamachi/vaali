@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/middleware"
 
 	"github.com/labstack/echo"
+	"github.com/varunamachi/vaali/vlog"
 	"github.com/varunamachi/vaali/vsec"
 )
 
@@ -31,8 +32,8 @@ func AddEndpoints(eps ...*Endpoint) {
 	}
 }
 
-// ModifiedHTTPErrorHandler is the default HTTP error handler. It sends a JSON response
-// with status code.
+// ModifiedHTTPErrorHandler is the default HTTP error handler. It sends a
+// JSON response with status code. [Modefied from echo.DefaultHTTPErrorHandler]
 func ModifiedHTTPErrorHandler(err error, c echo.Context) {
 	var (
 		code = http.StatusInternalServerError
@@ -54,7 +55,7 @@ func ModifiedHTTPErrorHandler(err error, c echo.Context) {
 		msg = echo.Map{"message": msg}
 	}
 
-	e.Logger.Error(err)
+	vlog.LogError("Net:HTTP", err)
 
 	// Send response
 	if !c.Response().Committed {
@@ -64,17 +65,18 @@ func ModifiedHTTPErrorHandler(err error, c echo.Context) {
 			err = c.JSON(code, msg)
 		}
 		if err != nil {
-			e.Logger.Error(err)
+			vlog.LogError("Net:HTTP", err)
 		}
 	}
 }
 
 //InitWithOptions - initializes all the registered endpoints
 func InitWithOptions(opts Options) {
-	// e.HTTPErrorHandler =
+	e.HideBanner = true
+	e.HTTPErrorHandler = ModifiedHTTPErrorHandler
 	e.Use(middleware.Recover())
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-		Format: "method=${method}, uri=${uri}, status=${status}\n",
+		Format: "[ACCSS] [Net:HTTP] ${status} : ${method} => ${uri}\n",
 	}))
 	//Add middleware
 	authenticator = opts.Authenticator
@@ -146,10 +148,12 @@ func configure(grp *echo.Group, urlPrefix string, ep *Endpoint) {
 }
 
 func printConfig() {
+	fmt.Println()
+	fmt.Println("Endpoints: ")
 	for category, eps := range categories {
-		fmt.Println(category)
+		fmt.Printf("\t%10s\n", category)
 		for _, ep := range eps {
-			fmt.Printf("\t%10s - %10v - %s\n",
+			fmt.Printf("\t\t|-%10s - %10v - %s\n",
 				ep.Method,
 				ep.Access,
 				ep.Route.Path)
