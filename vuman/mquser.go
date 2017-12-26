@@ -14,7 +14,8 @@ import (
 func CreateUser(user *vsec.User) (err error) {
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
-	_, err = conn.C("user").Upsert(bson.M{"id": user.ID}, user)
+	// _, err = conn.C("user").Upsert(bson.M{"id": user.ID}, user)
+	err = conn.C("user").Insert(user)
 	return vlog.LogError("UMan:Mongo", err)
 }
 
@@ -135,4 +136,25 @@ func GetUserAuthLevel(userID string) (level vsec.AuthLevel, err error) {
 		Select(bson.M{"auth": 1}).
 		One(&level)
 	return level, vlog.LogError("UMan:Mongo", err)
+}
+
+//CreateFirstSuperUser - creates the first super user for the application
+func CreateFirstSuperUser(user *vsec.User, password string) (err error) {
+	defer func() {
+		vlog.LogError("UMan:Mongo", err)
+	}()
+	conn := vdb.DefaultMongoConn()
+	defer conn.Close()
+	var count int
+	count, err = conn.C("user").Find(bson.M{"auth": 0}).Limit(1).Count()
+	if count != 0 {
+		err = errors.New("A super admin already exists, operation aborted")
+		return err
+	}
+	err = CreateUser(user)
+	if err != nil {
+		return err
+	}
+	err = SetPassword(user.ID, password)
+	return err
 }

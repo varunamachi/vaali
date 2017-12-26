@@ -1,9 +1,14 @@
 package vapp
 
 import (
+	"time"
+
+	"github.com/varunamachi/vaali/vuman"
+
 	"github.com/varunamachi/vaali/vcmn"
 	"github.com/varunamachi/vaali/vdb"
 	"github.com/varunamachi/vaali/vnet"
+	"github.com/varunamachi/vaali/vsec"
 	"gopkg.in/urfave/cli.v1"
 )
 
@@ -11,7 +16,7 @@ import (
 func GetCommands() []cli.Command {
 	return []cli.Command{
 		*vdb.MakeRequireMongo(serviceStart()),
-		*vdb.MakeRequireMongo(makeAdmin()),
+		*vdb.MakeRequireMongo(createUser()),
 	}
 }
 
@@ -39,9 +44,59 @@ func serviceStart() *cli.Command {
 }
 
 //makeAdmin - makes an user admin
-func makeAdmin() *cli.Command {
+// func makeAdmin() *cli.Command {
+// 	return &cli.Command{
+// 		Name:  "make-admin",
+// 		Flags: []cli.Flag{},
+// 	}
+// }
+
+func createUser() *cli.Command {
 	return &cli.Command{
-		Name:  "make-admin",
-		Flags: []cli.Flag{},
+		Name: "create-super",
+		Flags: []cli.Flag{
+			cli.StringFlag{
+				Name:  "id",
+				Usage: "Unique ID of the user",
+			},
+			cli.StringFlag{
+				Name:  "email",
+				Usage: "Email of the password",
+			},
+			cli.StringFlag{
+				Name:  "first",
+				Usage: "First name of the user",
+			},
+			cli.StringFlag{
+				Name:  "last",
+				Usage: "Last name of the user",
+			},
+		},
+		Action: func(ctx *cli.Context) (err error) {
+			ag := vcmn.NewArgGetter(ctx)
+			id := ag.GetRequiredString("id")
+			email := ag.GetRequiredString("email")
+			first := ag.GetString("first")
+			last := ag.GetString("last")
+			if err = ag.Err; err == nil {
+				one := vcmn.AskPassword("Password")
+				two := vcmn.AskPassword("Confirm")
+				if one == two {
+					user := vsec.User{
+						ID:        id,
+						Email:     email,
+						Auth:      vsec.Super,
+						FirstName: first,
+						LastName:  last,
+						Created:   time.Now(),
+						Modified:  time.Now(),
+						Props:     make(map[string]string),
+						PwdExpiry: time.Now().AddDate(1, 0, 0),
+					}
+					err = vuman.CreateFirstSuperUser(&user, one)
+				}
+			}
+			return err
+		},
 	}
 }

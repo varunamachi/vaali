@@ -28,7 +28,7 @@ const (
 
 //User - represents an user
 type User struct {
-	OID       bson.ObjectId     `json:"_id" bson:"_id"`
+	OID       bson.ObjectId     `json:"_id" bson:"_id,omitempty"`
 	ID        string            `json:"id" bson:"id"`
 	Email     string            `json:"email" bson:"email"`
 	Auth      AuthLevel         `json:"auth" bson:"auth"`

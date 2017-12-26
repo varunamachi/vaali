@@ -11,7 +11,7 @@ import (
 	cli "gopkg.in/urfave/cli.v1"
 )
 
-//AskSecret - asks password from user, does not echo charectors
+//askSecret - asks password from user, does not echo charectors
 func askSecret() (secret string, err error) {
 	var pbyte []byte
 	pbyte, err = terminal.ReadPassword(int(syscall.Stdin))
@@ -20,6 +20,13 @@ func askSecret() (secret string, err error) {
 		fmt.Println()
 	}
 	return secret, err
+}
+
+//AskPassword - asks password, prints the given name before asking
+func AskPassword(name string) (secret string) {
+	fmt.Print(name + ": ")
+	secret, _ = askSecret()
+	return secret
 }
 
 //ArgGetter - this struct and its method are helpers to combine getting args
