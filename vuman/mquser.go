@@ -2,6 +2,7 @@ package vuman
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/varunamachi/vaali/vdb"
 	"github.com/varunamachi/vaali/vlog"
@@ -38,6 +39,7 @@ func DeleteUser(userID string) (err error) {
 //GetUser - gets details of the user corresponding to ID
 func GetUser(userID string) (user *vsec.User, err error) {
 	conn := vdb.DefaultMongoConn()
+	user = &vsec.User{}
 	defer conn.Close()
 	err = conn.C("user").Find(bson.M{"id": userID}).One(user)
 	return user, vlog.LogError("UMan:Mongo", err)
@@ -60,8 +62,6 @@ func GetAllUsers(offset, limit int) (users []*vsec.User, err error) {
 
 //ResetPassword - sets password of a unauthenticated user
 func ResetPassword(userID, oldPwd, newPwd string) (err error) {
-	var oldHash, newHash string
-	oldHash, err = passlib.Hash(oldPwd)
 	conn := vdb.DefaultMongoConn()
 	defer func() {
 		conn.Close()
@@ -70,16 +70,12 @@ func ResetPassword(userID, oldPwd, newPwd string) (err error) {
 	if err != nil {
 		return err
 	}
+	var newHash string
 	newHash, err = passlib.Hash(newPwd)
 	if err != nil {
 		return err
 	}
-	storedPass := ""
-	err = conn.C("secret").
-		Find(bson.M{"userID": userID}).
-		Select(bson.M{"phash": 1}).
-		One(&storedPass)
-	if err != nil || oldPwd == "" || oldHash != storedPass {
+	if err = ValidateUser(userID, oldPwd); err != nil {
 		err = errors.New("Could not match old password")
 		return err
 	}
@@ -93,34 +89,49 @@ func ResetPassword(userID, oldPwd, newPwd string) (err error) {
 //SetPassword - sets password of a already authenticated user, old password
 //is not required
 func SetPassword(userID, newPwd string) (err error) {
-	conn := vdb.DefaultMongoConn()
-	defer conn.Close()
 	var newHash string
 	newHash, err = passlib.Hash(newPwd)
 	if err == nil {
-		err = conn.C("secret").Update(
-			bson.M{"userID": userID},
-			bson.M{"phash": newHash},
-		)
+		conn := vdb.DefaultMongoConn()
+		defer conn.Close()
+		setPasswordHash(conn, userID, newHash)
 	}
 	return vlog.LogError("UMan:Mongo", err)
 }
 
+func setPasswordHash(conn *vdb.MongoConn, userID, hash string) (
+	err error) {
+	_, err = conn.C("secret").Upsert(
+		bson.M{
+			"userID": userID,
+		},
+		bson.M{
+			"userID": userID,
+			"phash":  hash,
+		})
+	return err
+}
+
 //ValidateUser - validates user ID and password
 func ValidateUser(userID, password string) (err error) {
-	var inHash string
-	inHash, err = passlib.Hash(password)
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
 	if err == nil {
-		var storedHash string
+		secret := bson.M{}
 		err = conn.C("secret").
 			Find(bson.M{"userID": userID}).
-			Select(bson.M{"phash": 1}).
-			One(&storedHash)
+			Select(bson.M{"phash": 1, "_id": 0}).
+			One(&secret)
 		if err == nil {
-			if inHash != storedHash {
-				err = errors.New("Invalid password provided")
+			storedHash, ok := secret["phash"].(string)
+			if ok {
+				var newHash string
+				newHash, err = passlib.Verify(password, storedHash)
+				if err == nil && newHash != "" {
+					err = setPasswordHash(conn, userID, newHash)
+				}
+			} else {
+				err = errors.New("Failed to varify password")
 			}
 		}
 	}
@@ -146,7 +157,7 @@ func CreateFirstSuperUser(user *vsec.User, password string) (err error) {
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
 	var count int
-	count, err = conn.C("user").Find(bson.M{"auth": 0}).Limit(1).Count()
+	count, _ = conn.C("user").Find(bson.M{"auth": 0}).Limit(1).Count()
 	if count != 0 {
 		err = errors.New("A super admin already exists, operation aborted")
 		return err
@@ -156,5 +167,6 @@ func CreateFirstSuperUser(user *vsec.User, password string) (err error) {
 		return err
 	}
 	err = SetPassword(user.ID, password)
+	fmt.Printf("Password: %s", password)
 	return err
 }

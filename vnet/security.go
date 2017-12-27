@@ -107,6 +107,7 @@ func login(ctx echo.Context) (err error) {
 			var signed string
 			signed, err = token.SignedString(getKey())
 			if err == nil {
+				data = make(map[string]interface{})
 				data["token"] = signed
 				data["user"] = user
 			} else {
@@ -126,7 +127,7 @@ func login(ctx echo.Context) (err error) {
 		Op:     "login",
 		Msg:    msg,
 		OK:     err == nil,
-		Data:   data["user"],
+		Data:   data,
 		Err:    err,
 	})
 	return vlog.LogError("Net:Sec:API", err)

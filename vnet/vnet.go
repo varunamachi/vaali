@@ -122,23 +122,23 @@ func configure(grp *echo.Group, urlPrefix string, ep *Endpoint) {
 	var route *echo.Route
 	switch ep.Method {
 	case echo.CONNECT:
-		route = grp.GET(urlPrefix+ep.URL, ep.Func)
+		route = grp.CONNECT(urlPrefix+ep.URL, ep.Func)
 	case echo.DELETE:
-		route = grp.GET(urlPrefix+ep.URL, ep.Func)
+		route = grp.DELETE(urlPrefix+ep.URL, ep.Func)
 	case echo.GET:
 		route = grp.GET(urlPrefix+ep.URL, ep.Func)
 	case echo.HEAD:
-		route = grp.GET(urlPrefix+ep.URL, ep.Func)
+		route = grp.HEAD(urlPrefix+ep.URL, ep.Func)
 	case echo.OPTIONS:
-		route = grp.GET(urlPrefix+ep.URL, ep.Func)
+		route = grp.OPTIONS(urlPrefix+ep.URL, ep.Func)
 	case echo.PATCH:
-		route = grp.GET(urlPrefix+ep.URL, ep.Func)
+		route = grp.PATCH(urlPrefix+ep.URL, ep.Func)
 	case echo.POST:
-		route = grp.GET(urlPrefix+ep.URL, ep.Func)
+		route = grp.POST(urlPrefix+ep.URL, ep.Func)
 	case echo.PUT:
-		route = grp.GET(urlPrefix+ep.URL, ep.Func)
+		route = grp.PUT(urlPrefix+ep.URL, ep.Func)
 	case echo.TRACE:
-		route = grp.GET(urlPrefix+ep.URL, ep.Func)
+		route = grp.TRACE(urlPrefix+ep.URL, ep.Func)
 	}
 	ep.Route = route
 	if _, found := categories[ep.Category]; !found {

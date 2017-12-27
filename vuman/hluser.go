@@ -9,15 +9,68 @@ import (
 	"github.com/varunamachi/vaali/vsec"
 )
 
+//GetUserEndpoints - gives REST endpoints for user manaagement
+func GetUserEndpoints() (endpoints []*vnet.Endpoint) {
+	endpoints = []*vnet.Endpoint{
+		&vnet.Endpoint{
+			Method:   echo.POST,
+			URL:      "/uman/user",
+			Access:   vsec.Admin,
+			Category: "user management",
+			Func:     createUser,
+		},
+		&vnet.Endpoint{
+			Method:   echo.PUT,
+			URL:      "/uman/user",
+			Access:   vsec.Admin,
+			Category: "user management",
+			Func:     updateUser,
+		},
+		&vnet.Endpoint{
+			Method:   echo.DELETE,
+			URL:      "/uman/user/:userID",
+			Access:   vsec.Admin,
+			Category: "user management",
+			Func:     deleteUser,
+		},
+		&vnet.Endpoint{
+			Method:   echo.GET,
+			URL:      "/uman/user/:userID",
+			Access:   vsec.Monitor,
+			Category: "user management",
+			Func:     getUser,
+		},
+		&vnet.Endpoint{
+			Method:   echo.GET,
+			URL:      "/uman/user",
+			Access:   vsec.Monitor,
+			Category: "user management",
+			Func:     getUsers,
+		},
+		&vnet.Endpoint{
+			Method:   echo.POST,
+			URL:      "/uman/user/password",
+			Access:   vsec.Admin,
+			Category: "user management",
+			Func:     setPassword,
+		},
+		&vnet.Endpoint{
+			Method:   echo.PUT,
+			URL:      "/uman/user/password",
+			Access:   vsec.Monitor,
+			Category: "user management",
+			Func:     resetPassword,
+		},
+	}
+	return endpoints
+
+}
+
 func createUser(ctx echo.Context) (err error) {
 	status, msg := vnet.DefMS("Create User")
 	var user vsec.User
 	err = ctx.Bind(&user)
 	if err == nil {
-		//Only admin can set a different role
-		if !vnet.IsAdmin(ctx) {
-			user.Auth = vsec.Normal
-		}
 		err = CreateUser(&user)
 		if err != nil {
 			msg = "Failed to create user in database"
@@ -43,14 +96,6 @@ func updateUser(ctx echo.Context) (err error) {
 	var user vsec.User
 	err = ctx.Bind(&user)
 	if err == nil {
-		if !vnet.IsAdmin(ctx) {
-			user.Auth, err = GetUserAuthLevel(user.ID)
-			if err != nil {
-				return vlog.LogError("Sec:Hdl", err)
-			}
-		} else {
-
-		}
 		err = UpdateUser(&user)
 		if err != nil {
 			msg = "Failed to update user in database"
