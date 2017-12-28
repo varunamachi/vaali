@@ -2,7 +2,6 @@ package vuman
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/varunamachi/vaali/vdb"
 	"github.com/varunamachi/vaali/vlog"
@@ -167,6 +166,5 @@ func CreateFirstSuperUser(user *vsec.User, password string) (err error) {
 		return err
 	}
 	err = SetPassword(user.ID, password)
-	fmt.Printf("Password: %s", password)
 	return err
 }
