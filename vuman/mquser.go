@@ -156,8 +156,8 @@ func CreateFirstSuperUser(user *vsec.User, password string) (err error) {
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
 	var count int
-	count, _ = conn.C("user").Find(bson.M{"auth": 0}).Limit(1).Count()
-	if count != 0 {
+	count, _ = conn.C("user").Find(bson.M{"auth": 0}).Count()
+	if count > 5 {
 		err = errors.New("A super admin already exists, operation aborted")
 		return err
 	}
