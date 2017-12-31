@@ -122,7 +122,8 @@ func login(ctx echo.Context) (err error) {
 		msg = "Failed to read credentials from request"
 		status = http.StatusBadRequest
 	}
-	AuditedSendX(ctx, userID, &Result{
+	ctx.Set("userID", userID)
+	AuditedSend(ctx, &Result{
 		Status: status,
 		Op:     "login",
 		Msg:    msg,

@@ -67,7 +67,7 @@ type Event struct {
 	UserID  string      `json:"user" bson:"user"`
 	Success bool        `json:"success" bson:"success"`
 	Error   error       `json:"error" bson:"error"`
-	Time    time.Time   `json:"time" bson:"bson"`
+	Time    time.Time   `json:"time" bson:"date"`
 	Data    interface{} `json:"data" bson:"data"`
 }
 
