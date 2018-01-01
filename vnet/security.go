@@ -152,13 +152,21 @@ func RetrieveUserInfo(ctx echo.Context) (
 	role vsec.AuthLevel,
 	err error) {
 	success := false
-	if tkn, ok := ctx.Get("token").(*jwt.Token); ok {
+	itk := ctx.Get("token")
+	// vcmn.DumpJSON(itk)
+	if tkn, ok := itk.(*jwt.Token); ok {
 		if claims, ok := tkn.Claims.(jwt.MapClaims); ok {
 			var aok bool
-			user, aok = claims["user"].(string)
+			user, aok = claims["userID"].(string)
 			access, bok := claims["access"].(float64)
 			role = vsec.AuthLevel(access)
 			success = aok && bok
+			if !aok {
+				vlog.Error("Net:Sec:API", "Invalid user name in JWT")
+			}
+			if !bok {
+				vlog.Error("Net:Sec:API", "Invalid access level in JWT")
+			}
 		}
 	}
 	if !success {
