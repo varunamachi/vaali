@@ -9,13 +9,13 @@
 
 [[projects]]
   name = "github.com/labstack/echo"
-  packages = ["."]
+  packages = [".","middleware"]
   revision = "0473c51f1dbd83487effce00702571d19033a6e5"
   version = "3.2.5"
 
 [[projects]]
   name = "github.com/labstack/gommon"
-  packages = ["color","log"]
+  packages = ["bytes","color","log","random"]
   revision = "57409ada9da0f2afad6664c49502f8c50fbd8476"
   version = "0.2.3"
 
@@ -88,6 +88,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8f635f7183ad7dbca514656973d92be33ae050a054143be7553d3230a89d1d57"
+  inputs-digest = "404e62aa3fb9cf791f322ed57626de37aca8b7496f20ba32818567e0d9c0487b"
   solver-name = "gps-cdcl"
   solver-version = 1

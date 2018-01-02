@@ -42,3 +42,19 @@ type Options struct {
 	Authenticator Authenticator
 	Authorizer    Authorizer
 }
+
+//EmailConfig - configuration for sending email
+type EmailConfig struct {
+	From     string `json:"from"`
+	Password string `json:"password"`
+	SMTPHost string `json:"smtpHost"`
+	SMTPPort int    `json:"smtpPort"`
+}
+
+var categories = make(map[string][]*Endpoint)
+var endpoints = make([]*Endpoint, 0, 200)
+var e = echo.New()
+var accessPos = 0
+var authenticator Authenticator
+var authorizer Authorizer
+var emailConfig EmailConfig

@@ -11,15 +11,6 @@ import (
 	"github.com/varunamachi/vaali/vsec"
 )
 
-var categories = make(map[string][]*Endpoint)
-var endpoints = make([]*Endpoint, 0, 200)
-var e = echo.New()
-var accessPos = 0
-var authenticator Authenticator
-var authorizer Authorizer
-
-// var groups = make
-
 //AddEndpoint - registers an REST endpoint
 func AddEndpoint(ep *Endpoint) {
 	endpoints = append(endpoints, ep)
