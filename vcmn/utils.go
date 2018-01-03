@@ -1,8 +1,13 @@
 package vcmn
 
-import "encoding/json"
-import "fmt"
-import "github.com/varunamachi/vaali/vlog"
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
+
+	"github.com/varunamachi/vaali/vlog"
+)
 
 //DumpJSON - dumps JSON representation of given data to stdout
 func DumpJSON(o interface{}) {
@@ -10,7 +15,7 @@ func DumpJSON(o interface{}) {
 	if err == nil {
 		fmt.Println(string(b))
 	} else {
-		vlog.LogError("Cmd:JSON", err)
+		vlog.LogError("Cmn:Utils", err)
 	}
 }
 
@@ -20,5 +25,38 @@ func GetAsJSON(o interface{}) (jstr string, err error) {
 	if err == nil {
 		jstr = string(b)
 	}
-	return jstr, vlog.LogError("Cmd:JSON", err)
+	return jstr, vlog.LogError("Cmn:Utils", err)
+}
+
+//GetExecDir - gives absolute path of the directory in which the executable
+//for the current application is present
+func GetExecDir() (dirPath string) {
+	execPath, err := os.Executable()
+	if err == nil {
+		dirPath = filepath.Dir(execPath)
+	} else {
+		vlog.LogError("Cmn:Utils", err)
+	}
+
+	return dirPath
+}
+
+//ExistsAsFile - checks if a regular file exists at given path. If a error
+//occurs while stating whatever exists at given location, false is returned
+func ExistsAsFile(path string) (yes bool) {
+	stat, err := os.Stat(path)
+	if err == nil && !stat.IsDir() {
+		yes = true
+	}
+	return yes
+}
+
+//ExistsAsDir - checks if a directory exists at given path. If a error
+//occurs while stating whatever exists at given location, false is returned
+func ExistsAsDir(path string) (yes bool) {
+	stat, err := os.Stat(path)
+	if err == nil && stat.IsDir() {
+		yes = true
+	}
+	return yes
 }

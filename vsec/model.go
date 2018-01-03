@@ -26,6 +26,18 @@ const (
 	Public
 )
 
+//UserState - state of the user account
+type UserState string
+
+//Active - user is active
+var Active UserState = "active"
+
+//Disabled - user account is disabled by an admin
+var Disabled UserState = "disabled"
+
+//Flagged - user account is flagged by a user
+var Flagged UserState = "flagged"
+
 //User - represents an user
 type User struct {
 	OID       bson.ObjectId     `json:"_id" bson:"_id,omitempty"`
@@ -34,10 +46,12 @@ type User struct {
 	Auth      AuthLevel         `json:"auth" bson:"auth"`
 	FirstName string            `json:"firstName" bson:"firstName"`
 	LastName  string            `json:"lastName" bson:"lastName"`
-	Props     map[string]string `json:"props" bson:"props"`
+	State     bool              `json:"state" bson:"state"`
 	Created   time.Time         `json:"created" bson:"created"`
 	Modified  time.Time         `json:"modified" bson:"modified"`
 	PwdExpiry time.Time         `json:"pwdExpiry" bson:"pwdExpiry"`
+	Props     map[string]string `json:"props" bson:"props"`
+	VarfnID   string            `json:"varfnID" bson:"varfnID"`
 }
 
 //Group - group of users
