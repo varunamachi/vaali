@@ -168,3 +168,13 @@ func CreateFirstSuperUser(user *vsec.User, password string) (err error) {
 	err = SetPassword(user.ID, password)
 	return err
 }
+
+//CreateIndices - creates mongoDB indeces for tables used for user management
+func CreateIndices() (err error) {
+	return err
+}
+
+//CleanData - cleans user management related data from database
+func CleanData() (err error) {
+	return err
+}

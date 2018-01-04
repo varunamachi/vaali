@@ -15,12 +15,14 @@ import (
 //GetCommands - gives commands related to HTTP networking
 func GetCommands() []cli.Command {
 	return []cli.Command{
-		*vdb.MakeRequireMongo(serviceStart()),
-		*vdb.MakeRequireMongo(createUser()),
+		*vdb.MakeRequireMongo(serviceStartCmd()),
+		*vdb.MakeRequireMongo(createUserCmd()),
+		*vdb.MakeRequireMongo(setupCmd()),
+		*vdb.MakeRequireMongo(resetCmd()),
 	}
 }
 
-func serviceStart() *cli.Command {
+func serviceStartCmd() *cli.Command {
 	return &cli.Command{
 		Name:  "serve",
 		Usage: "Starts the HTTP service",
@@ -51,7 +53,7 @@ func serviceStart() *cli.Command {
 // 	}
 // }
 
-func createUser() *cli.Command {
+func createUserCmd() *cli.Command {
 	return &cli.Command{
 		Name: "create-super",
 		Flags: []cli.Flag{
@@ -98,5 +100,17 @@ func createUser() *cli.Command {
 			}
 			return err
 		},
+	}
+}
+
+func setupCmd() *cli.Command {
+	return &cli.Command{
+		Name: "setup",
+	}
+}
+
+func resetCmd() *cli.Command {
+	return &cli.Command{
+		Name: "reset",
 	}
 }

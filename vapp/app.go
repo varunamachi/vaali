@@ -1,6 +1,7 @@
 package vapp
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -44,12 +45,23 @@ func (app *App) Exec(args []string) (err error) {
 	app.Commands = append(app.Commands, GetCommands()...)
 
 	for _, module := range app.Modules {
+		if module.Initialize != nil {
+			err = module.Initialize(app)
+			if err != nil {
+				vlog.Error("App", "Failed to initialize module %s",
+					module.Name)
+				break
+			}
+		}
 		cmds := module.CmdProvider()
 		app.Commands = append(app.Commands, cmds...)
 		vnet.AddEndpoints(module.Endpoints...)
 	}
-	vnet.InitWithOptions(app.NetOptions)
-	return app.Run(args)
+	if err == nil {
+		vnet.InitWithOptions(app.NetOptions)
+		err = app.Run(args)
+	}
+	return err
 }
 
 //NewDefaultApp - creates a new application with default options
@@ -82,7 +94,57 @@ func NewDefaultApp(
 		},
 		Modules: make([]*Module, 0, 10),
 	}
+	loadConfig(name)
 	return app
+}
+
+//Setup - sets up the application and the registered module. This is not
+//initialization and needs to be called when app/module configuration changes.
+//This is the place where mongoDB indices are expected to be created.
+func (app *App) Setup() (err error) {
+	err = vuman.CreateIndices()
+	if err != nil {
+		vlog.Error("App", "Failed to create U-Man indices creation")
+	}
+	for _, module := range app.Modules {
+		if module.Setup != nil {
+			err = module.Setup(app)
+			if err != nil {
+				vlog.Error("App", "Failed to set module %s up",
+					module.Name)
+			} else {
+				vlog.Info("App", "Configured module %s", module.Name)
+			}
+		}
+	}
+	if err != nil {
+		err = errors.New("Failed to set the application up")
+	}
+	return err
+}
+
+//Reset - resets the application and module configuration and data.
+//USE WITH CAUTION
+func (app *App) Reset() (err error) {
+	err = vuman.CleanData()
+	if err != nil {
+		vlog.Error("App", "Failed to reset U-Man data")
+	}
+	for _, module := range app.Modules {
+		if module.Setup != nil {
+			err = module.Setup(app)
+			if err != nil {
+				vlog.Error("App", "Failed to reset module %s",
+					module.Name)
+			} else {
+				vlog.Info("App", "Reset module %s", module.Name)
+			}
+		}
+	}
+	if err != nil {
+		err = errors.New("Failed to reset application")
+	}
+	return err
 }
 
 //NewAppWithOptions - creates app with non default options
