@@ -33,3 +33,7 @@ func MongoAuthenticator(params map[string]interface{}) (
 	}
 	return user, vlog.LogError("UMan:Mongo:Auth", err)
 }
+
+func sendVerificationMail(user *vsec.User) (err error) {
+	return err
+}

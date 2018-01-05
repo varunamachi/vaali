@@ -7,6 +7,7 @@ import (
 	"github.com/varunamachi/vaali/vlog"
 	"github.com/varunamachi/vaali/vsec"
 	passlib "gopkg.in/hlandau/passlib.v1"
+	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -169,12 +170,37 @@ func CreateFirstSuperUser(user *vsec.User, password string) (err error) {
 	return err
 }
 
+//SetUserState - sets state of an user account
+func SetUserState(userID string, state vsec.UserState) (err error) {
+	//@TODO - implement
+	return err
+}
+
+//VerifyUser - sets state of an user account to verified based on userID
+//and verification ID
+func VerifyUser(userID, verID string) (err error) {
+	//@TODO - implement
+	return err
+}
+
 //CreateIndices - creates mongoDB indeces for tables used for user management
 func CreateIndices() (err error) {
+	conn := vdb.DefaultMongoConn()
+	defer conn.Close()
+	err = conn.C("user").EnsureIndex(mgo.Index{
+		Key:        []string{"id", "varfnID"},
+		Unique:     true,
+		DropDups:   true,
+		Background: true, // See notes.
+		Sparse:     true,
+	})
 	return err
 }
 
 //CleanData - cleans user management related data from database
 func CleanData() (err error) {
+	conn := vdb.DefaultMongoConn()
+	defer conn.Close()
+	_, err = conn.C("user").RemoveAll(bson.M{})
 	return err
 }

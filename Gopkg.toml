@@ -47,3 +47,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/mitchellh/mapstructure"
+
+[[constraint]]
+  name = "github.com/satori/go.uuid"
+  version = "1.1.0"

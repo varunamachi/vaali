@@ -3,6 +3,8 @@ package vuman
 import (
 	"net/http"
 
+	"github.com/satori/go.uuid"
+
 	"github.com/labstack/echo"
 	"github.com/varunamachi/vaali/vlog"
 	"github.com/varunamachi/vaali/vnet"
@@ -83,6 +85,65 @@ func createUser(ctx echo.Context) (err error) {
 	vnet.AuditedSendX(ctx, user, &vnet.Result{
 		Status: status,
 		Op:     "user_create",
+		Msg:    msg,
+		OK:     err == nil,
+		Data:   nil,
+		Err:    err,
+	})
+	return vlog.LogError("Sec:Hdl", err)
+}
+
+func registerUser(ctx echo.Context) (err error) {
+	status, msg := vnet.DefMS("Register User")
+	var user vsec.User
+	err = ctx.Bind(&user)
+	if err == nil {
+		user.Auth = vsec.Normal
+		uid := uuid.NewV4()
+		user.VarfnID = uid.String()
+		err = CreateUser(&user)
+		if err != nil {
+			msg = "Failed to register user in database"
+			status = http.StatusInternalServerError
+		} else {
+			err = sendVerificationMail(&user)
+			if err != nil {
+				msg = "Failed to send verification email"
+				status = http.StatusInternalServerError
+			}
+		}
+	} else {
+		status = http.StatusBadRequest
+		msg = "User information given is malformed"
+	}
+	vnet.AuditedSendX(ctx, user, &vnet.Result{
+		Status: status,
+		Op:     "user_register",
+		Msg:    msg,
+		OK:     err == nil,
+		Data:   nil,
+		Err:    err,
+	})
+	return vlog.LogError("Sec:Hdl", err)
+}
+
+func varifyUser(ctx echo.Context) (err error) {
+	status, msg := vnet.DefMS("User verification")
+	userID := ctx.Param("userID")
+	verID := ctx.Param("verID")
+	if len(userID) != 0 && len(verID) != 0 {
+		err = VerifyUser(userID, verID)
+		if err != nil {
+			msg = "Failed to verify user"
+			status = http.StatusInternalServerError
+		}
+	} else {
+		status = http.StatusBadRequest
+		msg = "User information given is malformed"
+	}
+	vnet.AuditedSendX(ctx, userID, &vnet.Result{
+		Status: status,
+		Op:     "user_register",
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   nil,
