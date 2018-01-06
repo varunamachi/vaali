@@ -55,6 +55,7 @@ var categories = make(map[string][]*Endpoint)
 var endpoints = make([]*Endpoint, 0, 200)
 var e = echo.New()
 var accessPos = 0
+var rootPath = ""
 var authenticator Authenticator
 var authorizer Authorizer
 var emailConfig EmailConfig

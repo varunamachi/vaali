@@ -50,7 +50,7 @@ func ModifiedHTTPErrorHandler(err error, c echo.Context) {
 
 	// Send response
 	if !c.Response().Committed {
-		if c.Request().Method == echo.HEAD { // Issue #608
+		if c.Request().Method == echo.HEAD {
 			err = c.NoContent(code)
 		} else {
 			err = c.JSON(code, msg)
@@ -72,7 +72,9 @@ func InitWithOptions(opts Options) {
 	//Add middleware
 	authenticator = opts.Authenticator
 	authorizer = opts.Authorizer
-	rootPath := opts.RootName + "/api/v" + opts.APIVersion + "/"
+
+	//rootPath is a package variable
+	rootPath = opts.RootName + "/api/v" + opts.APIVersion + "/"
 	accessPos = len(rootPath) + len("in/")
 	root := e.Group(rootPath)
 	in := root.Group("in/")
@@ -108,6 +110,10 @@ func Serve(port int) (err error) {
 	address := fmt.Sprintf(":%d", port)
 	err = e.Start(address)
 	return err
+}
+
+func GetRootPath() string {
+	return rootPath
 }
 
 func configure(grp *echo.Group, urlPrefix string, ep *Endpoint) {

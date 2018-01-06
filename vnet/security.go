@@ -99,20 +99,27 @@ func login(ctx echo.Context) (err error) {
 		userID = creds["userID"]
 		user, err = doLogin(userID, creds["password"])
 		if err == nil {
-			token := jwt.New(jwt.SigningMethodHS256)
-			claims := token.Claims.(jwt.MapClaims)
-			claims["userID"] = user.ID
-			claims["exp"] = time.Now().Add(time.Hour * 2).Unix()
-			claims["access"] = user.Auth
-			var signed string
-			signed, err = token.SignedString(getKey())
-			if err == nil {
-				data = make(map[string]interface{})
-				data["token"] = signed
-				data["user"] = user
+			if user.State == vsec.Active {
+				token := jwt.New(jwt.SigningMethodHS256)
+				claims := token.Claims.(jwt.MapClaims)
+				claims["userID"] = user.ID
+				claims["exp"] = time.Now().Add(time.Hour * 2).Unix()
+				claims["access"] = user.Auth
+				var signed string
+				signed, err = token.SignedString(getKey())
+				if err == nil {
+					data = make(map[string]interface{})
+					data["token"] = signed
+					data["user"] = user
+				} else {
+					msg = "Failed to sign token"
+					status = http.StatusInternalServerError
+				}
 			} else {
-				msg = "Failed to sign toke"
-				status = http.StatusInternalServerError
+				data = make(map[string]interface{})
+				data["state"] = user.State
+				msg = "User is not active"
+				status = http.StatusUnauthorized
 			}
 		} else {
 			msg = "Login failed"

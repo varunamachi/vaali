@@ -80,8 +80,12 @@ func ResetPassword(userID, oldPwd, newPwd string) (err error) {
 		return err
 	}
 	err = conn.C("secret").Update(
-		bson.M{"userID": userID},
-		bson.M{"phash": newHash},
+		bson.M{
+			"userID": userID,
+		},
+		bson.M{
+			"phash": newHash,
+		},
 	)
 	return err
 }
@@ -172,15 +176,36 @@ func CreateFirstSuperUser(user *vsec.User, password string) (err error) {
 
 //SetUserState - sets state of an user account
 func SetUserState(userID string, state vsec.UserState) (err error) {
-	//@TODO - implement
-	return err
+	//@TODO - Test
+	conn := vdb.DefaultMongoConn()
+	defer conn.Close()
+	err = conn.C("user").Update(
+		bson.M{
+			"id": userID,
+		},
+		bson.M{
+			"state": state,
+		})
+	return vlog.LogError("UMan:Mongo", err)
 }
 
 //VerifyUser - sets state of an user account to verified based on userID
 //and verification ID
 func VerifyUser(userID, verID string) (err error) {
-	//@TODO - implement
-	return err
+	//@TODO - Test
+	conn := vdb.DefaultMongoConn()
+	defer conn.Close()
+	err = conn.C("user").Update(
+		bson.M{
+			"$and": bson.M{
+				"id":    userID,
+				"verID": verID,
+			},
+		},
+		bson.M{
+			"state": vsec.Active,
+		})
+	return vlog.LogError("UMan:Mongo", err)
 }
 
 //CreateIndices - creates mongoDB indeces for tables used for user management

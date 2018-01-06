@@ -9,10 +9,10 @@ import (
 
 //"smtp.gmail.com:587"
 
-func sendEmail(to string, meesage string) (err error) {
+func SendEmail(to, subject, meesage string) (err error) {
 	msg := "From: " + emailConfig.From + "\n" +
 		"To: " + to + "\n" +
-		"Subject: Sparrow Registration\n\n" +
+		"Subject: " + subject + "\n\n" +
 		meesage
 	smtpURL := fmt.Sprintf("%s:%d", emailConfig.SMTPHost, emailConfig.SMTPPort)
 	auth := smtp.PlainAuth("",

@@ -63,6 +63,20 @@ func GetUserEndpoints() (endpoints []*vnet.Endpoint) {
 			Category: "user management",
 			Func:     resetPassword,
 		},
+		&vnet.Endpoint{
+			Method:   echo.POST,
+			URL:      "/uman/user/register",
+			Access:   vsec.Monitor,
+			Category: "user management",
+			Func:     resetPassword,
+		},
+		&vnet.Endpoint{
+			Method:   echo.POST,
+			URL:      "/uman/user/verify/:userID/:verID",
+			Access:   vsec.Monitor,
+			Category: "user management",
+			Func:     resetPassword,
+		},
 	}
 	return endpoints
 
@@ -99,8 +113,7 @@ func registerUser(ctx echo.Context) (err error) {
 	err = ctx.Bind(&user)
 	if err == nil {
 		user.Auth = vsec.Normal
-		uid := uuid.NewV4()
-		user.VarfnID = uid.String()
+		user.VerID = uuid.NewV4().String()
 		err = CreateUser(&user)
 		if err != nil {
 			msg = "Failed to register user in database"
@@ -121,8 +134,10 @@ func registerUser(ctx echo.Context) (err error) {
 		Op:     "user_register",
 		Msg:    msg,
 		OK:     err == nil,
-		Data:   nil,
-		Err:    err,
+		Data: vlog.M{
+			"user": user,
+		},
+		Err: err,
 	})
 	return vlog.LogError("Sec:Hdl", err)
 }
@@ -143,11 +158,14 @@ func varifyUser(ctx echo.Context) (err error) {
 	}
 	vnet.AuditedSendX(ctx, userID, &vnet.Result{
 		Status: status,
-		Op:     "user_register",
+		Op:     "user_verify",
 		Msg:    msg,
 		OK:     err == nil,
-		Data:   nil,
-		Err:    err,
+		Data: vlog.M{
+			"userID": userID,
+			"verID":  verID,
+		},
+		Err: err,
 	})
 	return vlog.LogError("Sec:Hdl", err)
 }

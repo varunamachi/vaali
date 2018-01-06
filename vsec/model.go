@@ -29,6 +29,9 @@ const (
 //UserState - state of the user account
 type UserState string
 
+//Verfied - user account is verified by the user
+var Verfied UserState = "verified"
+
 //Active - user is active
 var Active UserState = "active"
 
@@ -46,12 +49,12 @@ type User struct {
 	Auth      AuthLevel         `json:"auth" bson:"auth"`
 	FirstName string            `json:"firstName" bson:"firstName"`
 	LastName  string            `json:"lastName" bson:"lastName"`
-	State     bool              `json:"state" bson:"state"`
+	State     UserState         `json:"state" bson:"state"`
 	Created   time.Time         `json:"created" bson:"created"`
 	Modified  time.Time         `json:"modified" bson:"modified"`
 	PwdExpiry time.Time         `json:"pwdExpiry" bson:"pwdExpiry"`
 	Props     map[string]string `json:"props" bson:"props"`
-	VarfnID   string            `json:"varfnID" bson:"varfnID"`
+	VerID     string            `json:"verID" bson:"verID"`
 }
 
 //Group - group of users
