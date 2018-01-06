@@ -12,16 +12,18 @@ func GetEndpoints() (endpoints []*vnet.Endpoint) {
 		&vnet.Endpoint{
 			Method:   echo.POST,
 			URL:      "uman/user",
-			Access:   vsec.Public,
+			Access:   vsec.Admin,
 			Category: "user management",
 			Func:     createUser,
+			Comment:  "Create an user",
 		},
 		&vnet.Endpoint{
 			Method:   echo.PUT,
 			URL:      "uman/user",
-			Access:   vsec.Public,
+			Access:   vsec.Admin,
 			Category: "user management",
 			Func:     updateUser,
+			Comment:  "Update an user",
 		},
 		&vnet.Endpoint{
 			Method:   echo.DELETE,
@@ -29,6 +31,7 @@ func GetEndpoints() (endpoints []*vnet.Endpoint) {
 			Access:   vsec.Admin,
 			Category: "user management",
 			Func:     deleteUser,
+			Comment:  "Delete an user",
 		},
 		&vnet.Endpoint{
 			Method:   echo.GET,
@@ -36,6 +39,7 @@ func GetEndpoints() (endpoints []*vnet.Endpoint) {
 			Access:   vsec.Monitor,
 			Category: "user management",
 			Func:     getUser,
+			Comment:  "Get info about an user",
 		},
 		&vnet.Endpoint{
 			Method:   echo.GET,
@@ -43,6 +47,7 @@ func GetEndpoints() (endpoints []*vnet.Endpoint) {
 			Access:   vsec.Monitor,
 			Category: "user management",
 			Func:     getUsers,
+			Comment:  "Get list of user & their details",
 		},
 		&vnet.Endpoint{
 			Method:   echo.POST,
@@ -50,6 +55,7 @@ func GetEndpoints() (endpoints []*vnet.Endpoint) {
 			Access:   vsec.Admin,
 			Category: "user management",
 			Func:     setPassword,
+			Comment:  "Set password for an user",
 		},
 		&vnet.Endpoint{
 			Method:   echo.PUT,
@@ -57,7 +63,33 @@ func GetEndpoints() (endpoints []*vnet.Endpoint) {
 			Access:   vsec.Monitor,
 			Category: "user management",
 			Func:     resetPassword,
+			Comment:  "Reset password",
 		},
+		&vnet.Endpoint{
+			Method:   echo.POST,
+			URL:      "/uman/user/self",
+			Access:   vsec.Public,
+			Category: "user management",
+			Func:     registerUser,
+			Comment:  "Registration for new user",
+		},
+		&vnet.Endpoint{
+			Method:   echo.POST,
+			URL:      "/uman/user/verify/:userID/:verID",
+			Access:   vsec.Public,
+			Category: "user management",
+			Func:     verifyUser,
+			Comment:  "Verify a registered account",
+		},
+		//@TODO implement BELOW - same as updateUser but can only update current
+		//user
+		// &vnet.Endpoint{
+		// 	Method:   echo.PUT,
+		// 	URL:      "/uman/user/self",
+		// 	Access:   vsec.Public,
+		// 	Category: "user management",
+		// 	Func:     updateUserProfile,
+		// },
 	}
 	return endpoints
 

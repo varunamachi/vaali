@@ -11,77 +11,6 @@ import (
 	"github.com/varunamachi/vaali/vsec"
 )
 
-//GetUserEndpoints - gives REST endpoints for user manaagement
-func GetUserEndpoints() (endpoints []*vnet.Endpoint) {
-	endpoints = []*vnet.Endpoint{
-		&vnet.Endpoint{
-			Method:   echo.POST,
-			URL:      "/uman/user",
-			Access:   vsec.Admin,
-			Category: "user management",
-			Func:     createUser,
-		},
-		&vnet.Endpoint{
-			Method:   echo.PUT,
-			URL:      "/uman/user",
-			Access:   vsec.Admin,
-			Category: "user management",
-			Func:     updateUser,
-		},
-		&vnet.Endpoint{
-			Method:   echo.DELETE,
-			URL:      "/uman/user/:userID",
-			Access:   vsec.Admin,
-			Category: "user management",
-			Func:     deleteUser,
-		},
-		&vnet.Endpoint{
-			Method:   echo.GET,
-			URL:      "/uman/user/:userID",
-			Access:   vsec.Monitor,
-			Category: "user management",
-			Func:     getUser,
-		},
-		&vnet.Endpoint{
-			Method:   echo.GET,
-			URL:      "/uman/user",
-			Access:   vsec.Monitor,
-			Category: "user management",
-			Func:     getUsers,
-		},
-		&vnet.Endpoint{
-			Method:   echo.POST,
-			URL:      "/uman/user/password",
-			Access:   vsec.Admin,
-			Category: "user management",
-			Func:     setPassword,
-		},
-		&vnet.Endpoint{
-			Method:   echo.PUT,
-			URL:      "/uman/user/password",
-			Access:   vsec.Monitor,
-			Category: "user management",
-			Func:     resetPassword,
-		},
-		&vnet.Endpoint{
-			Method:   echo.POST,
-			URL:      "/uman/user/register",
-			Access:   vsec.Monitor,
-			Category: "user management",
-			Func:     resetPassword,
-		},
-		&vnet.Endpoint{
-			Method:   echo.POST,
-			URL:      "/uman/user/verify/:userID/:verID",
-			Access:   vsec.Monitor,
-			Category: "user management",
-			Func:     resetPassword,
-		},
-	}
-	return endpoints
-
-}
-
 func createUser(ctx echo.Context) (err error) {
 	status, msg := vnet.DefMS("Create User")
 	var user vsec.User
@@ -142,7 +71,7 @@ func registerUser(ctx echo.Context) (err error) {
 	return vlog.LogError("Sec:Hdl", err)
 }
 
-func varifyUser(ctx echo.Context) (err error) {
+func verifyUser(ctx echo.Context) (err error) {
 	status, msg := vnet.DefMS("User verification")
 	userID := ctx.Param("userID")
 	verID := ctx.Param("verID")

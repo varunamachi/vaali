@@ -14,6 +14,7 @@ func GetEndpoints() (endpoints []*Endpoint) {
 			Category: "security",
 			Func:     login,
 			Access:   vsec.Public,
+			Comment:  "Login to application",
 		},
 	}
 	return endpoints

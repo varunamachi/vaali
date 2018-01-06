@@ -22,6 +22,7 @@ type Endpoint struct {
 	Access   vsec.AuthLevel `json:"access"`
 	Category string         `json:"cateogry"`
 	Route    *echo.Route    `json:"route"`
+	Comment  string         `json:"Comment"`
 	Func     echo.HandlerFunc
 }
 

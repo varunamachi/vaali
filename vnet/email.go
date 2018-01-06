@@ -7,8 +7,8 @@ import (
 	"github.com/varunamachi/vaali/vlog"
 )
 
-//"smtp.gmail.com:587"
-
+//SendEmail - sends an email with given information. Uses the package level
+//variable emainConfig for SMTP configuration - smtp.gmail.com:587
 func SendEmail(to, subject, meesage string) (err error) {
 	msg := "From: " + emailConfig.From + "\n" +
 		"To: " + to + "\n" +

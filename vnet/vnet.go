@@ -112,6 +112,7 @@ func Serve(port int) (err error) {
 	return err
 }
 
+//GetRootPath - get base URL of the configured application's REST Endpoints
 func GetRootPath() string {
 	return rootPath
 }
@@ -151,10 +152,11 @@ func printConfig() {
 	for category, eps := range categories {
 		fmt.Printf("\t%10s\n", category)
 		for _, ep := range eps {
-			fmt.Printf("\t\t|-%10s - %10v - %s\n",
+			fmt.Printf("\t\t|-%10s - %10v - %-50s - %s\n",
 				ep.Method,
 				ep.Access,
-				ep.Route.Path)
+				ep.Route.Path,
+				ep.Comment)
 		}
 		fmt.Println()
 	}
