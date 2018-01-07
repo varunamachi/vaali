@@ -85,6 +85,9 @@ func NewDefaultApp(
 			Authors:   authors,
 			Usage:     desc,
 			ErrWriter: ioutil.Discard,
+			Metadata: map[string]interface{}{
+				"vapp": app,
+			},
 		},
 		NetOptions: vnet.Options{
 			RootName:      name,

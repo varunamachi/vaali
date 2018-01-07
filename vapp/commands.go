@@ -1,7 +1,11 @@
 package vapp
 
 import (
+	"errors"
+	"fmt"
 	"time"
+
+	"github.com/varunamachi/vaali/vlog"
 
 	"github.com/varunamachi/vaali/vuman"
 
@@ -55,7 +59,8 @@ func serviceStartCmd() *cli.Command {
 
 func createUserCmd() *cli.Command {
 	return &cli.Command{
-		Name: "create-super",
+		Name:  "create-super",
+		Usage: "Create a super user",
 		Flags: []cli.Flag{
 			cli.StringFlag{
 				Name:  "id",
@@ -105,12 +110,184 @@ func createUserCmd() *cli.Command {
 
 func setupCmd() *cli.Command {
 	return &cli.Command{
-		Name: "setup",
+		Name:  "setup",
+		Usage: "Sets up the application",
+		Flags: []cli.Flag{
+			cli.StringFlag{
+				Name:  "super-id",
+				Usage: "Super user ID",
+			},
+			cli.StringFlag{
+				Name:  "super-pw",
+				Usage: "Super user password",
+			},
+		},
+		Action: func(ctx *cli.Context) (err error) {
+			vapp := GetVApp(ctx)
+			if vapp != nil {
+				ag := vcmn.NewArgGetter(ctx)
+				superID := ag.GetRequiredString("super-id")
+				superPW := ag.GetOptionalString("super-pw")
+				if err = ag.Err; err == nil {
+					defer func() {
+						vlog.LogEvent(
+							"setup app",
+							superID,
+							err != nil,
+							err,
+							nil)
+					}()
+					if len(superPW) == 0 {
+						superPW = vcmn.AskPassword("Super-user Password")
+					}
+					var user *vsec.User
+					user, err = vnet.DoLogin(superID, superPW)
+					if err != nil {
+						err = fmt.Errorf(
+							"Failed to authenticate super user: %v",
+							err)
+						return err
+					}
+					if user.Auth != vsec.Super {
+						err = errors.New(
+							"User forcing reset is not a super user")
+					}
+					err = vapp.Setup()
+				}
+			} else {
+				err = errors.New("V App not properly initialized")
+			}
+			return vlog.LogError("App", err)
+		},
 	}
 }
 
 func resetCmd() *cli.Command {
 	return &cli.Command{
-		Name: "reset",
+		Name:  "setup",
+		Usage: "Sets up the application",
+		Flags: []cli.Flag{
+			cli.StringFlag{
+				Name:  "super-id",
+				Usage: "Super user ID",
+			},
+			cli.StringFlag{
+				Name:  "super-pw",
+				Usage: "Super user password",
+			},
+		},
+		Action: func(ctx *cli.Context) (err error) {
+			vapp := GetVApp(ctx)
+			if vapp != nil {
+				ag := vcmn.NewArgGetter(ctx)
+				superID := ag.GetRequiredString("super-id")
+				superPW := ag.GetOptionalString("super-pw")
+				if err = ag.Err; err == nil {
+					defer func() {
+						vlog.LogEvent(
+							"rerset app",
+							superID,
+							err != nil,
+							err,
+							nil)
+					}()
+					if len(superPW) == 0 {
+						superPW = vcmn.AskPassword("Super-user Password")
+					}
+					var user *vsec.User
+					user, err = vnet.DoLogin(superID, superPW)
+					if err != nil {
+						err = fmt.Errorf(
+							"Failed to authenticate super user: %v",
+							err)
+						return err
+					}
+					if user.Auth != vsec.Super {
+						err = errors.New(
+							"User forcing reset is not a super user")
+					}
+					err = vapp.Reset()
+				}
+			} else {
+				err = errors.New("V App not properly initialized")
+			}
+			return vlog.LogError("App", err)
+		},
 	}
+}
+
+func overridePassword() *cli.Command {
+	return &cli.Command{
+		Name: "force-pw-reset",
+		Flags: []cli.Flag{
+			cli.StringFlag{
+				Name:  "id",
+				Usage: "Unique ID of the user",
+			},
+			cli.StringFlag{
+				Name:  "password",
+				Usage: "New password",
+			},
+			cli.StringFlag{
+				Name:  "super-id",
+				Usage: "Super user ID",
+			},
+			cli.StringFlag{
+				Name:  "super-pw",
+				Usage: "Super user password",
+			},
+		},
+		Action: func(ctx *cli.Context) (err error) {
+			ag := vcmn.NewArgGetter(ctx)
+			id := ag.GetRequiredString("id")
+			pw := ag.GetOptionalString("password")
+			superID := ag.GetRequiredString("super-id")
+			superPW := ag.GetOptionalString("super-pw")
+			defer func() { vlog.LogError("App", err) }()
+			if err = ag.Err; err == nil {
+				defer func() {
+					vlog.LogEvent(
+						"force set password",
+						superID,
+						err != nil,
+						err,
+						vlog.M{
+							"super": superID,
+							"user":  id,
+						})
+				}()
+				if len(pw) == 0 {
+					pw = vcmn.AskPassword("New Password")
+				}
+				if len(superPW) == 0 {
+					superPW = vcmn.AskPassword("Super-user Password")
+				}
+				var user *vsec.User
+				user, err = vnet.DoLogin(superID, superPW)
+				if err != nil {
+					err = fmt.Errorf("Failed to authenticate super user: %v",
+						err)
+					return err
+				}
+				if user.Auth != vsec.Super {
+					err = errors.New("User forcing reset is not a super user")
+				}
+				err = vuman.SetPassword(id, pw)
+				if err == nil {
+					vlog.Info("App", "Password for %s successfully reset", id)
+				}
+			}
+			return err
+		},
+	}
+}
+
+//GetVApp - gets instance of vapp.App which is stored inside cli.App.Metadata
+func GetVApp(ctx *cli.Context) (vapp *App) {
+	metadata := ctx.App.Metadata
+	vi, found := metadata["vapp"]
+	if found {
+		vapp, _ = vi.(*App)
+	}
+	return vapp
 }

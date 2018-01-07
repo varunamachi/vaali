@@ -36,7 +36,6 @@ func MongoAuthenticator(params map[string]interface{}) (
 }
 
 func sendVerificationMail(user *vsec.User) (err error) {
-	//@TODO - test
 	subject := "Verification for Sparrow"
 	name := user.FirstName + " " + user.LastName
 	if name == "" {

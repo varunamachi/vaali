@@ -97,7 +97,7 @@ func login(ctx echo.Context) (err error) {
 	if err == nil {
 		var user *vsec.User
 		userID = creds["userID"]
-		user, err = doLogin(userID, creds["password"])
+		user, err = DoLogin(userID, creds["password"])
 		if err == nil {
 			if user.State == vsec.Active {
 				token := jwt.New(jwt.SigningMethodHS256)
@@ -141,7 +141,8 @@ func login(ctx echo.Context) (err error) {
 	return vlog.LogError("Net:Sec:API", err)
 }
 
-func doLogin(userID string, password string) (*vsec.User, error) {
+//DoLogin - performs login using username and password
+func DoLogin(userID string, password string) (*vsec.User, error) {
 	//Check for password expiry and stuff
 	params := make(map[string]interface{})
 	params["userID"] = userID

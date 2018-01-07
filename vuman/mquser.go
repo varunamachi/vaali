@@ -176,7 +176,6 @@ func CreateFirstSuperUser(user *vsec.User, password string) (err error) {
 
 //SetUserState - sets state of an user account
 func SetUserState(userID string, state vsec.UserState) (err error) {
-	//@TODO - Test
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C("user").Update(
@@ -192,7 +191,6 @@ func SetUserState(userID string, state vsec.UserState) (err error) {
 //VerifyUser - sets state of an user account to verified based on userID
 //and verification ID
 func VerifyUser(userID, verID string) (err error) {
-	//@TODO - Test
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C("user").Update(
