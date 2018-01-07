@@ -120,6 +120,7 @@ func login(ctx echo.Context) (err error) {
 				data["state"] = user.State
 				msg = "User is not active"
 				status = http.StatusUnauthorized
+				err = errors.New(msg)
 			}
 		} else {
 			msg = "Login failed"

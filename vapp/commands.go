@@ -99,6 +99,7 @@ func createUserCmd() *cli.Command {
 						Modified:  time.Now(),
 						Props:     make(map[string]string),
 						PwdExpiry: time.Now().AddDate(1, 0, 0),
+						State:     vsec.Active,
 					}
 					err = vuman.CreateFirstSuperUser(&user, one)
 				}
