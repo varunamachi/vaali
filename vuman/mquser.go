@@ -153,8 +153,8 @@ func GetUserAuthLevel(userID string) (level vsec.AuthLevel, err error) {
 	return level, vlog.LogError("UMan:Mongo", err)
 }
 
-//CreateFirstSuperUser - creates the first super user for the application
-func CreateFirstSuperUser(user *vsec.User, password string) (err error) {
+//CreateSuperUser - creates the first super user for the application
+func CreateSuperUser(user *vsec.User, password string) (err error) {
 	defer func() {
 		vlog.LogError("UMan:Mongo", err)
 	}()
@@ -163,7 +163,7 @@ func CreateFirstSuperUser(user *vsec.User, password string) (err error) {
 	var count int
 	count, _ = conn.C("user").Find(bson.M{"auth": 0}).Count()
 	if count > 5 {
-		err = errors.New("A super admin already exists, operation aborted")
+		err = errors.New("Super user limit exceeded")
 		return err
 	}
 	err = CreateUser(user)

@@ -38,33 +38,43 @@ func createUser(ctx echo.Context) (err error) {
 
 func registerUser(ctx echo.Context) (err error) {
 	status, msg := vnet.DefMS("Register User")
-	var user vsec.User
-	err = ctx.Bind(&user)
+	// var user vsec.User
+	upw := struct {
+		User     vsec.User `json:"user"`
+		Password string    `json:"password"`
+	}{}
+	err = ctx.Bind(&upw)
 	if err == nil {
-		user.Auth = vsec.Normal
-		user.VerID = uuid.NewV4().String()
-		err = CreateUser(&user)
+		upw.User.Auth = vsec.Normal
+		upw.User.VerID = uuid.NewV4().String()
+		err = CreateUser(&upw.User)
 		if err != nil {
 			msg = "Failed to register user in database"
 			status = http.StatusInternalServerError
 		} else {
-			err = sendVerificationMail(&user)
+			err = SetPassword(upw.User.ID, upw.Password)
 			if err != nil {
-				msg = "Failed to send verification email"
+				msg = "Failed to set password"
 				status = http.StatusInternalServerError
+			} else {
+				err = sendVerificationMail(&upw.User)
+				if err != nil {
+					msg = "Failed to send verification email"
+					status = http.StatusInternalServerError
+				}
 			}
 		}
 	} else {
 		status = http.StatusBadRequest
 		msg = "User information given is malformed"
 	}
-	vnet.AuditedSendX(ctx, user, &vnet.Result{
+	vnet.AuditedSendX(ctx, upw.User, &vnet.Result{
 		Status: status,
 		Op:     "user_register",
 		Msg:    msg,
 		OK:     err == nil,
 		Data: vlog.M{
-			"user": user,
+			"user": upw.User,
 		},
 		Err: err,
 	})

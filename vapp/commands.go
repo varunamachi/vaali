@@ -101,7 +101,7 @@ func createUserCmd() *cli.Command {
 						PwdExpiry: time.Now().AddDate(1, 0, 0),
 						State:     vsec.Active,
 					}
-					err = vuman.CreateFirstSuperUser(&user, one)
+					err = vuman.CreateSuperUser(&user, one)
 				}
 			}
 			return err

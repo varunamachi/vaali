@@ -67,7 +67,7 @@ func GetEndpoints() (endpoints []*vnet.Endpoint) {
 		},
 		&vnet.Endpoint{
 			Method:   echo.POST,
-			URL:      "/uman/user/self",
+			URL:      "uman/user/self",
 			Access:   vsec.Public,
 			Category: "user management",
 			Func:     registerUser,
@@ -75,7 +75,7 @@ func GetEndpoints() (endpoints []*vnet.Endpoint) {
 		},
 		&vnet.Endpoint{
 			Method:   echo.POST,
-			URL:      "/uman/user/verify/:userID/:verID",
+			URL:      "uman/user/verify/:userID/:verID",
 			Access:   vsec.Public,
 			Category: "user management",
 			Func:     verifyUser,
