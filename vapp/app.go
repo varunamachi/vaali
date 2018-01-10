@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 
 	"github.com/varunamachi/vaali/vcmn"
 	"github.com/varunamachi/vaali/vlog"
@@ -77,6 +78,19 @@ func NewDefaultApp(
 		FilterLevel: vlog.TraceLevel,
 		EventLogger: MongoAuditor,
 	})
+	loadConfig(app.Name)
+	pstr := GetConfigDef("smtpPort", "586")
+	port, e := strconv.Atoi(pstr)
+	if e != nil {
+		port = 586
+	}
+	ecfg := vnet.EmailConfig{
+		From:     GetConfig("appEMail"),
+		Password: GetConfig("appEMailPassword"),
+		SMTPHost: GetConfig("smtpHost"),
+		SMTPPort: port,
+	}
+	printConfig()
 	app = &App{
 		App: cli.App{
 			Name:      name,
@@ -94,10 +108,10 @@ func NewDefaultApp(
 			APIVersion:    apiVersion,
 			Authenticator: vuman.MongoAuthenticator,
 			Authorizer:    nil,
+			EmailConfig:   ecfg,
 		},
 		Modules: make([]*Module, 0, 10),
 	}
-	loadConfig(name)
 	return app
 }
 

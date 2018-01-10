@@ -69,3 +69,11 @@ func AuditedSendX(ctx echo.Context,
 	vlog.LogEvent(res.Op, GetUserID(ctx), res.OK, res.Err, data)
 	return err
 }
+
+//LoadJSONFromArgs - decodes argument identified by 'param' to JSON and
+//unmarshals it into the given 'out' structure
+func LoadJSONFromArgs(ctx echo.Context, param string, out interface{}) (
+	err error) {
+	//@TODO implement
+	return vlog.LogError("Net:Utils", err)
+}

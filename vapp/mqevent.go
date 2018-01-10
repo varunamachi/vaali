@@ -20,11 +20,13 @@ func GetEvents(offset, limit int, filter bson.M) (
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
 	filter = make(bson.M)
+	events = make([]*vlog.Event, 0, limit)
 	err = conn.C("events").
 		Find(filter).
 		Skip(offset).
 		Limit(limit).
-		All(events)
+		All(&events)
+	return events, vlog.LogError("App:Event", err)
 }
 
 //CreateIndices - creates mongoDB indeces for tables used for event logs

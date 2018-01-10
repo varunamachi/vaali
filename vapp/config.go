@@ -2,6 +2,7 @@ package vapp
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"runtime"
@@ -40,6 +41,12 @@ func loadConfig(appName string) {
 		vlog.Warn("App:Config", "Unsupported operating system")
 	}
 	readConfig(vcmn.GetExecDir(), appName)
+}
+
+func printConfig() {
+	for k, v := range config {
+		fmt.Printf("%s: %v\n", k, v)
+	}
 }
 
 //GetConfig - gets a value associated with config key

@@ -42,6 +42,7 @@ type Options struct {
 	APIVersion    string
 	Authenticator Authenticator
 	Authorizer    Authorizer
+	EmailConfig   EmailConfig
 }
 
 //EmailConfig - configuration for sending email
