@@ -5,11 +5,25 @@ import (
 	"net/http"
 
 	"github.com/varunamachi/vaali/vlog"
+	"github.com/varunamachi/vaali/vsec"
 
 	"github.com/labstack/echo"
 	"github.com/varunamachi/vaali/vnet"
 	"gopkg.in/mgo.v2/bson"
 )
+
+func getEndpoints() []*vnet.Endpoint {
+	return []*vnet.Endpoint{
+		&vnet.Endpoint{
+			Method:   echo.GET,
+			URL:      "admin/event",
+			Access:   vsec.Admin,
+			Category: "administration",
+			Func:     getEvents,
+			Comment:  "Fetch all the events",
+		},
+	}
+}
 
 func getEvents(ctx echo.Context) (err error) {
 	status, msg := vnet.DefMS("Fetch events")
@@ -30,7 +44,7 @@ func getEvents(ctx echo.Context) (err error) {
 		msg = "Could not find required parameter"
 		status = http.StatusBadRequest
 	}
-	err = vnet.AuditedSend(ctx, &vnet.Result{
+	err = ctx.JSON(status, &vnet.Result{
 		Status: status,
 		Op:     "fetch events",
 		Msg:    msg,

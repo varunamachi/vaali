@@ -43,6 +43,7 @@ func (app *App) Exec(args []string) (err error) {
 	fmt.Printf("Starting %s v.%v\n", app.Name, app.Version)
 	vnet.AddEndpoints(vnet.GetEndpoints()...)
 	vnet.AddEndpoints(vuman.GetEndpoints()...)
+	vnet.AddEndpoints(getEndpoints()...)
 	app.Commands = append(app.Commands, GetCommands()...)
 
 	for _, module := range app.Modules {
@@ -78,7 +79,7 @@ func NewDefaultApp(
 		FilterLevel: vlog.TraceLevel,
 		EventLogger: MongoAuditor,
 	})
-	loadConfig(app.Name)
+	loadConfig(name)
 	pstr := GetConfigDef("smtpPort", "586")
 	port, e := strconv.Atoi(pstr)
 	if e != nil {
@@ -90,7 +91,7 @@ func NewDefaultApp(
 		SMTPHost: GetConfig("smtpHost"),
 		SMTPPort: port,
 	}
-	printConfig()
+	// printConfig()
 	app = &App{
 		App: cli.App{
 			Name:      name,
@@ -121,7 +122,15 @@ func NewDefaultApp(
 func (app *App) Setup() (err error) {
 	err = vuman.CreateIndices()
 	if err != nil {
-		vlog.Error("App", "Failed to create U-Man indices creation")
+		vlog.Error("App",
+			"Failed to create Mongo indeces for U-Man collections")
+		return err
+	}
+	err = CreateIndices()
+	if err != nil {
+		vlog.Error("App",
+			"Failed to create Mongo indeces for applications collections")
+		return err
 	}
 	for _, module := range app.Modules {
 		if module.Setup != nil {
@@ -129,6 +138,7 @@ func (app *App) Setup() (err error) {
 			if err != nil {
 				vlog.Error("App", "Failed to set module %s up",
 					module.Name)
+				return err
 			} else {
 				vlog.Info("App", "Configured module %s", module.Name)
 			}
