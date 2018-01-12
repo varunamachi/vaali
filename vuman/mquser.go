@@ -15,8 +15,8 @@ import (
 func CreateUser(user *vsec.User) (err error) {
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
-	// _, err = conn.C("user").Upsert(bson.M{"id": user.ID}, user)
-	err = conn.C("user").Insert(user)
+	// _, err = conn.C("users").Upsert(bson.M{"id": user.ID}, user)
+	err = conn.C("users").Insert(user)
 	return vlog.LogError("UMan:Mongo", err)
 }
 
@@ -24,7 +24,7 @@ func CreateUser(user *vsec.User) (err error) {
 func UpdateUser(user *vsec.User) (err error) {
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
-	err = conn.C("user").Update(bson.M{"id": user.ID}, user)
+	err = conn.C("users").Update(bson.M{"id": user.ID}, user)
 	return vlog.LogError("UMan:Mongo", err)
 }
 
@@ -32,7 +32,7 @@ func UpdateUser(user *vsec.User) (err error) {
 func DeleteUser(userID string) (err error) {
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
-	err = conn.C("user").Remove(bson.M{"id": userID})
+	err = conn.C("users").Remove(bson.M{"id": userID})
 	return vlog.LogError("UMan:Mongo", err)
 }
 
@@ -41,7 +41,7 @@ func GetUser(userID string) (user *vsec.User, err error) {
 	conn := vdb.DefaultMongoConn()
 	user = &vsec.User{}
 	defer conn.Close()
-	err = conn.C("user").Find(bson.M{"id": userID}).One(user)
+	err = conn.C("users").Find(bson.M{"id": userID}).One(user)
 	return user, vlog.LogError("UMan:Mongo", err)
 }
 
@@ -51,7 +51,7 @@ func GetAllUsers(offset, limit int) (users []*vsec.User, err error) {
 	defer conn.Close()
 	users = make([]*vsec.User, 0, limit)
 	err = conn.
-		C("user").
+		C("users").
 		Find(bson.M{}).
 		Sort("-created").
 		Skip(offset).
@@ -146,7 +146,7 @@ func ValidateUser(userID, password string) (err error) {
 func GetUserAuthLevel(userID string) (level vsec.AuthLevel, err error) {
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
-	err = conn.C("user").
+	err = conn.C("users").
 		Find(bson.M{"userID": userID}).
 		Select(bson.M{"auth": 1}).
 		One(&level)
@@ -161,7 +161,7 @@ func CreateSuperUser(user *vsec.User, password string) (err error) {
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
 	var count int
-	count, _ = conn.C("user").Find(bson.M{"auth": 0}).Count()
+	count, _ = conn.C("users").Find(bson.M{"auth": 0}).Count()
 	if count > 5 {
 		err = errors.New("Super user limit exceeded")
 		return err
@@ -178,7 +178,7 @@ func CreateSuperUser(user *vsec.User, password string) (err error) {
 func SetUserState(userID string, state vsec.UserState) (err error) {
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
-	err = conn.C("user").Update(
+	err = conn.C("users").Update(
 		bson.M{
 			"id": userID,
 		},
@@ -193,7 +193,7 @@ func SetUserState(userID string, state vsec.UserState) (err error) {
 func VerifyUser(userID, verID string) (err error) {
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
-	err = conn.C("user").Update(
+	err = conn.C("users").Update(
 		bson.M{
 			"$and": bson.M{
 				"id":    userID,
@@ -210,7 +210,7 @@ func VerifyUser(userID, verID string) (err error) {
 func CreateIndices() (err error) {
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
-	err = conn.C("user").EnsureIndex(mgo.Index{
+	err = conn.C("users").EnsureIndex(mgo.Index{
 		Key:        []string{"id", "varfnID"},
 		Unique:     true,
 		DropDups:   true,
@@ -224,6 +224,6 @@ func CreateIndices() (err error) {
 func CleanData() (err error) {
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
-	_, err = conn.C("user").RemoveAll(bson.M{})
+	_, err = conn.C("users").RemoveAll(bson.M{})
 	return err
 }

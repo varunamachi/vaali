@@ -100,9 +100,7 @@ func NewDefaultApp(
 			Authors:   authors,
 			Usage:     desc,
 			ErrWriter: ioutil.Discard,
-			Metadata: map[string]interface{}{
-				"vapp": app,
-			},
+			Metadata:  map[string]interface{}{},
 		},
 		NetOptions: vnet.Options{
 			RootName:      name,
@@ -113,6 +111,7 @@ func NewDefaultApp(
 		},
 		Modules: make([]*Module, 0, 10),
 	}
+	app.Metadata["vapp"] = app
 	return app
 }
 
@@ -126,12 +125,14 @@ func (app *App) Setup() (err error) {
 			"Failed to create Mongo indeces for U-Man collections")
 		return err
 	}
+	vlog.Info("App", "Created indeces for User Management collections")
 	err = CreateIndices()
 	if err != nil {
 		vlog.Error("App",
 			"Failed to create Mongo indeces for applications collections")
 		return err
 	}
+	vlog.Info("App", "Created indeces for Application collections")
 	for _, module := range app.Modules {
 		if module.Setup != nil {
 			err = module.Setup(app)
@@ -139,13 +140,14 @@ func (app *App) Setup() (err error) {
 				vlog.Error("App", "Failed to set module %s up",
 					module.Name)
 				return err
-			} else {
-				vlog.Info("App", "Configured module %s", module.Name)
 			}
+			vlog.Info("App", "Configured module %s", module.Name)
 		}
 	}
 	if err != nil {
 		err = errors.New("Failed to set the application up")
+	} else {
+		vlog.Info("App", "Application setup complete")
 	}
 	return err
 }

@@ -47,6 +47,7 @@ func registerUser(ctx echo.Context) (err error) {
 	if err == nil {
 		upw.User.Auth = vsec.Normal
 		upw.User.VerID = uuid.NewV4().String()
+		upw.User.ID = upw.User.Email
 		err = CreateUser(&upw.User)
 		if err != nil {
 			msg = "Failed to register user in database"

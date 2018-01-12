@@ -248,7 +248,7 @@ func overridePassword() *cli.Command {
 			if err = ag.Err; err == nil {
 				defer func() {
 					vlog.LogEvent(
-						"force set password",
+						"force-set-password",
 						superID,
 						err != nil,
 						err,
@@ -286,6 +286,7 @@ func overridePassword() *cli.Command {
 //GetVApp - gets instance of vapp.App which is stored inside cli.App.Metadata
 func GetVApp(ctx *cli.Context) (vapp *App) {
 	metadata := ctx.App.Metadata
+	fmt.Println(metadata)
 	vi, found := metadata["vapp"]
 	if found {
 		vapp, _ = vi.(*App)
