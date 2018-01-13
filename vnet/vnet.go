@@ -73,6 +73,9 @@ func InitWithOptions(opts Options) {
 	authenticator = opts.Authenticator
 	authorizer = opts.Authorizer
 
+	//EMail config
+	emailConfig = opts.EmailConfig
+
 	//rootPath is a package variable
 	rootPath = opts.RootName + "/api/v" + opts.APIVersion + "/"
 	accessPos = len(rootPath) + len("in/")

@@ -23,6 +23,8 @@ func GetCommands() []cli.Command {
 		*vdb.MakeRequireMongo(createUserCmd()),
 		*vdb.MakeRequireMongo(setupCmd()),
 		*vdb.MakeRequireMongo(resetCmd()),
+		*vdb.MakeRequireMongo(overridePasswordCmd()),
+		*testEMail(),
 	}
 }
 
@@ -217,9 +219,10 @@ func resetCmd() *cli.Command {
 	}
 }
 
-func overridePassword() *cli.Command {
+func overridePasswordCmd() *cli.Command {
 	return &cli.Command{
-		Name: "force-pw-reset",
+		Name:  "force-pw-reset",
+		Usage: "Forced password rest - super admin only",
 		Flags: []cli.Flag{
 			cli.StringFlag{
 				Name:  "id",
@@ -278,6 +281,37 @@ func overridePassword() *cli.Command {
 					vlog.Info("App", "Password for %s successfully reset", id)
 				}
 			}
+			return err
+		},
+	}
+}
+
+func testEMail() *cli.Command {
+	return &cli.Command{
+		Name:  "test-email",
+		Usage: "Sends a test EMail",
+		Flags: []cli.Flag{
+			cli.StringFlag{
+				Name:  "to",
+				Usage: "EMail ID of the recipient",
+			},
+		},
+		Action: func(ctx *cli.Context) (err error) {
+			ag := vcmn.NewArgGetter(ctx)
+			to := ag.GetRequiredString("to")
+			if err = ag.Err; err == nil {
+				err = vnet.SendEmail(to, "test", "hello!")
+			}
+
+			// vlog.LogEvent(
+			// 	"force-set-password",
+			// 	superID,
+			// 	err != nil,
+			// 	err,
+			// 	vlog.M{
+			// 		"super": superID,
+			// 		"user":  id,
+			// 	})
 			return err
 		},
 	}
