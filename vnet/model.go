@@ -47,8 +47,8 @@ type Options struct {
 
 //EmailConfig - configuration for sending email
 type EmailConfig struct {
-	From     string `json:"from"`
-	Password string `json:"password"`
+	From     string `json:"appEMail"`
+	Password string `json:"appEMailPassword"`
 	SMTPHost string `json:"smtpHost"`
 	SMTPPort int    `json:"smtpPort"`
 }
