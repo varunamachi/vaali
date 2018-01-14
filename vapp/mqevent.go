@@ -22,7 +22,6 @@ func GetEvents(offset, limit int, filter bson.M) (
 	defer conn.Close()
 	events = make([]*vlog.Event, 0, limit)
 	err = conn.C("events").
-		// Find(filter).
 		Find(nil).
 		Sort("-time").
 		Skip(offset).

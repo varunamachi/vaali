@@ -19,11 +19,15 @@ func LogEvent(
 	success bool,
 	err error,
 	data interface{}) {
+	estr := ""
+	if err != nil {
+		estr = err.Error()
+	}
 	lconf.EventLogger(&Event{
 		Op:      op,
 		UserID:  userID,
 		Success: success,
-		Error:   err,
+		Error:   estr,
 		Time:    time.Now(),
 		Data:    data,
 	})

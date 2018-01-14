@@ -2,6 +2,7 @@ package vuman
 
 import (
 	"errors"
+	"net/url"
 
 	"github.com/varunamachi/vaali/vlog"
 	"github.com/varunamachi/vaali/vnet"
@@ -47,7 +48,7 @@ func sendVerificationMail(user *vsec.User) (err error) {
 		"http://" +
 		vnet.GetRootPath() +
 		"/uman/user/verify/" +
-		user.ID +
+		url.PathEscape(user.ID) +
 		"/" +
 		user.VerID
 	err = vnet.SendEmail(user.Email, subject, content)
