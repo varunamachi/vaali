@@ -43,18 +43,19 @@ var Flagged UserState = "flagged"
 
 //User - represents an user
 type User struct {
-	OID       bson.ObjectId     `json:"_id" bson:"_id,omitempty"`
-	ID        string            `json:"id" bson:"id"`
-	Email     string            `json:"email" bson:"email"`
-	Auth      AuthLevel         `json:"auth" bson:"auth"`
-	FirstName string            `json:"firstName" bson:"firstName"`
-	LastName  string            `json:"lastName" bson:"lastName"`
-	State     UserState         `json:"state" bson:"state"`
-	Created   time.Time         `json:"created" bson:"created"`
-	Modified  time.Time         `json:"modified" bson:"modified"`
-	PwdExpiry time.Time         `json:"pwdExpiry" bson:"pwdExpiry"`
-	Props     map[string]string `json:"props" bson:"props"`
-	VerID     string            `json:"verID" bson:"verID"`
+	OID         bson.ObjectId `json:"_id" bson:"_id,omitempty"`
+	ID          string        `json:"id" bson:"id"`
+	Email       string        `json:"email" bson:"email"`
+	Auth        AuthLevel     `json:"auth" bson:"auth"`
+	FirstName   string        `json:"firstName" bson:"firstName"`
+	LastName    string        `json:"lastName" bson:"lastName"`
+	State       UserState     `json:"state" bson:"state"`
+	VerID       string        `json:"verID" bson:"verID"`
+	PwdExpiry   time.Time     `json:"pwdExpiry" bson:"pwdExpiry"`
+	Created     time.Time     `json:"created" bson:"created"`
+	Modified    time.Time     `json:"modified" bson:"modified"`
+	VerfiedDate time.Time     `json:"verified" bson:"verified"`
+	Props       bson.M        `json:"props" bson:"props"`
 }
 
 //Group - group of users

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/satori/go.uuid"
+	"gopkg.in/mgo.v2/bson"
 
 	"github.com/labstack/echo"
 	"github.com/varunamachi/vaali/vlog"
@@ -16,10 +17,23 @@ func createUser(ctx echo.Context) (err error) {
 	var user vsec.User
 	err = ctx.Bind(&user)
 	if err == nil {
+		user.Props = bson.M{
+			"admin-created": true,
+		}
+		if len(user.ID) == 0 {
+			user.ID = user.Email
+		}
+		user.VerID = uuid.NewV4().String()
 		err = CreateUser(&user)
 		if err != nil {
 			msg = "Failed to create user in database"
 			status = http.StatusInternalServerError
+		} else {
+			err = sendVerificationMail(&user)
+			if err != nil {
+				msg = "Failed to send verification email"
+				status = http.StatusInternalServerError
+			}
 		}
 	} else {
 		status = http.StatusBadRequest
