@@ -13,6 +13,7 @@ import (
 	"github.com/varunamachi/vaali/vdb"
 	"github.com/varunamachi/vaali/vnet"
 	"github.com/varunamachi/vaali/vsec"
+	"gopkg.in/mgo.v2/bson"
 	"gopkg.in/urfave/cli.v1"
 )
 
@@ -99,7 +100,7 @@ func createUserCmd() *cli.Command {
 						LastName:  last,
 						Created:   time.Now(),
 						Modified:  time.Now(),
-						Props:     make(map[string]string),
+						Props:     bson.M{},
 						PwdExpiry: time.Now().AddDate(1, 0, 0),
 						State:     vsec.Active,
 					}
