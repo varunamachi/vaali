@@ -15,7 +15,7 @@ func MongoAuditor(event *vlog.Event) {
 }
 
 //GetEvents - retrieves event entries based on filters
-func GetEvents(offset, limit int, filter bson.M) (
+func GetEvents(offset, limit int, filter vdb.Filter) (
 	events []*vlog.Event, err error) {
 	//@TODO define filter structure and the translate to query
 	conn := vdb.DefaultMongoConn()

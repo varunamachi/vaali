@@ -32,6 +32,12 @@
   version = "v0.0.3"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/mitchellh/mapstructure"
+  packages = ["."]
+  revision = "b4575eea38cca1123ec2dc90c26529b5c5acfcff"
+
+[[projects]]
   name = "github.com/satori/go.uuid"
   packages = ["."]
   revision = "879c5887cd475cd7864858769793b2ceb0d44feb"
@@ -94,6 +100,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "99b566c68d3346408e47f6e4e9f27083eff28af125899a5a101da5bec5121cc0"
+  inputs-digest = "2132f5ef1a56fd9a6d9d71361356e21ba006233d3f5300f726e9bea0ee75600f"
   solver-name = "gps-cdcl"
   solver-version = 1

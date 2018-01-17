@@ -1,26 +1,12 @@
-package vcmn
+package vdb
 
-import (
-	"fmt"
-	"time"
-)
-
-//Version - represents version of the application
-type Version struct {
-	Major int `json:"major" bson:"major"`
-	Minor int `json:"minor" bson:"minor"`
-	Patch int `json:"patch" bson:"patch"`
-}
-
-//String - version to string
-func (v Version) String() string {
-	return fmt.Sprintf("%d.%d.%d", v.Major, v.Minor, v.Patch)
-}
+import "time"
 
 //ArrayMatcher - matches elements of an array. If MatchAll set to true all
 //the elements of the Tags array needs to be matched, otherwise only one element
 //needs to match (minimum)
 type ArrayMatcher struct {
+	Name     string   `json:"name" bson:"name"`
 	MatchAll bool     `json:"matchAll" bson:"matchAll"`
 	Tags     []string `json:"tags" bson:"tags"`
 }

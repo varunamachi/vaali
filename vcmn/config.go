@@ -7,25 +7,10 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/mitchellh/mapstructure"
+
 	"github.com/varunamachi/vaali/vlog"
 )
-
-// var config = make(map[string]string)
-
-// func readConfig(dirPath, appName string) (err error) {
-// 	path := dirPath + "/" + appName + ".conf.json"
-// 	if ExistsAsFile(path) {
-// 		var raw []byte
-// 		raw, err = ioutil.ReadFile(path)
-// 		if err == nil {
-// 			err = json.Unmarshal(raw, &config)
-// 		}
-// 		if err == nil {
-// 			vlog.Info("App:Config", "Loaded config from %s", path)
-// 		}
-// 	}
-// 	return err
-// }
 
 var config = make(map[string]interface{})
 
@@ -81,22 +66,18 @@ func GetStringConfig(key string) (value string) {
 //returned
 func GetConfig(key string, value interface{}) (err error) {
 	if val, ok := config[key]; ok {
-		//@TODO iterate throught the interface and populate the value struct
-		//Below code is to shut the compiler up
-		value = val
+		if im, ok := val.(map[string]interface{}); ok {
+			err = mapstructure.Decode(im, value)
+		} else {
+			err = fmt.Errorf("Config for key %s is not in expected format",
+				key)
+		}
+
+	} else {
+		err = fmt.Errorf("Config with key %s not found", key)
 	}
 	return err
 }
-
-//GetConfigDef - gets a value associated with given key, if not found return
-//default vlue
-// func GetConfigDef(key, def string) (value string) {
-// 	value = def
-// 	if val, ok := config[key]; ok {
-// 		value = val.(string)
-// 	}
-// 	return value
-// }
 
 //HasConfig - checks if a value exists in config for a key
 func HasConfig(key string) (yes bool) {
