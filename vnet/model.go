@@ -42,7 +42,6 @@ type Options struct {
 	APIVersion    string
 	Authenticator Authenticator
 	Authorizer    Authorizer
-	EmailConfig   EmailConfig
 }
 
 //EmailConfig - configuration for sending email
@@ -60,4 +59,3 @@ var accessPos = 0
 var rootPath = ""
 var authenticator Authenticator
 var authorizer Authorizer
-var emailConfig EmailConfig

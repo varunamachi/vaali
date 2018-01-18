@@ -4,12 +4,13 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/varunamachi/vaali/vdb"
+
 	"github.com/varunamachi/vaali/vlog"
 	"github.com/varunamachi/vaali/vsec"
 
 	"github.com/labstack/echo"
 	"github.com/varunamachi/vaali/vnet"
-	"gopkg.in/mgo.v2/bson"
 )
 
 func getEndpoints() []*vnet.Endpoint {
@@ -29,7 +30,7 @@ func getEvents(ctx echo.Context) (err error) {
 	status, msg := vnet.DefMS("Fetch events")
 	var events []*vlog.Event
 	offset, limit, has := vnet.GetOffsetLimit(ctx)
-	filter := make(bson.M)
+	var filter vdb.Filter
 	err = vnet.LoadJSONFromArgs(ctx, "filter", &filter)
 	if err == nil && has {
 		events, err = GetEvents(offset, limit, filter)

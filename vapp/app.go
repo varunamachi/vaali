@@ -79,18 +79,6 @@ func NewDefaultApp(
 		EventLogger: MongoAuditor,
 	})
 	vcmn.LoadConfig(name)
-	// pstr := vcmn.GetConfigDef("smtpPort", "586")
-	// port, e := strconv.Atoi(pstr)
-	// if e != nil {
-	// 	port = 586
-	// }
-	// ecfg := vnet.EmailConfig{
-	// 	From:     vcmn.GetConfig("appEMail"),
-	// 	Password: vcmn.GetConfig("appEMailPassword"),
-	// 	SMTPHost: vcmn.GetConfig("smtpHost"),
-	// 	SMTPPort: port,
-	// }
-	// printConfig()
 	app = &App{
 		App: cli.App{
 			Name:      name,
@@ -106,9 +94,6 @@ func NewDefaultApp(
 			APIVersion:    apiVersion,
 			Authenticator: vuman.MongoAuthenticator,
 			Authorizer:    nil,
-			EmailConfig:   nil,
-			// EmailConfig:   ecfg,
-
 		},
 		Modules: make([]*Module, 0, 10),
 	}

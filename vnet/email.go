@@ -14,7 +14,12 @@ import (
 //SendEmail - sends an email with given information. Uses the package level
 //variable emainConfig for SMTP configuration - smtp.gmail.com:587
 func SendEmail(to, subject, meesage string) (err error) {
-	vcmn.DumpJSON(emailConfig)
+	var emailConfig EmailConfig
+	err = vcmn.GetConfig("emailConfig", &emailConfig)
+	if err != nil {
+		return vlog.LogError("Net:EMail", err)
+	}
+	// vcmn.DumpJSON(emailConfig)
 	msg := "From: " + emailConfig.From + "\n" +
 		"To: " + to + "\n" +
 		"Subject: " + subject + "\n\n" +
