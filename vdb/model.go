@@ -19,7 +19,7 @@ type DateRange struct {
 
 //Filter - generic filter used to filter data in any mongodb collection
 type Filter struct {
-	Fields map[string]string `json:"fields" bson:"fields"`
-	Dates  []DateRange       `json:"dates" bson:"dates"`
-	Lists  []ArrayMatcher    `json:"lists" bson:"lists"`
+	Fields map[string][]string `json:"fields" bson:"fields"`
+	Dates  []DateRange         `json:"dates" bson:"dates"`
+	Lists  []ArrayMatcher      `json:"lists" bson:"lists"`
 }
