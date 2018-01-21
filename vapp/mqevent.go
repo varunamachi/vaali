@@ -16,21 +16,29 @@ func MongoAuditor(event *vlog.Event) {
 
 //GetEvents - retrieves event entries based on filters
 func GetEvents(offset, limit int, filter vdb.Filter) (
-	events []*vlog.Event, err error) {
+	total int, events []*vlog.Event, err error) {
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
 	events = make([]*vlog.Event, 0, limit)
 	var selector bson.M
 	selector, err = vdb.GenerateSelector(filter)
 	if err == nil {
-		err = conn.C("events").
-			Find(selector).
-			Sort("-time").
-			Skip(offset).
-			Limit(limit).
-			All(&events)
+		// q := conn.C("events").
+		// 	Find(selector).
+		// 	Sort("-time").
+		// 	Skip(offset).
+		// 	Limit(limit)
+		// err = q.All(&events)
+		// if err == nil {
+		// 	total, err = q.Count()
+		// }
+		q := conn.C("events").Find(selector).Sort("-time")
+		total, err = q.Count()
+		if err == nil {
+			err = q.Skip(offset).Limit(limit).All(&events)
+		}
 	}
-	return events, vlog.LogError("App:Event", err)
+	return total, events, vlog.LogError("App:Event", err)
 }
 
 //CreateIndices - creates mongoDB indeces for tables used for event logs

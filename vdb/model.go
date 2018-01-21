@@ -23,3 +23,10 @@ type Filter struct {
 	Dates  []DateRange         `json:"dates" bson:"dates"`
 	Lists  []ArrayMatcher      `json:"lists" bson:"lists"`
 }
+
+//CountList - paginated list returned from mongoDB along with total number of
+//items in the list counted without pagination
+type CountList struct {
+	TotalCount int         `json:"total" bson:"total"`
+	Data       interface{} `json:"data" bson:"data"`
+}

@@ -46,18 +46,23 @@ func GetUser(userID string) (user *vsec.User, err error) {
 }
 
 //GetAllUsers - gets all users based on offset and limit
-func GetAllUsers(offset, limit int) (users []*vsec.User, err error) {
+func GetAllUsers(offset, limit int) (
+	total int, users []*vsec.User, err error) {
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
 	users = make([]*vsec.User, 0, limit)
-	err = conn.
-		C("users").
-		Find(bson.M{}).
-		Sort("-created").
-		Skip(offset).
-		Limit(limit).
-		All(&users)
-	return users, vlog.LogError("UMan:Mongo", err)
+	// q := conn.
+	// 	C("users").
+	// 	Find(bson.M{}).
+	// 	Sort("-created").
+	// 	Skip(offset).
+	// 	Limit(limit)
+	q := conn.C("users").Find(bson.M{}).Sort("-created")
+	total, err = q.Count()
+	if err == nil {
+		err = q.Skip(offset).Limit(limit).All(&users)
+	}
+	return total, users, vlog.LogError("UMan:Mongo", err)
 }
 
 //ResetPassword - sets password of a unauthenticated user

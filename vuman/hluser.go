@@ -3,6 +3,8 @@ package vuman
 import (
 	"net/http"
 
+	"github.com/varunamachi/vaali/vdb"
+
 	"github.com/satori/go.uuid"
 	"gopkg.in/mgo.v2/bson"
 
@@ -202,8 +204,9 @@ func getUsers(ctx echo.Context) (err error) {
 	status, msg := vnet.DefMS("Get Users")
 	offset, limit, has := vnet.GetOffsetLimit(ctx)
 	var users []*vsec.User
+	var total int
 	if has {
-		users, err = GetAllUsers(offset, limit)
+		total, users, err = GetAllUsers(offset, limit)
 		if err != nil {
 			msg = "Failed to retrieve user info from database"
 			status = http.StatusInternalServerError
@@ -217,8 +220,11 @@ func getUsers(ctx echo.Context) (err error) {
 		Op:     "multi_user_get",
 		Msg:    msg,
 		OK:     err == nil,
-		Data:   users,
-		Err:    err,
+		Data: vdb.CountList{
+			TotalCount: total,
+			Data:       users,
+		},
+		Err: err,
 	})
 	return vlog.LogError("Sec:Hdl", err)
 }

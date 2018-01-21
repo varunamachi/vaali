@@ -29,11 +29,12 @@ func getEndpoints() []*vnet.Endpoint {
 func getEvents(ctx echo.Context) (err error) {
 	status, msg := vnet.DefMS("Fetch events")
 	var events []*vlog.Event
+	var total int
 	offset, limit, has := vnet.GetOffsetLimit(ctx)
 	var filter vdb.Filter
 	err = vnet.LoadJSONFromArgs(ctx, "filter", &filter)
 	if err == nil && has {
-		events, err = GetEvents(offset, limit, filter)
+		total, events, err = GetEvents(offset, limit, filter)
 		if err != nil {
 			msg = "Could not retrieve event info from database"
 			status = http.StatusInternalServerError
@@ -50,8 +51,11 @@ func getEvents(ctx echo.Context) (err error) {
 		Op:     "fetch events",
 		Msg:    msg,
 		OK:     err == nil,
-		Data:   events,
-		Err:    err,
+		Data: vdb.CountList{
+			TotalCount: total,
+			Data:       events,
+		},
+		Err: err,
 	})
 	return vlog.LogError("App:Events", err)
 }
