@@ -23,6 +23,14 @@ func getEndpoints() []*vnet.Endpoint {
 			Func:     getEvents,
 			Comment:  "Fetch all the events",
 		},
+		&vnet.Endpoint{
+			Method:   echo.GET,
+			URL:      "admin/event/filterModel",
+			Access:   vsec.Admin,
+			Category: "administration",
+			Func:     getEventFilterModel,
+			Comment:  "Fetch event filter model",
+		},
 	}
 }
 
@@ -58,4 +66,23 @@ func getEvents(ctx echo.Context) (err error) {
 		Err: err,
 	})
 	return vlog.LogError("App:Events", err)
+}
+
+func getEventFilterModel(ctx echo.Context) (err error) {
+	status, msg := vnet.DefMS("Get Event Filter Model")
+	var efm EventFilterModel
+	efm, err = GetEventFilterModel()
+	if err != nil {
+		msg = "Failed to retrieve event filter model"
+		status = http.StatusInternalServerError
+	}
+	vnet.AuditedSend(ctx, &vnet.Result{
+		Status: status,
+		Op:     "user_get",
+		Msg:    msg,
+		OK:     err == nil,
+		Data:   efm,
+		Err:    err,
+	})
+	return vlog.LogError("Sec:Hdl", err)
 }
