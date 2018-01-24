@@ -17,19 +17,23 @@ func GenerateSelector(filter Filter) (selector bson.M, err error) {
 			queries = append(queries, bson.M{"$or": orProps})
 		}
 	}
-	for _, date := range filter.Dates {
-		queries = append(queries, bson.M{
-			"$gte": date.From,
-			"$lte": date.To,
-		})
+	for field, dateRange := range filter.Dates {
+		queries = append(queries,
+			bson.M{
+				field: bson.M{
+					"$gte": dateRange.From,
+					"$lte": dateRange.To,
+				},
+			},
+		)
 	}
-	for _, matcher := range filter.Lists {
+	for field, matcher := range filter.Lists {
 		mode := "$in"
 		if matcher.MatchAll {
 			mode = "$all"
 		}
 		queries = append(queries, bson.M{
-			matcher.Name: bson.M{
+			field: bson.M{
 				mode: matcher.Tags,
 			},
 		})
