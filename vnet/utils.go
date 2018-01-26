@@ -1,7 +1,9 @@
 package vnet
 
 import (
+	"encoding/json"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/labstack/echo"
@@ -74,6 +76,13 @@ func AuditedSendX(ctx echo.Context,
 //unmarshals it into the given 'out' structure
 func LoadJSONFromArgs(ctx echo.Context, param string, out interface{}) (
 	err error) {
-	//@TODO implement
+	val := ctx.QueryParam(param)
+	if len(val) != 0 {
+		var decoded string
+		decoded, err = url.PathUnescape(val)
+		if err == nil {
+			err = json.Unmarshal([]byte(decoded), out)
+		}
+	}
 	return vlog.LogError("Net:Utils", err)
 }

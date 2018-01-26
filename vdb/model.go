@@ -1,6 +1,6 @@
 package vdb
 
-import "time"
+import "github.com/varunamachi/vaali/vcmn"
 
 //ArrayMatcher - matches elements of an array. If MatchAll set to true all
 //the elements of the Tags array needs to be matched, otherwise only one element
@@ -11,18 +11,12 @@ type ArrayMatcher struct {
 	Tags     []string `json:"tags" bson:"tags"`
 }
 
-//DateRange - represents date ranges
-type DateRange struct {
-	// Name string    `json:"name" bson:"name"`
-	From time.Time `json:"from" bson:"from"`
-	To   time.Time `json:"from" bson:"from"`
-}
-
 //Filter - generic filter used to filter data in any mongodb collection
 type Filter struct {
-	Fields map[string][]string     `json:"fields" bson:"fields"`
-	Dates  map[string]DateRange    `json:"dates" bson:"dates"`
-	Lists  map[string]ArrayMatcher `json:"lists" bson:"lists"`
+	Fields     map[string][]string       `json:"fields" bson:"fields"`
+	BoolFields map[string]bool           `json:"boolFields" bson:"boolFields"`
+	Dates      map[string]vcmn.DateRange `json:"dates" bson:"dates"`
+	Lists      map[string]ArrayMatcher   `json:"lists" bson:"lists"`
 }
 
 //CountList - paginated list returned from mongoDB along with total number of
