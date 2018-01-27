@@ -98,34 +98,6 @@ func registerUser(ctx echo.Context) (err error) {
 	return vlog.LogError("Sec:Hdl", err)
 }
 
-func verifyUser(ctx echo.Context) (err error) {
-	status, msg := vnet.DefMS("User verification")
-	userID := ctx.Param("userID")
-	verID := ctx.Param("verID")
-	if len(userID) != 0 && len(verID) != 0 {
-		err = VerifyUser(userID, verID)
-		if err != nil {
-			msg = "Failed to verify user"
-			status = http.StatusInternalServerError
-		}
-	} else {
-		status = http.StatusBadRequest
-		msg = "User information given is malformed"
-	}
-	vnet.AuditedSendX(ctx, userID, &vnet.Result{
-		Status: status,
-		Op:     "user_verify",
-		Msg:    msg,
-		OK:     err == nil,
-		Data: vlog.M{
-			"userID": userID,
-			"verID":  verID,
-		},
-		Err: err,
-	})
-	return vlog.LogError("Sec:Hdl", err)
-}
-
 func updateUser(ctx echo.Context) (err error) {
 	status, msg := vnet.DefMS("Update User")
 	var user vsec.User
@@ -280,6 +252,70 @@ func resetPassword(ctx echo.Context) (err error) {
 		OK:     err == nil,
 		Data:   nil,
 		Err:    err,
+	})
+	return vlog.LogError("Sec:Hdl", err)
+}
+
+// func verifyUser(ctx echo.Context) (err error) {
+// 	status, msg := vnet.DefMS("User verification")
+// 	userID := ctx.Param("userID")
+// 	verID := ctx.Param("verID")
+// 	if len(userID) != 0 && len(verID) != 0 {
+// 		err = VerifyUser(userID, verID)
+// 		if err != nil {
+// 			msg = "Failed to verify user"
+// 			status = http.StatusInternalServerError
+// 		}
+// 	} else {
+// 		status = http.StatusBadRequest
+// 		msg = "User information given is malformed"
+// 	}
+// 	vnet.AuditedSendX(ctx, userID, &vnet.Result{
+// 		Status: status,
+// 		Op:     "user_verify",
+// 		Msg:    msg,
+// 		OK:     err == nil,
+// 		Data: vlog.M{
+// 			"userID": userID,
+// 			"verID":  verID,
+// 		},
+// 		Err: err,
+// 	})
+// 	return vlog.LogError("Sec:Hdl", err)
+// }
+
+func verify(ctx echo.Context) (err error) {
+	status, msg := vnet.DefMS("Create Password")
+	params := make(map[string]string)
+	userID := ctx.Param("userID")
+	verID := ctx.Param("verID")
+	err = ctx.Bind(&params)
+	if len(userID) > 0 && len(verID) > 0 && err == nil {
+		err = VerifyUser(userID, verID)
+		if err == nil {
+			err = SetPassword(userID, params["password"])
+			if err != nil {
+				msg = "Failed to set password"
+				status = http.StatusInternalServerError
+			}
+		} else {
+			msg = "Failed to verify user"
+			status = http.StatusInternalServerError
+		}
+	} else {
+		status = http.StatusBadRequest
+		msg = "Invalid information provided for creating password"
+	}
+	vnet.AuditedSendX(ctx, userID, &vnet.Result{
+		Status: status,
+		Op:     "password_create",
+		Msg:    msg,
+		OK:     err == nil,
+		Data: vlog.M{
+			"userID":         userID,
+			"verificationID": verID,
+		},
+		Err: err,
 	})
 	return vlog.LogError("Sec:Hdl", err)
 }

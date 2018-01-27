@@ -78,7 +78,7 @@ func GetEndpoints() (endpoints []*vnet.Endpoint) {
 			URL:      "uman/user/verify/:userID/:verID",
 			Access:   vsec.Public,
 			Category: "user management",
-			Func:     verifyUser,
+			Func:     verify,
 			Comment:  "Verify a registered account",
 		},
 		//@TODO implement BELOW - same as updateUser but can only update current
