@@ -2,8 +2,10 @@ package vuman
 
 import (
 	"errors"
+	"fmt"
 	"net/url"
 
+	"github.com/varunamachi/vaali/vcmn"
 	"github.com/varunamachi/vaali/vlog"
 	"github.com/varunamachi/vaali/vnet"
 
@@ -37,20 +39,28 @@ func MongoAuthenticator(params map[string]interface{}) (
 }
 
 func sendVerificationMail(user *vsec.User) (err error) {
-	subject := "Verification for Sparrow"
+
 	name := user.FirstName + " " + user.LastName
 	if name == "" {
 		name = user.ID
 	}
 	//@MAYBE use a template
+	var host string
+	e := vcmn.GetConfig("emailHostAddress", &host)
+	if e != nil {
+		host = "localhost:80"
+	}
 	content := "Hello " + name + ",\n Verify your account by clicking on " +
 		"below link\n" +
 		"http://" +
+		host + "/" +
 		vnet.GetRootPath() +
 		"/uman/user/verify/" +
 		url.PathEscape(user.ID) +
 		"/" +
 		user.VerID
-	err = vnet.SendEmail(user.Email, subject, content)
+	// subject := "Verification for Sparrow"
+	// err = vnet.SendEmail(user.Email, subject, content)
+	fmt.Println(content)
 	return vlog.LogError("UMan:Auth", err)
 }
