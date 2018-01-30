@@ -2,6 +2,7 @@ package vuman
 
 import (
 	"errors"
+	"time"
 
 	"github.com/varunamachi/vaali/vdb"
 	"github.com/varunamachi/vaali/vlog"
@@ -206,7 +207,8 @@ func VerifyUser(userID, verID string) (err error) {
 			},
 		},
 		bson.M{
-			"state": vsec.Active,
+			"state":    vsec.Active,
+			"verified": time.Now(),
 		})
 	return vlog.LogError("UMan:Mongo", err)
 }

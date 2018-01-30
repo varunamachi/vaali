@@ -2,6 +2,7 @@ package vuman
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/varunamachi/vaali/vdb"
 
@@ -25,6 +26,8 @@ func createUser(ctx echo.Context) (err error) {
 		if len(user.ID) == 0 {
 			user.ID = user.Email
 		}
+		user.Created = time.Now()
+		user.State = vsec.Disabled
 		user.VerID = uuid.NewV4().String()
 		err = CreateUser(&user)
 		if err != nil {
@@ -32,6 +35,7 @@ func createUser(ctx echo.Context) (err error) {
 			status = http.StatusInternalServerError
 		} else {
 			err = sendVerificationMail(&user)
+			// fmt.Println(getVerificationLink(&user))
 			if err != nil {
 				msg = "Failed to send verification email"
 				status = http.StatusInternalServerError

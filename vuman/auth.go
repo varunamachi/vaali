@@ -40,6 +40,15 @@ func MongoAuthenticator(params map[string]interface{}) (
 
 func sendVerificationMail(user *vsec.User) (err error) {
 
+	content := "Hi!,\n Verify your account by clicking on " +
+		"below link\n" + getVerificationLink(user)
+	subject := "Verification for Sparrow"
+	err = vnet.SendEmail(user.Email, subject, content)
+	fmt.Println(content)
+	return vlog.LogError("UMan:Auth", err)
+}
+
+func getVerificationLink(user *vsec.User) (link string) {
 	name := user.FirstName + " " + user.LastName
 	if name == "" {
 		name = user.ID
@@ -48,19 +57,10 @@ func sendVerificationMail(user *vsec.User) (err error) {
 	var host string
 	e := vcmn.GetConfig("emailHostAddress", &host)
 	if e != nil {
-		host = "localhost:80"
+		host = "http://localhost:4200"
 	}
-	content := "Hello " + name + ",\n Verify your account by clicking on " +
-		"below link\n" +
-		"http://" +
-		host + "/" +
-		vnet.GetRootPath() +
-		"/uman/user/verify/" +
-		url.PathEscape(user.ID) +
-		"/" +
-		user.VerID
-	// subject := "Verification for Sparrow"
-	// err = vnet.SendEmail(user.Email, subject, content)
-	fmt.Println(content)
-	return vlog.LogError("UMan:Auth", err)
+	link = host + "/" + "verify?" +
+		"verifyID=" + user.VerID +
+		"&userID=" + url.PathEscape(user.ID)
+	return link
 }
