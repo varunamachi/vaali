@@ -55,7 +55,7 @@ func getVerificationLink(user *vsec.User) (link string) {
 	}
 	//@MAYBE use a template
 	var host string
-	e := vcmn.GetConfig("emailHostAddress", &host)
+	e := vcmn.GetConfig("hostAddress", &host)
 	if e != nil {
 		host = "http://localhost:4200"
 	}
