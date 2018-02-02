@@ -90,7 +90,9 @@ func ResetPassword(userID, oldPwd, newPwd string) (err error) {
 			"userID": userID,
 		},
 		bson.M{
-			"phash": newHash,
+			"$set": bson.M{
+				"phash": newHash,
+			},
 		},
 	)
 	return err
@@ -116,8 +118,10 @@ func setPasswordHash(conn *vdb.MongoConn, userID, hash string) (
 			"userID": userID,
 		},
 		bson.M{
-			"userID": userID,
-			"phash":  hash,
+			"$set": bson.M{
+				"userID": userID,
+				"phash":  hash,
+			},
 		})
 	return err
 }
@@ -189,7 +193,9 @@ func SetUserState(userID string, state vsec.UserState) (err error) {
 			"id": userID,
 		},
 		bson.M{
-			"state": state,
+			"$set": bson.M{
+				"state": state,
+			},
 		})
 	return vlog.LogError("UMan:Mongo", err)
 }
@@ -201,14 +207,16 @@ func VerifyUser(userID, verID string) (err error) {
 	defer conn.Close()
 	err = conn.C("users").Update(
 		bson.M{
-			"$and": bson.M{
-				"id":    userID,
-				"verID": verID,
+			"$and": []bson.M{
+				bson.M{"id": userID},
+				bson.M{"verID": verID},
 			},
 		},
 		bson.M{
-			"state":    vsec.Active,
-			"verified": time.Now(),
+			"$set": bson.M{
+				"state":    vsec.Active,
+				"verified": time.Now(),
+			},
 		})
 	return vlog.LogError("UMan:Mongo", err)
 }
