@@ -25,14 +25,14 @@ type Module struct {
 
 //EventFilterModel - model for creating event filters for fields
 type EventFilterModel struct {
-	UserIDs    []string `json:"userIDs" bson:"userIDs"`
+	UserNames  []string `json:"userNames" bson:"userNames"`
 	EventTypes []string `json:"eventTypes" bson:"eventTypes"`
 }
 
 //NewEventFilterModel - creates a new event filter model
 func NewEventFilterModel() EventFilterModel {
 	return EventFilterModel{
-		UserIDs:    make([]string, 0, 1000),
+		UserNames:  make([]string, 0, 1000),
 		EventTypes: make([]string, 0, 100),
 	}
 }

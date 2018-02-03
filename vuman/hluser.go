@@ -1,8 +1,11 @@
 package vuman
 
 import (
+	"errors"
 	"net/http"
 	"time"
+
+	"github.com/varunamachi/vaali/vcmn"
 
 	"github.com/varunamachi/vaali/vdb"
 
@@ -15,6 +18,25 @@ import (
 	"github.com/varunamachi/vaali/vsec"
 )
 
+func updateUserInfo(user *vsec.User) (err error) {
+	if len(user.ID) == 0 {
+		// @TODO - store hash of user ID
+		user.ID = vcmn.Hash(user.Email)
+	} else {
+		user.ID = vcmn.Hash(user.ID)
+	}
+	user.VerID = uuid.NewV4().String()
+	user.Created = time.Now()
+	user.State = vsec.Disabled
+	// @TODO create a key retrieving strategy -- local | remote etc
+	var emailKey string
+	err = vcmn.GetConfig("emailKey", &emailKey)
+	if err == nil {
+		user.Email, err = vcmn.EncryptStr(emailKey, user.Email)
+	}
+	return err
+}
+
 func createUser(ctx echo.Context) (err error) {
 	status, msg := vnet.DefMS("Create User")
 	var user vsec.User
@@ -23,12 +45,7 @@ func createUser(ctx echo.Context) (err error) {
 		user.Props = bson.M{
 			"admin-created": true,
 		}
-		if len(user.ID) == 0 {
-			user.ID = user.Email
-		}
-		user.Created = time.Now()
-		user.State = vsec.Disabled
-		user.VerID = uuid.NewV4().String()
+		updateUserInfo(&user)
 		err = CreateUser(&user)
 		if err != nil {
 			msg = "Failed to create user in database"
@@ -66,13 +83,13 @@ func registerUser(ctx echo.Context) (err error) {
 	err = ctx.Bind(&upw)
 	if err == nil {
 		upw.User.Auth = vsec.Normal
-		upw.User.VerID = uuid.NewV4().String()
-		upw.User.ID = upw.User.Email
+		updateUserInfo(&upw.User)
 		err = CreateUser(&upw.User)
 		if err != nil {
 			msg = "Failed to register user in database"
 			status = http.StatusInternalServerError
 		} else {
+
 			err = SetPassword(upw.User.ID, upw.Password)
 			if err != nil {
 				msg = "Failed to set password"
@@ -130,7 +147,7 @@ func updateUser(ctx echo.Context) (err error) {
 func deleteUser(ctx echo.Context) (err error) {
 	status, msg := vnet.DefMS("Delete User")
 	userID := ctx.Param("userID")
-	if len(userID) == 0 {
+	if len(userID) != 0 {
 		err = DeleteUser(userID)
 		if err != nil {
 			msg = "Failed to delete user from database"
@@ -139,6 +156,7 @@ func deleteUser(ctx echo.Context) (err error) {
 	} else {
 		msg = "Invalid user ID is given for deletion"
 		status = http.StatusBadRequest
+		err = errors.New(msg)
 	}
 	vnet.AuditedSend(ctx, &vnet.Result{
 		Status: status,
@@ -236,7 +254,7 @@ func resetPassword(ctx echo.Context) (err error) {
 	status, msg := vnet.DefMS("Set Password")
 	pinfo := make(map[string]string)
 	err = ctx.Bind(&pinfo)
-	userID := vnet.GetUserID(ctx)
+	userID := vnet.GetString(ctx, "userID")
 	oldPassword, ok2 := pinfo["oldPassword"]
 	newPassword, ok3 := pinfo["newPassword"]
 	if err == nil && ok2 && ok3 && len(userID) != 0 {

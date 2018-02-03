@@ -16,6 +16,10 @@ func getUserIDPassword(params map[string]interface{}) (
 	userID string, password string, err error) {
 	var aok, bok bool
 	userID, aok = params["userID"].(string)
+	//UserID is the SHA1 hash of the userID provided
+	if aok {
+		userID = vcmn.Hash(userID)
+	}
 	password, bok = params["password"].(string)
 	if !aok || !bok {
 		err = errors.New("Authorization, Invalid credentials provided")
@@ -39,11 +43,18 @@ func MongoAuthenticator(params map[string]interface{}) (
 }
 
 func sendVerificationMail(user *vsec.User) (err error) {
-
 	content := "Hi!,\n Verify your account by clicking on " +
 		"below link\n" + getVerificationLink(user)
 	subject := "Verification for Sparrow"
-	err = vnet.SendEmail(user.Email, subject, content)
+	var emailKey string
+	err = vcmn.GetConfig("emailKey", &emailKey)
+	if err == nil {
+		var email string
+		email, err = vcmn.DecryptStr(emailKey, user.Email)
+		if err == nil {
+			err = vnet.SendEmail(email, subject, content)
+		}
+	}
 	fmt.Println(content)
 	return vlog.LogError("UMan:Auth", err)
 }

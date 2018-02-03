@@ -41,6 +41,16 @@ var Disabled UserState = "disabled"
 //Flagged - user account is flagged by a user
 var Flagged UserState = "flagged"
 
+// type GroupAccess string
+// var Admin GroupAccess = "admin"
+// var RW GroupAccess = "RW"
+// var RO GroupAccess = "RO"
+
+// type GroupConfig struct {
+// 	Group string,
+// 	Access GroupAccess
+// }
+
 //User - represents an user
 type User struct {
 	OID         bson.ObjectId `json:"_id" bson:"_id,omitempty"`

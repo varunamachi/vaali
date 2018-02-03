@@ -63,12 +63,13 @@ type Logger interface {
 
 //Event - represents a event initiated by a user while performing an operation
 type Event struct {
-	Op      string      `json:"op" bson:"op"`
-	UserID  string      `json:"user" bson:"user"`
-	Success bool        `json:"success" bson:"success"`
-	Error   string      `json:"error" bson:"error"`
-	Time    time.Time   `json:"time" bson:"time"`
-	Data    interface{} `json:"data" bson:"data"`
+	Op       string      `json:"op" bson:"op"`
+	UserID   string      `json:"userID" bson:"userID"`
+	UserName string      `json:"userName" bson:"userName"`
+	Success  bool        `json:"success" bson:"success"`
+	Error    string      `json:"error" bson:"error"`
+	Time     time.Time   `json:"time" bson:"time"`
+	Data     interface{} `json:"data" bson:"data"`
 }
 
 //LoggerConfig - configuration that is used to initialize the logger

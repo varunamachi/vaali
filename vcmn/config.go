@@ -66,13 +66,13 @@ func GetStringConfig(key string) (value string) {
 //returned
 func GetConfig(key string, value interface{}) (err error) {
 	if val, ok := config[key]; ok {
-		if im, ok := val.(map[string]interface{}); ok {
-			err = mapstructure.Decode(im, value)
-		} else {
-			err = fmt.Errorf("Config for key %s is not in expected format",
-				key)
-		}
-
+		// if im, ok := val.(map[string]interface{}); ok {
+		// 	err = mapstructure.Decode(im, value)
+		// } else {
+		// 	err = fmt.Errorf("Config for key %s is not in expected format",
+		// 		key)
+		// }
+		err = mapstructure.Decode(val, value)
 	} else {
 		err = fmt.Errorf("Config with key %s not found", key)
 	}

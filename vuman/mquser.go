@@ -176,6 +176,11 @@ func CreateSuperUser(user *vsec.User, password string) (err error) {
 		err = errors.New("Super user limit exceeded")
 		return err
 	}
+	err = updateUserInfo(user)
+	if err != nil {
+		return err
+	}
+	user.State = vsec.Active
 	err = CreateUser(user)
 	if err != nil {
 		return err

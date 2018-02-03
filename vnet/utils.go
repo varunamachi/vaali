@@ -44,9 +44,19 @@ func DefMS(oprn string) (int, string) {
 	return http.StatusOK, oprn + " - successful"
 }
 
-//GetUserID - retrieves user ID from context
-func GetUserID(ctx echo.Context) string {
-	ui := ctx.Get("userID")
+// //GetUserID - retrieves user ID from context
+// func GetUserID_(ctx echo.Context) string {
+// 	ui := ctx.Get("userID")
+// 	userID, ok := ui.(string)
+// 	if ok {
+// 		return userID
+// 	}
+// 	return ""
+// }
+
+//GetString - retrieves property with key from context
+func GetString(ctx echo.Context, key string) (value string) {
+	ui := ctx.Get(key)
 	userID, ok := ui.(string)
 	if ok {
 		return userID
@@ -58,17 +68,27 @@ func GetUserID(ctx echo.Context) string {
 //is same as the data present in the result
 func AuditedSend(ctx echo.Context, res *Result) (err error) {
 	err = ctx.JSON(res.Status, res)
-	vlog.LogEvent(res.Op, GetUserID(ctx), res.OK, res.Err, res.Data)
+	vlog.LogEvent(
+		res.Op,
+		GetString(ctx, "userID"),
+		GetString(ctx, "userName"),
+		res.OK,
+		res.Err,
+		res.Data)
 	return err
 }
 
 //AuditedSendX - sends result as JSON while logging it as event. This method
 //logs event data which is seperate from result data
-func AuditedSendX(ctx echo.Context,
-	data interface{},
-	res *Result) (err error) {
+func AuditedSendX(ctx echo.Context, data interface{}, res *Result) (err error) {
 	err = ctx.JSON(res.Status, res)
-	vlog.LogEvent(res.Op, GetUserID(ctx), res.OK, res.Err, data)
+	vlog.LogEvent(
+		res.Op,
+		GetString(ctx, "userID"),
+		GetString(ctx, "userName"),
+		res.OK,
+		res.Err,
+		data)
 	return err
 }
 

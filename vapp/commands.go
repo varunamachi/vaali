@@ -128,15 +128,22 @@ func setupCmd() *cli.Command {
 		},
 		Action: func(ctx *cli.Context) (err error) {
 			vapp := GetVApp(ctx)
+			var user *vsec.User
 			if vapp != nil {
 				ag := vcmn.NewArgGetter(ctx)
 				superID := ag.GetRequiredString("super-id")
 				superPW := ag.GetOptionalString("super-pw")
 				if err = ag.Err; err == nil {
 					defer func() {
+						suname := superID
+						if user != nil {
+							suname = user.FirstName +
+								" " + user.LastName
+						}
 						vlog.LogEvent(
 							"setup app",
 							superID,
+							suname,
 							err != nil,
 							err,
 							nil)
@@ -144,7 +151,6 @@ func setupCmd() *cli.Command {
 					if len(superPW) == 0 {
 						superPW = vcmn.AskPassword("Super-user Password")
 					}
-					var user *vsec.User
 					user, err = vnet.DoLogin(superID, superPW)
 					if err != nil {
 						err = fmt.Errorf(
@@ -182,15 +188,22 @@ func resetCmd() *cli.Command {
 		},
 		Action: func(ctx *cli.Context) (err error) {
 			vapp := GetVApp(ctx)
+			var user *vsec.User
 			if vapp != nil {
 				ag := vcmn.NewArgGetter(ctx)
 				superID := ag.GetRequiredString("super-id")
 				superPW := ag.GetOptionalString("super-pw")
 				if err = ag.Err; err == nil {
 					defer func() {
+						suname := superID
+						if user != nil {
+							suname = user.FirstName +
+								" " + user.LastName
+						}
 						vlog.LogEvent(
-							"rerset app",
+							"setup app",
 							superID,
+							suname,
 							err != nil,
 							err,
 							nil)
@@ -198,7 +211,6 @@ func resetCmd() *cli.Command {
 					if len(superPW) == 0 {
 						superPW = vcmn.AskPassword("Super-user Password")
 					}
-					var user *vsec.User
 					user, err = vnet.DoLogin(superID, superPW)
 					if err != nil {
 						err = fmt.Errorf(
@@ -249,17 +261,21 @@ func overridePasswordCmd() *cli.Command {
 			superID := ag.GetRequiredString("super-id")
 			superPW := ag.GetOptionalString("super-pw")
 			defer func() { vlog.LogError("App", err) }()
+			var user *vsec.User
 			if err = ag.Err; err == nil {
 				defer func() {
+					suname := superID
+					if user != nil {
+						suname = user.FirstName +
+							" " + user.LastName
+					}
 					vlog.LogEvent(
-						"force-set-password",
+						"setup app",
 						superID,
+						suname,
 						err != nil,
 						err,
-						vlog.M{
-							"super": superID,
-							"user":  id,
-						})
+						nil)
 				}()
 				if len(pw) == 0 {
 					pw = vcmn.AskPassword("New Password")
@@ -267,7 +283,6 @@ func overridePasswordCmd() *cli.Command {
 				if len(superPW) == 0 {
 					superPW = vcmn.AskPassword("Super-user Password")
 				}
-				var user *vsec.User
 				user, err = vnet.DoLogin(superID, superPW)
 				if err != nil {
 					err = fmt.Errorf("Failed to authenticate super user: %v",

@@ -6,11 +6,20 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/varunamachi/vaali/vcmn"
+
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 	"github.com/varunamachi/vaali/vlog"
 	"github.com/varunamachi/vaali/vsec"
 )
+
+//JWTUserInfo - container for retrieving user information from JWT
+type JWTUserInfo struct {
+	UserID   string
+	UserName string
+	Role     vsec.AuthLevel
+}
 
 func getKey() []byte {
 	return []byte("valrrwwssffgsdgfksdjfghsdlgnsda")
@@ -37,7 +46,6 @@ func getAccessLevel(path string) (access vsec.AuthLevel, err error) {
 func authMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) (err error) {
 		var userRole, access vsec.AuthLevel
-		var user string
 		access, err = getAccessLevel(ctx.Path())
 		if err != nil {
 			err = &echo.HTTPError{
@@ -45,16 +53,17 @@ func authMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 				Message: "Invalid URL",
 				Inner:   err,
 			}
-			return err
+			vlog.LogError("Net", err)
 		}
-		user, userRole, err = RetrieveUserInfo(ctx)
+		var userInfo JWTUserInfo
+		userInfo, err = RetrieveUserInfo(ctx)
 		if err != nil {
 			err = &echo.HTTPError{
 				Code:    http.StatusForbidden,
 				Message: "Invalid JWT toke found, does not have user info",
 				Inner:   err,
 			}
-			return err
+			vlog.LogError("Net", err)
 		}
 		if access < userRole {
 			err = &echo.HTTPError{
@@ -65,7 +74,8 @@ func authMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			return err
 		}
 		if err == nil {
-			ctx.Set("userID", user)
+			ctx.Set("userID", userInfo.UserID)
+			ctx.Set("userName", userInfo.UserName)
 			err = next(ctx)
 		}
 		return vlog.LogError("Net", err)
@@ -92,19 +102,23 @@ func login(ctx echo.Context) (err error) {
 	status := http.StatusOK
 	var data map[string]interface{}
 	userID := ""
+	name := "" //user name is used for auditing
 	creds := make(map[string]string)
 	err = ctx.Bind(&creds)
 	if err == nil {
 		var user *vsec.User
 		userID = creds["userID"]
+		name = userID
 		user, err = DoLogin(userID, creds["password"])
 		if err == nil {
 			if user.State == vsec.Active {
 				token := jwt.New(jwt.SigningMethodHS256)
 				claims := token.Claims.(jwt.MapClaims)
+				name = user.FirstName + " " + user.LastName
 				claims["userID"] = user.ID
 				claims["exp"] = time.Now().Add(time.Hour * 2).Unix()
 				claims["access"] = user.Auth
+				claims["userName"] = name
 				var signed string
 				signed, err = token.SignedString(getKey())
 				if err == nil {
@@ -130,7 +144,9 @@ func login(ctx echo.Context) (err error) {
 		msg = "Failed to read credentials from request"
 		status = http.StatusBadRequest
 	}
-	ctx.Set("userID", userID)
+	//SHA1 encoded to avoid storing email in db
+	ctx.Set("userID", vcmn.Hash(userID))
+	ctx.Set("userName", name)
 	AuditedSend(ctx, &Result{
 		Status: status,
 		Op:     "login",
@@ -156,40 +172,41 @@ func DoLogin(userID string, password string) (*vsec.User, error) {
 }
 
 //RetrieveUserInfo - retrieves user information from JWT token
-func RetrieveUserInfo(ctx echo.Context) (
-	user string,
-	role vsec.AuthLevel,
-	err error) {
+func RetrieveUserInfo(ctx echo.Context) (uinfo JWTUserInfo, err error) {
 	success := false
 	itk := ctx.Get("token")
 	// vcmn.DumpJSON(itk)
 	if tkn, ok := itk.(*jwt.Token); ok {
 		if claims, ok := tkn.Claims.(jwt.MapClaims); ok {
-			var aok bool
-			user, aok = claims["userID"].(string)
-			access, bok := claims["access"].(float64)
-			role = vsec.AuthLevel(access)
-			success = aok && bok
-			if !aok {
-				vlog.Error("Net:Sec:API", "Invalid user name in JWT")
+			var ok1, ok3 bool
+			uinfo.UserID, ok1 = claims["userID"].(string)
+			access, ok2 := claims["access"].(float64)
+			uinfo.UserName, ok3 = claims["userName"].(string)
+			uinfo.Role = vsec.AuthLevel(access)
+			success = ok1 && ok2
+			if !ok1 {
+				vlog.Error("Net:Sec:API", "Invalid user ID in JWT")
 			}
-			if !bok {
+			if !ok2 {
 				vlog.Error("Net:Sec:API", "Invalid access level in JWT")
+			}
+			if !ok3 {
+				vlog.Error("Net:Sec:API", "Invalid user name in JWT")
 			}
 		}
 	}
 	if !success {
 		err = errors.New("Could not find relevent information in JWT token")
 	}
-	return user, role, err
+	return uinfo, err
 }
 
 //IsAdmin - returns true if user associated with request is an admin
 func IsAdmin(ctx echo.Context) (yes bool) {
 	yes = false
-	_, role, err := RetrieveUserInfo(ctx)
+	uinfo, err := RetrieveUserInfo(ctx)
 	if err == nil {
-		yes = role <= vsec.Admin
+		yes = uinfo.Role <= vsec.Admin
 	}
 	return yes
 }
@@ -197,9 +214,9 @@ func IsAdmin(ctx echo.Context) (yes bool) {
 //IsSuperUser - returns true if user is a super user
 func IsSuperUser(ctx echo.Context) (yes bool) {
 	yes = false
-	_, role, err := RetrieveUserInfo(ctx)
+	uinfo, err := RetrieveUserInfo(ctx)
 	if err == nil {
-		yes = role == vsec.Super
+		yes = uinfo.Role == vsec.Super
 	}
 	return yes
 }
@@ -207,9 +224,9 @@ func IsSuperUser(ctx echo.Context) (yes bool) {
 //IsNormalUser - returns true if user is a normal user
 func IsNormalUser(ctx echo.Context) (yes bool) {
 	yes = false
-	_, role, err := RetrieveUserInfo(ctx)
+	uinfo, err := RetrieveUserInfo(ctx)
 	if err == nil {
-		yes = role <= vsec.Normal
+		yes = uinfo.Role <= vsec.Normal
 	}
 	return yes
 }

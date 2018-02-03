@@ -16,6 +16,7 @@ func defaultAuditor(event *Event) {
 func LogEvent(
 	op string,
 	userID string,
+	userName string,
 	success bool,
 	err error,
 	data interface{}) {
@@ -24,11 +25,12 @@ func LogEvent(
 		estr = err.Error()
 	}
 	lconf.EventLogger(&Event{
-		Op:      op,
-		UserID:  userID,
-		Success: success,
-		Error:   estr,
-		Time:    time.Now(),
-		Data:    data,
+		Op:       op,
+		UserID:   userID,
+		UserName: userName,
+		Success:  success,
+		Error:    estr,
+		Time:     time.Now(),
+		Data:     data,
 	})
 }

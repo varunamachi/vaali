@@ -37,7 +37,7 @@ func GetEventFilterModel() (efm EventFilterModel, err error) {
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
 	efm = NewEventFilterModel()
-	err = conn.C("users").Find(nil).Distinct("id", &efm.UserIDs)
+	err = conn.C("events").Find(nil).Distinct("userName", &efm.UserNames)
 	if err == nil {
 		err = conn.C("events").Find(nil).Distinct("op", &efm.EventTypes)
 	}

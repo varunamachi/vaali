@@ -20,14 +20,14 @@ func SendEmail(to, subject, meesage string) (err error) {
 		return vlog.LogError("Net:EMail", err)
 	}
 	// vcmn.DumpJSON(emailConfig)
-	msg := "From: " + emailConfig.From + "\n" +
+	msg := "From: " + emailConfig.AppEMail + "\n" +
 		"To: " + to + "\n" +
 		"Subject: " + subject + "\n\n" +
 		meesage
 	smtpURL := fmt.Sprintf("%s:%d", emailConfig.SMTPHost, emailConfig.SMTPPort)
 	auth := smtp.PlainAuth("",
-		emailConfig.From,
-		emailConfig.Password,
+		emailConfig.AppEMail,
+		emailConfig.AppEMailPassword,
 		emailConfig.SMTPHost)
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: true,
@@ -48,7 +48,7 @@ func SendEmail(to, subject, meesage string) (err error) {
 		return vlog.LogError("Net:EMail", err)
 	}
 
-	err = client.Mail(emailConfig.From)
+	err = client.Mail(emailConfig.AppEMail)
 	if err != nil {
 		return vlog.LogError("Net:EMail", err)
 	}
