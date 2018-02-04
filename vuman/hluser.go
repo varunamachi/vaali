@@ -148,10 +148,19 @@ func deleteUser(ctx echo.Context) (err error) {
 	status, msg := vnet.DefMS("Delete User")
 	userID := ctx.Param("userID")
 	if len(userID) != 0 {
-		err = DeleteUser(userID)
-		if err != nil {
-			msg = "Failed to delete user from database"
-			status = http.StatusInternalServerError
+		curID := vnet.GetString(ctx, "userID")
+		if userID == curID {
+			msg = "Can not delete own user account"
+			status = http.StatusBadRequest
+		} else if vnet.IsSuperUser(ctx) {
+			msg = "Super account can not be deleted from web interface"
+			status = http.StatusBadRequest
+		} else {
+			err = DeleteUser(userID)
+			if err != nil {
+				msg = "Failed to delete user from database"
+				status = http.StatusInternalServerError
+			}
 		}
 	} else {
 		msg = "Invalid user ID is given for deletion"
@@ -239,7 +248,7 @@ func setPassword(ctx echo.Context) (err error) {
 		status = http.StatusBadRequest
 		msg = "Password information given is invalid, cannot set"
 	}
-	vnet.AuditedSendX(ctx, userID, &vnet.Result{
+	vnet.AuditedSendX(ctx, vcmn.Hash(userID), &vnet.Result{
 		Status: status,
 		Op:     "password_set",
 		Msg:    msg,
@@ -267,7 +276,7 @@ func resetPassword(ctx echo.Context) (err error) {
 		status = http.StatusBadRequest
 		msg = "Password information given is invalid, cannot reset"
 	}
-	vnet.AuditedSendX(ctx, userID, &vnet.Result{
+	vnet.AuditedSendX(ctx, vcmn.Hash(userID), &vnet.Result{
 		Status: status,
 		Op:     "password_reset",
 		Msg:    msg,
@@ -328,13 +337,15 @@ func verify(ctx echo.Context) (err error) {
 		status = http.StatusBadRequest
 		msg = "Invalid information provided for creating password"
 	}
-	vnet.AuditedSendX(ctx, userID, &vnet.Result{
+	ctx.Set("userName", "N/A")
+	hash := vcmn.Hash(userID)
+	vnet.AuditedSendX(ctx, hash, &vnet.Result{
 		Status: status,
-		Op:     "password_create",
+		Op:     "verify_account",
 		Msg:    msg,
 		OK:     err == nil,
 		Data: vlog.M{
-			"userID":         userID,
+			"userID":         hash,
 			"verificationID": verID,
 		},
 		Err: err,
