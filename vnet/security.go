@@ -215,6 +215,7 @@ func IsAdmin(ctx echo.Context) (yes bool) {
 func IsSuperUser(ctx echo.Context) (yes bool) {
 	yes = false
 	uinfo, err := RetrieveUserInfo(ctx)
+	vcmn.DumpJSON(uinfo)
 	if err == nil {
 		yes = uinfo.Role == vsec.Super
 	}

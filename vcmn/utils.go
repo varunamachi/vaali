@@ -60,3 +60,21 @@ func ExistsAsDir(path string) (yes bool) {
 	}
 	return yes
 }
+
+//ErrString - returns the error string if the given error is not nil
+func ErrString(err error) string {
+	if err != nil {
+		return err.Error()
+	}
+	return ""
+}
+
+//FirstValid - returns the first error that is not nil
+func FirstValid(errs ...error) (err error) {
+	for _, err := range errs {
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

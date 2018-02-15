@@ -6,6 +6,8 @@ import (
 	"net/url"
 	"strconv"
 
+	"github.com/varunamachi/vaali/vcmn"
+
 	"github.com/labstack/echo"
 	"github.com/varunamachi/vaali/vlog"
 )
@@ -89,6 +91,22 @@ func AuditedSendX(ctx echo.Context, data interface{}, res *Result) (err error) {
 		res.OK,
 		res.Err,
 		data)
+	return err
+}
+
+//SendAndAuditOnErr - sends the result to client and puts an audit record in
+//audit log if the result is error OR sending failed
+func SendAndAuditOnErr(ctx echo.Context, res *Result) (err error) {
+	err = ctx.JSON(res.Status, res)
+	if res.Err != nil || err != nil {
+		vlog.LogEvent(
+			res.Op,
+			GetString(ctx, "userID"),
+			GetString(ctx, "userName"),
+			res.OK,
+			vcmn.FirstValid(res.Err, err),
+			res.Data)
+	}
 	return err
 }
 

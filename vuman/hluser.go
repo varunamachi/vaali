@@ -147,14 +147,17 @@ func updateUser(ctx echo.Context) (err error) {
 func deleteUser(ctx echo.Context) (err error) {
 	status, msg := vnet.DefMS("Delete User")
 	userID := ctx.Param("userID")
-	if len(userID) != 0 {
+	var user *vsec.User
+	user, err = GetUser(userID)
+	if err == nil {
 		curID := vnet.GetString(ctx, "userID")
 		if userID == curID {
 			msg = "Can not delete own user account"
 			status = http.StatusBadRequest
-		} else if vnet.IsSuperUser(ctx) {
+		} else if user.Auth == vsec.Super {
 			msg = "Super account can not be deleted from web interface"
 			status = http.StatusBadRequest
+			err = errors.New(msg)
 		} else {
 			err = DeleteUser(userID)
 			if err != nil {
@@ -172,8 +175,11 @@ func deleteUser(ctx echo.Context) (err error) {
 		Op:     "user_remove",
 		Msg:    msg,
 		OK:     err == nil,
-		Data:   userID,
-		Err:    err,
+		Data: vlog.M{
+			"id":   userID,
+			"user": user,
+		},
+		Err: err,
 	})
 	return vlog.LogError("Sec:Hdl", err)
 }
