@@ -42,7 +42,7 @@ func getEvents(ctx echo.Context) (err error) {
 	var filter vdb.Filter
 	err = vnet.LoadJSONFromArgs(ctx, "filter", &filter)
 	if err == nil && has {
-		total, events, err = GetEvents(offset, limit, filter)
+		total, events, err = GetEvents(offset, limit, &filter)
 		if err != nil {
 			msg = "Could not retrieve event info from database"
 			status = http.StatusInternalServerError

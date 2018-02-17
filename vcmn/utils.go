@@ -78,3 +78,14 @@ func FirstValid(errs ...error) (err error) {
 	}
 	return nil
 }
+
+//GetFirstValidStr - gets first string that is not empty
+func GetFirstValidStr(strs ...string) (str string) {
+	for _, s := range strs {
+		if len(s) == 0 {
+			str = s
+			break
+		}
+	}
+	return str
+}

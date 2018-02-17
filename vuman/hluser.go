@@ -212,17 +212,24 @@ func getUser(ctx echo.Context) (err error) {
 func getUsers(ctx echo.Context) (err error) {
 	status, msg := vnet.DefMS("Get Users")
 	offset, limit, has := vnet.GetOffsetLimit(ctx)
+	// us := vcmn.GetFirstValidStr(ctx.Param("status"), string(vsec.Active))
 	var users []*vsec.User
 	var total int
-	if has {
-		total, users, err = GetAllUsers(offset, limit)
+	var filter vdb.Filter
+	err = vnet.LoadJSONFromArgs(ctx, "filter", &filter)
+	if has && err == nil {
+		total, users, err = GetUsers(offset, limit, &filter)
 		if err != nil {
 			msg = "Failed to retrieve user info from database"
 			status = http.StatusInternalServerError
 		}
+	} else if err != nil {
+		msg = "Failed to decode filter"
+		status = http.StatusBadRequest
 	} else {
 		msg = "Could not retrieve user list, offset/limit not found"
 		status = http.StatusBadRequest
+		err = errors.New(msg)
 	}
 	vnet.AuditedSendX(ctx, nil, &vnet.Result{
 		Status: status,
@@ -237,6 +244,37 @@ func getUsers(ctx echo.Context) (err error) {
 	})
 	return vlog.LogError("Sec:Hdl", err)
 }
+
+// func getAllUsers(ctx echo.Context) (err error) {
+// 	status, msg := vnet.DefMS("Get Users")
+// 	offset, limit, has := vnet.GetOffsetLimit(ctx)
+// 	var filter vdb.Filter
+// 	err = vnet.LoadJSONFromArgs(ctx, "filter", &filter)
+// 	var users []*vsec.User
+// 	var total int
+// 	if has {
+// 		total, users, err = GetAllUsers(offset, limit)
+// 		if err != nil {
+// 			msg = "Failed to retrieve user info from database"
+// 			status = http.StatusInternalServerError
+// 		}
+// 	} else {
+// 		msg = "Could not retrieve user list, offset/limit not found"
+// 		status = http.StatusBadRequest
+// 	}
+// 	vnet.AuditedSendX(ctx, nil, &vnet.Result{
+// 		Status: status,
+// 		Op:     "multi_user_get",
+// 		Msg:    msg,
+// 		OK:     err == nil,
+// 		Data: vdb.CountList{
+// 			TotalCount: total,
+// 			Data:       users,
+// 		},
+// 		Err: err,
+// 	})
+// 	return vlog.LogError("Sec:Hdl", err)
+// }
 
 func setPassword(ctx echo.Context) (err error) {
 	status, msg := vnet.DefMS("Set Password")

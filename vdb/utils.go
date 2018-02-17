@@ -5,7 +5,7 @@ import (
 )
 
 //GenerateSelector - creates mongodb query for a generic filter
-func GenerateSelector(filter Filter) (selector bson.M, err error) {
+func GenerateSelector(filter *Filter) (selector bson.M, err error) {
 	queries := make([]bson.M, 0, 100)
 	for key, values := range filter.Fields {
 		if len(values) == 1 {

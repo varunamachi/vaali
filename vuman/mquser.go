@@ -52,16 +52,28 @@ func GetAllUsers(offset, limit int) (
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
 	users = make([]*vsec.User, 0, limit)
-	// q := conn.
-	// 	C("users").
-	// 	Find(bson.M{}).
-	// 	Sort("-created").
-	// 	Skip(offset).
-	// 	Limit(limit)
 	q := conn.C("users").Find(bson.M{}).Sort("-created")
 	total, err = q.Count()
 	if err == nil {
 		err = q.Skip(offset).Limit(limit).All(&users)
+	}
+	return total, users, vlog.LogError("UMan:Mongo", err)
+}
+
+//GetUsers - gives a list of users based on their state
+func GetUsers(offset, limit int, filter *vdb.Filter) (
+	total int, users []*vsec.User, err error) {
+	conn := vdb.DefaultMongoConn()
+	defer conn.Close()
+	var selector bson.M
+	selector, err = vdb.GenerateSelector(filter)
+	if err == nil {
+		users = make([]*vsec.User, 0, limit)
+		q := conn.C("users").Find(selector).Sort("-created")
+		total, err = q.Count()
+		if err == nil {
+			err = q.Skip(offset).Limit(limit).All(&users)
+		}
 	}
 	return total, users, vlog.LogError("UMan:Mongo", err)
 }
