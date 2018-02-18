@@ -2,7 +2,6 @@ package vuman
 
 import (
 	"errors"
-	"fmt"
 	"net/url"
 
 	"github.com/varunamachi/vaali/vcmn"
@@ -55,7 +54,7 @@ func sendVerificationMail(user *vsec.User) (err error) {
 			err = vnet.SendEmail(email, subject, content)
 		}
 	}
-	fmt.Println(content)
+	// fmt.Println(content)
 	return vlog.LogError("UMan:Auth", err)
 }
 
