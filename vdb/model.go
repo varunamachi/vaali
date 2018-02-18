@@ -13,7 +13,7 @@ type ArrayMatcher struct {
 
 //Filter - generic filter used to filter data in any mongodb collection
 type Filter struct {
-	Fields     map[string][]string       `json:"fields" bson:"fields"`
+	Fields     map[string][]interface{}  `json:"fields" bson:"fields"`
 	BoolFields map[string]bool           `json:"boolFields" bson:"boolFields"`
 	Dates      map[string]vcmn.DateRange `json:"dates" bson:"dates"`
 	Lists      map[string]ArrayMatcher   `json:"lists" bson:"lists"`
