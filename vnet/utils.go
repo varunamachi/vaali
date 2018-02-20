@@ -2,6 +2,7 @@ package vnet
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -44,6 +45,11 @@ func GetOffsetLimit(ctx echo.Context) (offset, limit int, has bool) {
 //DefMS - gives default message and status, used for convenience
 func DefMS(oprn string) (int, string) {
 	return http.StatusOK, oprn + " - successful"
+}
+
+//DefaultSM - default status and message
+func DefaultSM(opern, name string) (int, string) {
+	return http.StatusOK, fmt.Sprintf("%s %s - successful", opern, name)
 }
 
 // //GetUserID - retrieves user ID from context

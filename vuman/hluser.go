@@ -62,7 +62,7 @@ func createUser(ctx echo.Context) (err error) {
 		status = http.StatusBadRequest
 		msg = "User information given is malformed"
 	}
-	vnet.AuditedSendX(ctx, user, &vnet.Result{
+	err = vnet.AuditedSendX(ctx, user, &vnet.Result{
 		Status: status,
 		Op:     "user_create",
 		Msg:    msg,
@@ -106,7 +106,7 @@ func registerUser(ctx echo.Context) (err error) {
 		status = http.StatusBadRequest
 		msg = "User information given is malformed"
 	}
-	vnet.AuditedSendX(ctx, upw.User, &vnet.Result{
+	err = vnet.AuditedSendX(ctx, upw.User, &vnet.Result{
 		Status: status,
 		Op:     "user_register",
 		Msg:    msg,
@@ -133,7 +133,7 @@ func updateUser(ctx echo.Context) (err error) {
 		status = http.StatusBadRequest
 		msg = "User information given is malformed"
 	}
-	vnet.AuditedSendX(ctx, user, &vnet.Result{
+	err = vnet.AuditedSendX(ctx, user, &vnet.Result{
 		Status: status,
 		Op:     "user_update",
 		Msg:    msg,
@@ -170,7 +170,7 @@ func deleteUser(ctx echo.Context) (err error) {
 		status = http.StatusBadRequest
 		err = errors.New(msg)
 	}
-	vnet.AuditedSend(ctx, &vnet.Result{
+	err = vnet.AuditedSend(ctx, &vnet.Result{
 		Status: status,
 		Op:     "user_remove",
 		Msg:    msg,
@@ -198,7 +198,7 @@ func getUser(ctx echo.Context) (err error) {
 		msg = "Invalid user ID is given for retrieval"
 		status = http.StatusBadRequest
 	}
-	vnet.AuditedSend(ctx, &vnet.Result{
+	err = vnet.SendAndAuditOnErr(ctx, &vnet.Result{
 		Status: status,
 		Op:     "user_get",
 		Msg:    msg,
@@ -231,7 +231,7 @@ func getUsers(ctx echo.Context) (err error) {
 		status = http.StatusBadRequest
 		err = errors.New(msg)
 	}
-	vnet.AuditedSendX(ctx, nil, &vnet.Result{
+	err = vnet.SendAndAuditOnErr(ctx, nil, &vnet.Result{
 		Status: status,
 		Op:     "multi_user_get",
 		Msg:    msg,
@@ -292,7 +292,7 @@ func setPassword(ctx echo.Context) (err error) {
 		status = http.StatusBadRequest
 		msg = "Password information given is invalid, cannot set"
 	}
-	vnet.AuditedSendX(ctx, vcmn.Hash(userID), &vnet.Result{
+	err = vnet.AuditedSendX(ctx, vcmn.Hash(userID), &vnet.Result{
 		Status: status,
 		Op:     "password_set",
 		Msg:    msg,
@@ -320,7 +320,7 @@ func resetPassword(ctx echo.Context) (err error) {
 		status = http.StatusBadRequest
 		msg = "Password information given is invalid, cannot reset"
 	}
-	vnet.AuditedSendX(ctx, vcmn.Hash(userID), &vnet.Result{
+	err = vnet.AuditedSendX(ctx, vcmn.Hash(userID), &vnet.Result{
 		Status: status,
 		Op:     "password_reset",
 		Msg:    msg,
@@ -383,7 +383,7 @@ func verify(ctx echo.Context) (err error) {
 	}
 	ctx.Set("userName", "N/A")
 	hash := vcmn.Hash(userID)
-	vnet.AuditedSendX(ctx, hash, &vnet.Result{
+	err = vnet.AuditedSendX(ctx, hash, &vnet.Result{
 		Status: status,
 		Op:     "verify_account",
 		Msg:    msg,

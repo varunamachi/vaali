@@ -52,6 +52,12 @@ type EmailConfig struct {
 	SMTPPort         int    `json:"smtpPort"`
 }
 
+//M - map of string to interface
+type M map[string]interface{}
+
+//BinderFunc - a function that binds data struct to response body
+type BinderFunc func(ctx echo.Context) (interface{}, error)
+
 var categories = make(map[string][]*Endpoint)
 var endpoints = make([]*Endpoint, 0, 200)
 var e = echo.New()

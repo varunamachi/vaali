@@ -95,7 +95,10 @@ func Fatal(module, fmtStr string, args ...interface{}) {
 func LogError(module string, err error) error {
 	if err != nil && ErrorLevel >= lconf.FilterLevel {
 		_, file, line, _ := runtime.Caller(1)
-		lconf.Logger.Log(ErrorLevel, module, "%v -- %s @ %d", err, file, line)
+		lconf.Logger.Log(ErrorLevel, module, "%s -- %s @ %d",
+			err.Error(),
+			file,
+			line)
 	}
 	return err
 }
