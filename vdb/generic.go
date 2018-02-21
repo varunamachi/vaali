@@ -43,7 +43,7 @@ func GetAll(dtype string,
 	sortFiled string,
 	offset int,
 	limit int,
-	out []interface{}) (err error) {
+	out interface{}) (err error) {
 	conn := DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C(dtype).
