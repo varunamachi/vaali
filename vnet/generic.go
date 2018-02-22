@@ -193,7 +193,7 @@ func MakeGetAllHandler(dtype, sortField string) echo.HandlerFunc {
 		var data []*M
 		if has {
 			data = make([]*M, 0, limit)
-			err = vdb.GetAll(dtype, "-sortField", offset, limit, data)
+			err = vdb.GetAll(dtype, "-" + sortField, offset, limit, data)
 			if err != nil {
 				msg = fmt.Sprintf("Failed to retrieve %s from database", dtype)
 				status = http.StatusInternalServerError
