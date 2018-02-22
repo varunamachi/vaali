@@ -54,7 +54,7 @@ func getEvents(ctx echo.Context) (err error) {
 		msg = "Could not find required parameter"
 		status = http.StatusBadRequest
 	}
-	err = ctx.JSON(status, &vnet.Result{
+	err = vnet.SendAndAuditOnErr(ctx, &vnet.Result{
 		Status: status,
 		Op:     "fetch events",
 		Msg:    msg,
@@ -76,9 +76,9 @@ func getEventFilterModel(ctx echo.Context) (err error) {
 		msg = "Failed to retrieve event filter model"
 		status = http.StatusInternalServerError
 	}
-	vnet.AuditedSend(ctx, &vnet.Result{
+	err = vnet.SendAndAuditOnErr(ctx, &vnet.Result{
 		Status: status,
-		Op:     "user_get",
+		Op:     "event_filter_get",
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   efm,
