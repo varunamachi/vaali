@@ -104,41 +104,42 @@ func MakeUpdateHandler(dtype string) echo.HandlerFunc {
 //MakeUpdateHandlerX - creates a generic PUT handler for a data, expects a
 //custom logic for binding request body to a data struct. Object ID is used for
 //matching
-func MakeUpdateHandlerX(dtype string,
-	bind BinderFunc) echo.HandlerFunc {
-	return func(ctx echo.Context) (err error) {
-		status, msg := DefaultSM("Update", dtype)
-		var data interface{}
-		data, err = bind(ctx)
-		if err == nil {
-			err = vdb.Create(dtype, data)
-			if err != nil {
-				msg = fmt.Sprintf("Failed to update %s in database", dtype)
-				status = http.StatusInternalServerError
-			}
-		} else {
-			msg = fmt.Sprintf(
-				"Failed to retrieve %s information from the request", dtype)
-			status = http.StatusBadRequest
-		}
-		err = AuditedSendX(ctx, &data, &Result{
-			Status: status,
-			Op:     "update_" + dtype,
-			Msg:    msg,
-			OK:     err == nil,
-			Data:   nil,
-			Err:    err,
-		})
-		return vlog.LogError("S:Entity", err)
-	}
-}
+// func MakeUpdateHandlerX(dtype string,
+// 	bind BinderFunc) echo.HandlerFunc {
+// 	return func(ctx echo.Context) (err error) {
+// 		status, msg := DefaultSM("Update", dtype)
+// 		var data interface{}
+// 		data, err = bind(ctx)
+// 		if err == nil {
+// 			id, _ := data["_id"].(string)
+// 			err = vdb.Update(dtype, bson.M{"_id": bson.ObjectIdHex(id)}, data)
+// 			if err != nil {
+// 				msg = fmt.Sprintf("Failed to update %s in database", dtype)
+// 				status = http.StatusInternalServerError
+// 			}
+// 		} else {
+// 			msg = fmt.Sprintf(
+// 				"Failed to retrieve %s information from the request", dtype)
+// 			status = http.StatusBadRequest
+// 		}
+// 		err = AuditedSendX(ctx, &data, &Result{
+// 			Status: status,
+// 			Op:     "update_" + dtype,
+// 			Msg:    msg,
+// 			OK:     err == nil,
+// 			Data:   nil,
+// 			Err:    err,
+// 		})
+// 		return vlog.LogError("S:Entity", err)
+// 	}
+// }
 
 //MakeDeleteHandler - creates a delete handler function, uses a REST parameter
-//named ${dtype}ID for getting the Object ID of the item to be deleted
+//named 'id' for getting the Object ID of the item to be deleted
 func MakeDeleteHandler(dtype string) echo.HandlerFunc {
 	return func(ctx echo.Context) (err error) {
 		status, msg := DefaultSM("Delete", dtype)
-		id := ctx.Param(dtype + "ID")
+		id := ctx.Param("id")
 		err = vdb.Delete(dtype, bson.M{"_id": bson.ObjectId(id)})
 		if err != nil {
 			msg = fmt.Sprintf("Failed to delete %s from database", dtype)
@@ -157,12 +158,12 @@ func MakeDeleteHandler(dtype string) echo.HandlerFunc {
 }
 
 //MakeGetHandler - creates a GET handler function, uses a REST parameter
-//named ${dtype}ID for getting the Object ID of the item to be retrieved
+//named 'id' for getting the Object ID of the item to be retrieved
 func MakeGetHandler(dtype string) echo.HandlerFunc {
 	return func(ctx echo.Context) (err error) {
 		status, msg := DefaultSM("Get", dtype)
 		data := M{}
-		id := ctx.Param(dtype + "ID")
+		id := ctx.Param("id")
 		err = vdb.Get(dtype, bson.M{"_id": bson.ObjectId(id)}, &data)
 		if err != nil {
 			msg = fmt.Sprintf(
