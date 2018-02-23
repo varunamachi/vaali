@@ -132,3 +132,12 @@ func LoadJSONFromArgs(ctx echo.Context, param string, out interface{}) (
 	}
 	return vlog.LogError("Net:Utils", err)
 }
+
+//Merge - merges multple endpoint arrays
+func Merge(epss ...[]*Endpoint) (eps []*Endpoint) {
+	eps = make([]*Endpoint, 0, 100)
+	for _, es := range epss {
+		eps = append(eps, es...)
+	}
+	return eps
+}

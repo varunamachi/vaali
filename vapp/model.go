@@ -6,7 +6,7 @@ import (
 )
 
 //CmdProvider - gives all the commands for a module
-type CmdProvider func() []cli.Command
+// type CmdProvider func() []cli.Command
 
 //ModuleConfigFunc Signature used by functions that are used to configure a
 //module. Some config callbacks include - initialize, setup, reset etc
@@ -17,7 +17,7 @@ type Module struct {
 	Name        string           `json:"name"`
 	Description string           `json:"desc"`
 	Endpoints   []*vnet.Endpoint `json:"endpoints"`
-	CmdProvider CmdProvider
+	Commands    []cli.Command
 	Initialize  ModuleConfigFunc
 	Setup       ModuleConfigFunc
 	Reset       ModuleConfigFunc

@@ -54,8 +54,7 @@ func (app *App) Exec(args []string) (err error) {
 				break
 			}
 		}
-		cmds := module.CmdProvider()
-		app.Commands = append(app.Commands, cmds...)
+		app.Commands = append(app.Commands, module.Commands...)
 		vnet.AddEndpoints(module.Endpoints...)
 	}
 	if err == nil {
