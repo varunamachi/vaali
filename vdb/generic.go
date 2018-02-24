@@ -44,6 +44,7 @@ func GetAll(dtype string,
 	offset int,
 	limit int,
 	out interface{}) (err error) {
+	//@TODO handle filters
 	conn := DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C(dtype).
@@ -53,4 +54,15 @@ func GetAll(dtype string,
 		Limit(limit).
 		All(out)
 	return vlog.LogError("DB:Mongo", err)
+}
+
+//Count - counts the number of items for data type
+func Count(dtype string) (count int, err error) {
+	//@TODO handle filters
+	conn := DefaultMongoConn()
+	defer conn.Close()
+	count, err = conn.C(dtype).
+		Find(nil).
+		Count()
+	return count, vlog.LogError("DB:Mongo", err)
 }
