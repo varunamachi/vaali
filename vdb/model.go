@@ -1,6 +1,11 @@
 package vdb
 
-import "github.com/varunamachi/vaali/vcmn"
+import (
+	"time"
+
+	"github.com/varunamachi/vaali/vcmn"
+	"gopkg.in/mgo.v2/bson"
+)
 
 //ArrayMatcher - matches elements of an array. If MatchAll set to true all
 //the elements of the Tags array needs to be matched, otherwise only one element
@@ -25,3 +30,39 @@ type CountList struct {
 	TotalCount int         `json:"total" bson:"total"`
 	Data       interface{} `json:"data" bson:"data"`
 }
+
+//FilterType - Type of filter item
+type FilterType string
+
+//Value - filter for a value
+const Value FilterType = "value"
+
+//Array - filter for an array
+const Array FilterType = "array'"
+
+//Date - filter for data range
+const Date FilterType = "dateRange"
+
+//Boolean - filter for boolean field
+const Boolean FilterType = "boolean"
+
+//FilterDesc - possible values for filters
+type FilterDesc struct {
+	Field string      `json:"field" bson:"field"`
+	Name  string      `json:"field" bson:"field"`
+	Type  FilterType  `json:"field" bson:"field"`
+	Data  interface{} `json:"data" bson:"data"`
+}
+
+//DateRange - represents a date range
+type DateRange struct {
+	From time.Time `json:"from" bson:"from"`
+	To   time.Time `json:"to" bson:"to"`
+}
+
+//FactoryFunc - Function for creating an instance of data type
+type FactoryFunc func() bson.M
+
+var mongoStore *store
+var defaultDB = "vaali"
+var factories map[string]FactoryFunc

@@ -43,8 +43,8 @@ func GetAll(dtype string,
 	sortFiled string,
 	offset int,
 	limit int,
+	filter *Filter,
 	out interface{}) (err error) {
-	//@TODO handle filters
 	conn := DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C(dtype).
@@ -57,12 +57,54 @@ func GetAll(dtype string,
 }
 
 //Count - counts the number of items for data type
-func Count(dtype string) (count int, err error) {
+func Count(dtype string, filter *Filter) (count int, err error) {
 	//@TODO handle filters
 	conn := DefaultMongoConn()
 	defer conn.Close()
-	count, err = conn.C(dtype).
-		Find(nil).
-		Count()
+	var selector bson.M
+	selector, err = GenerateSelector(filter)
+	if err == nil {
+		count, err = conn.C(dtype).
+			Find(selector).
+			Count()
+	}
 	return count, vlog.LogError("DB:Mongo", err)
+}
+
+//FillFilterValues - Fills given filter descriptors with possible values when
+//possible for a data type
+func FillFilterValues(dtype string, fds []*FilterDesc) (
+	out []*FilterDesc) {
+	conn := DefaultMongoConn()
+	defer conn.Close()
+	for _, fdesc := range fds {
+		switch fdesc.Type {
+		case Value:
+			fallthrough
+		case Array:
+			sdata := make([]string, 0, 100)
+			e := conn.C(dtype).Find(nil).Distinct(fdesc.Name, sdata)
+			fdesc.Data = sdata
+			vlog.LogError("DB:Mongo", e)
+		case Date:
+			var dr DateRange
+			e := conn.C(dtype).Pipe([]bson.M{
+				bson.M{
+					"$group": bson.M{
+						"_id": bson.M{},
+						"from": bson.M{
+							"$min": fdesc.Name,
+						},
+						"to": bson.M{
+							"$max": fdesc.Name,
+						},
+					},
+				},
+			}).One(&dr)
+			fdesc.Data = &dr
+			vlog.LogError("DB:Mongo", e)
+		}
+	}
+	out = fds
+	return out
 }

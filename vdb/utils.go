@@ -53,3 +53,16 @@ func GenerateSelector(filter *Filter) (selector bson.M, err error) {
 	}
 	return selector, err
 }
+
+//RegisterFactory - registers factory functions for a data type
+func RegisterFactory(dataType string, ff FactoryFunc) {
+	factories[dataType] = ff
+}
+
+//Instance - creates and returns an instance of given data type
+func Instance(dataType string) bson.M {
+	if ff, found := factories[dataType]; found {
+		return ff()
+	}
+	return nil
+}

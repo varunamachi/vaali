@@ -62,7 +62,15 @@ func GetEndpoints() (endpoints []*Endpoint) {
 			Access:   vsec.Normal,
 			Category: "generic",
 			Func:     count,
-			Comment:  "Create an resource of given type",
+			Comment:  "Get count of items of data type",
+		},
+		&Endpoint{
+			Method:   echo.GET,
+			URL:      "gen/:dataType/fdesc",
+			Access:   vsec.Normal,
+			Category: "generic",
+			Func:     getFilterValues,
+			Comment:  "Get possible values for filter",
 		},
 	}
 	return endpoints

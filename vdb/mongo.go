@@ -8,9 +8,6 @@ import (
 	mgo "gopkg.in/mgo.v2"
 )
 
-var mongoStore *store
-var defaultDB = "vaali"
-
 //MongoConnOpts - options for connecting to a mongodb instance
 type MongoConnOpts struct {
 	Host     string `json:"host"`

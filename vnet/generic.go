@@ -139,21 +139,22 @@ func get(ctx echo.Context) (err error) {
 }
 
 func getAll(ctx echo.Context) (err error) {
-	//@TODO - handle filters
 	dtype := ctx.Param("dataType")
 	status, msg := DefaultSM("Get All", dtype)
 	var data []*M
 	if len(dtype) != 0 {
 		offset, limit, has := GetOffsetLimit(ctx)
-		if has {
+		var filter vdb.Filter
+		err = LoadJSONFromArgs(ctx, "filter", &filter)
+		if has && err == nil {
 			data = make([]*M, 0, limit)
-			err = vdb.GetAll(dtype, "-createdAt", offset, limit, data)
+			err = vdb.GetAll(dtype, "-createdAt", offset, limit, &filter, data)
 			if err != nil {
 				msg = fmt.Sprintf("Failed to retrieve %s from database", dtype)
 				status = http.StatusInternalServerError
 			}
 		} else {
-			msg = "Invalid offset and limit given"
+			msg = "Invalid offset, limit or filter given"
 			status = http.StatusBadRequest
 		}
 	} else {
@@ -178,9 +179,16 @@ func count(ctx echo.Context) (err error) {
 	status, msg := DefaultSM("Get All", dtype)
 	count := 0
 	if len(dtype) != 0 {
-		count, err = vdb.Count(dtype)
-		if err != nil {
-			msg = fmt.Sprintf("Failed to retrieve %s from database", dtype)
+		if err == nil {
+			var filter vdb.Filter
+			err = LoadJSONFromArgs(ctx, "filter", &filter)
+			count, err = vdb.Count(dtype, &filter)
+			if err != nil {
+				msg = fmt.Sprintf("Failed to retrieve %s from database", dtype)
+				status = http.StatusInternalServerError
+			}
+		} else {
+			msg = fmt.Sprintf("Failed to decode filter for '%s'", dtype)
 			status = http.StatusInternalServerError
 		}
 	} else {
@@ -194,6 +202,34 @@ func count(ctx echo.Context) (err error) {
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   count,
+		Err:    err,
+	})
+	return vlog.LogError("S:Entity", err)
+}
+
+func getFilterValues(ctx echo.Context) (err error) {
+	dtype := ctx.Param("dataType")
+	status, msg := DefaultSM("Filter Values of", dtype)
+	var fdesc []*vdb.FilterDesc
+	if len(dtype) != 0 {
+		err = LoadJSONFromArgs(ctx, "fdesc", &fdesc)
+		if err == nil {
+			fdesc = vdb.FillFilterValues(dtype, fdesc)
+		} else {
+			msg = "Failed to load filter description from URL"
+			status = http.StatusBadRequest
+		}
+	} else {
+		msg = "Invalid empty data type given"
+		status = http.StatusBadRequest
+		err = errors.New(msg)
+	}
+	err = SendAndAuditOnErr(ctx, &Result{
+		Status: status,
+		Op:     "get_" + dtype,
+		Msg:    msg,
+		OK:     err == nil,
+		Data:   fdesc,
 		Err:    err,
 	})
 	return vlog.LogError("S:Entity", err)
