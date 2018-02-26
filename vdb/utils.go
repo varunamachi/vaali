@@ -60,7 +60,7 @@ func RegisterFactory(dataType string, ff FactoryFunc) {
 }
 
 //Instance - creates and returns an instance of given data type
-func Instance(dataType string) bson.M {
+func Instance(dataType string) StoredItem {
 	if ff, found := factories[dataType]; found {
 		return ff()
 	}

@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/varunamachi/vaali/vdb"
+
 	"github.com/varunamachi/vaali/vcmn"
 	"github.com/varunamachi/vaali/vlog"
 	"github.com/varunamachi/vaali/vnet"
@@ -54,7 +56,14 @@ func (app *App) Exec(args []string) (err error) {
 				break
 			}
 		}
-		app.Commands = append(app.Commands, module.Commands...)
+		if module.Commands != nil {
+			app.Commands = append(app.Commands, module.Commands...)
+		}
+		if module.Factories != nil {
+			for _, fc := range module.Factories {
+				vdb.RegisterFactory(fc.DataType, fc.Func)
+			}
+		}
 		vnet.AddEndpoints(module.Endpoints...)
 	}
 	if err == nil {

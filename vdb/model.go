@@ -3,8 +3,9 @@ package vdb
 import (
 	"time"
 
-	"github.com/varunamachi/vaali/vcmn"
 	"gopkg.in/mgo.v2/bson"
+
+	"github.com/varunamachi/vaali/vcmn"
 )
 
 //ArrayMatcher - matches elements of an array. If MatchAll set to true all
@@ -60,8 +61,18 @@ type DateRange struct {
 	To   time.Time `json:"to" bson:"to"`
 }
 
+//StoredItem - represents a value that is stored in database and is
+//compatible with generic queries and handlers. Any struct with a need to
+//support generic CRUD operations must implement and register a factory
+//method to return it
+type StoredItem interface {
+	ID() bson.ObjectId
+	SetCreationInfo(at time.Time, by string)
+	SetModInfo(at time.Time, by string)
+}
+
 //FactoryFunc - Function for creating an instance of data type
-type FactoryFunc func() bson.M
+type FactoryFunc func() StoredItem
 
 var mongoStore *store
 var defaultDB = "vaali"

@@ -16,11 +16,11 @@ import (
 func create(ctx echo.Context) (err error) {
 	dtype := ctx.Param("dataType")
 	status, msg := DefaultSM("Create", dtype)
-	data := bson.M{}
+	var data vdb.StoredItem
 	if len(dtype) != 0 {
-		err = ctx.Bind(&data)
+		data, err = bind(ctx, dtype)
 		if err == nil {
-			data["createdAt"] = time.Now()
+			data.SetCreationInfo(time.Now(), GetString(ctx, "userID"))
 			err = vdb.Create(dtype, data)
 			if err != nil {
 				msg = fmt.Sprintf("Failed to create %s in database", dtype)
@@ -50,13 +50,12 @@ func create(ctx echo.Context) (err error) {
 func update(ctx echo.Context) (err error) {
 	dtype := ctx.Param("dataType")
 	status, msg := DefaultSM("Update", dtype)
-	data := M{}
+	var data vdb.StoredItem
 	if len(dtype) != 0 {
-		err = ctx.Bind(&data)
+		data, err = bind(ctx, dtype)
 		if err == nil {
-			id, _ := data["_id"].(string)
-			data["modifiedAt"] = time.Now()
-			err = vdb.Update(dtype, bson.M{"_id": bson.ObjectIdHex(id)}, data)
+			data.SetModInfo(time.Now(), GetString(ctx, "userID"))
+			err = vdb.Update(dtype, bson.M{"_id": data.ID()}, data)
 			if err != nil {
 				msg = fmt.Sprintf("Failed to update %s in database", dtype)
 				status = http.StatusInternalServerError
@@ -233,4 +232,16 @@ func getFilterValues(ctx echo.Context) (err error) {
 		Err:    err,
 	})
 	return vlog.LogError("S:Entity", err)
+}
+
+func bind(ctx echo.Context, dataType string) (
+	data vdb.StoredItem, err error) {
+	data = vdb.Instance(dataType)
+	if data == nil {
+		err = ctx.Bind(data)
+	} else {
+		err = fmt.Errorf("Could not find factory function for data type %s",
+			dataType)
+	}
+	return data, err
 }
