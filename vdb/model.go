@@ -76,4 +76,4 @@ type FactoryFunc func() StoredItem
 
 var mongoStore *store
 var defaultDB = "vaali"
-var factories map[string]FactoryFunc
+var factories = make(map[string]FactoryFunc)
