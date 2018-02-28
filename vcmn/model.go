@@ -66,5 +66,5 @@ type Param struct {
 	Value   interface{} `json:"value" bson:"value"`
 	Range   Range       `json:"range" bson:"range"`
 	Choices []Pair      `json:"choices" bson:"choices"`
-	Default interface{} `json:"default" bson:"default"`
+	Default interface{} `json:"def" bson:"def"`
 }
