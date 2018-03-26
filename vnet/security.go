@@ -153,7 +153,7 @@ func login(ctx echo.Context) (err error) {
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   data,
-		Err:    err,
+		Err:    vcmn.ErrString(err),
 	})
 	return vlog.LogError("Net:Sec:API", err)
 }

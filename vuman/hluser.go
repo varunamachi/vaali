@@ -68,7 +68,7 @@ func createUser(ctx echo.Context) (err error) {
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   nil,
-		Err:    err,
+		Err:    vcmn.ErrString(err),
 	})
 	return vlog.LogError("Sec:Hdl", err)
 }
@@ -139,7 +139,7 @@ func updateUser(ctx echo.Context) (err error) {
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   nil,
-		Err:    err,
+		Err:    vcmn.ErrString(err),
 	})
 	return vlog.LogError("Sec:Hdl", err)
 }
@@ -204,7 +204,7 @@ func getUser(ctx echo.Context) (err error) {
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   user,
-		Err:    err,
+		Err:    vcmn.ErrString(err),
 	})
 	return vlog.LogError("Sec:Hdl", err)
 }
@@ -267,7 +267,7 @@ func setPassword(ctx echo.Context) (err error) {
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   nil,
-		Err:    err,
+		Err:    vcmn.ErrString(err),
 	})
 	return vlog.LogError("Sec:Hdl", err)
 }
@@ -295,7 +295,7 @@ func resetPassword(ctx echo.Context) (err error) {
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   nil,
-		Err:    err,
+		Err:    vcmn.ErrString(err),
 	})
 	return vlog.LogError("Sec:Hdl", err)
 }

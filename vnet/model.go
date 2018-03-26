@@ -32,7 +32,7 @@ type Result struct {
 	Op     string      `json:"op" bson:"op"`
 	Msg    string      `json:"msg" bson:"msg"`
 	OK     bool        `json:"ok" bson:"ok"`
-	Err    error       `json:"error" bson:"error"`
+	Err    string      `json:"error" bson:"error"`
 	Data   interface{} `json:"data" bson:"data"`
 }
 

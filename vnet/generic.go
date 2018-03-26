@@ -9,6 +9,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/labstack/echo"
+	"github.com/varunamachi/vaali/vcmn"
 	"github.com/varunamachi/vaali/vdb"
 	"github.com/varunamachi/vaali/vlog"
 )
@@ -42,7 +43,7 @@ func create(ctx echo.Context) (err error) {
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   nil,
-		Err:    err,
+		Err:    vcmn.ErrString(err),
 	})
 	return vlog.LogError("S:Entity", err)
 }
@@ -76,7 +77,7 @@ func update(ctx echo.Context) (err error) {
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   nil,
-		Err:    err,
+		Err:    vcmn.ErrString(err),
 	})
 	return vlog.LogError("S:Entity", err)
 }
@@ -102,7 +103,7 @@ func delete(ctx echo.Context) (err error) {
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   id,
-		Err:    err,
+		Err:    vcmn.ErrString(err),
 	})
 	return vlog.LogError("S:Entity", err)
 }
@@ -132,7 +133,7 @@ func get(ctx echo.Context) (err error) {
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   data,
-		Err:    err,
+		Err:    vcmn.ErrString(err),
 	})
 	return vlog.LogError("S:Entity", err)
 }
@@ -167,7 +168,7 @@ func getAll(ctx echo.Context) (err error) {
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   data,
-		Err:    err,
+		Err:    vcmn.ErrString(err),
 	})
 	return vlog.LogError("S:Entity", err)
 }
@@ -201,7 +202,7 @@ func count(ctx echo.Context) (err error) {
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   count,
-		Err:    err,
+		Err:    vcmn.ErrString(err),
 	})
 	return vlog.LogError("S:Entity", err)
 }
@@ -229,7 +230,7 @@ func getFilterValues(ctx echo.Context) (err error) {
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   fdesc,
-		Err:    err,
+		Err:    vcmn.ErrString(err),
 	})
 	return vlog.LogError("S:Entity", err)
 }

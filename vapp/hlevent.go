@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/varunamachi/vaali/vcmn"
 	"github.com/varunamachi/vaali/vdb"
 
 	"github.com/varunamachi/vaali/vlog"
@@ -82,7 +83,7 @@ func getEventFilterModel(ctx echo.Context) (err error) {
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   efm,
-		Err:    err,
+		Err:    vcmn.ErrString(err),
 	})
 	return vlog.LogError("Sec:Hdl", err)
 }

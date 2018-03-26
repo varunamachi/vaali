@@ -7,8 +7,6 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/varunamachi/vaali/vcmn"
-
 	"github.com/labstack/echo"
 	"github.com/varunamachi/vaali/vlog"
 )
@@ -105,14 +103,17 @@ func AuditedSendX(ctx echo.Context, data interface{}, res *Result) (err error) {
 func SendAndAuditOnErr(ctx echo.Context, res *Result) (err error) {
 	fmt.Println("one")
 	err = ctx.JSON(res.Status, res)
-	if res.Err != nil || err != nil {
-		fmt.Println("two")
+	if len(res.Err) != 0 || err != nil {
+		estr := res.Err
+		if err != nil {
+			estr = err.Error()
+		}
 		vlog.LogEvent(
 			res.Op,
 			GetString(ctx, "userID"),
 			GetString(ctx, "userName"),
 			false,
-			vcmn.FirstValid(res.Err, err),
+			estr,
 			res.Data)
 	}
 	return err
