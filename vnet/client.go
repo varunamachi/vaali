@@ -6,6 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
+
+	"github.com/varunamachi/vaali/vsec"
 
 	"github.com/varunamachi/vaali/vlog"
 )
@@ -20,25 +23,28 @@ type Client struct {
 }
 
 //NewClient - creates a new rest client
-func NewClient(address, versionStr string) *Client {
+func NewClient(address, appName, versionStr string) *Client {
 	return &Client{
 		Client: http.Client{
-			Timeout: 0,
+			Timeout: 1 * time.Minute,
 		},
 		Address:    address,
 		VersionStr: versionStr,
-		BaseURL:    fmt.Sprintf("%s/%s", address, versionStr),
+		BaseURL: fmt.Sprintf("%s/%s/api/%s",
+			address,
+			appName,
+			versionStr),
 	}
 }
 
 //Get - performs a get request
 func (client *Client) Get(
 	content interface{},
+	access vsec.AuthLevel,
 	urlArgs ...string) (err error) {
-
 	var req *http.Request
 	var resp *http.Response
-	apiURL := client.getURL(urlArgs...)
+	apiURL := client.CreateURL(access, urlArgs...)
 	req, err = http.NewRequest("GET", apiURL, nil)
 	authHeader := fmt.Sprintf("Bearer %s", client.Token)
 	req.Header.Add("Authorization", authHeader)
@@ -57,10 +63,11 @@ func (client *Client) Get(
 
 //Delete - performs a delete request
 func (client *Client) Delete(
+	access vsec.AuthLevel,
 	urlArgs ...string) (err error) {
 	var req *http.Request
 	var resp *http.Response
-	apiURL := client.getURL(urlArgs...)
+	apiURL := client.CreateURL(access, urlArgs...)
 	req, err = http.NewRequest("DELETE", apiURL, nil)
 	authHeader := fmt.Sprintf("Bearer %s", client.Token)
 	req.Header.Add("Authorization", authHeader)
@@ -74,15 +81,51 @@ func (client *Client) Delete(
 }
 
 //Post - performs a post request
-func (client *Client) Post(content interface{},
+func (client *Client) Post(
+	content interface{},
+	access vsec.AuthLevel,
 	urlArgs ...string) (err error) {
-	return client.putOrPost("POST", content, urlArgs...)
+	return client.putOrPost("POST", access, content, urlArgs...)
 }
 
 //Put - performs a put request
-func (client *Client) Put(content interface{},
+func (client *Client) Put(
+	content interface{},
+	access vsec.AuthLevel,
 	urlArgs ...string) (err error) {
-	return client.putOrPost("PUT", content, urlArgs...)
+	return client.putOrPost("PUT", access, content, urlArgs...)
+}
+
+//CreateURL - constructs URL from base URL, access level and the given
+//path components
+func (client *Client) CreateURL(
+	access vsec.AuthLevel,
+	args ...string) (str string) {
+	var buffer bytes.Buffer
+	// buffer.WriteString("/in/")
+	accessStr := ""
+	switch access {
+	case vsec.Super:
+		accessStr = "in/r0/"
+	case vsec.Admin:
+		accessStr = "in/r1/"
+	case vsec.Normal:
+		accessStr = "in/r2/"
+	case vsec.Monitor:
+		accessStr = "in/r3/"
+	case vsec.Public:
+		accessStr = ""
+	}
+	buffer.WriteString(client.BaseURL)
+	buffer.WriteString(accessStr)
+	for i := 0; i < len(args); i++ {
+		buffer.WriteString(args[i])
+		if i < len(args)-1 {
+			buffer.WriteString("/")
+		}
+	}
+	str = buffer.String()
+	return str
 }
 
 func handleStatusCode(statusCode int, decoder *json.Decoder) (err error) {
@@ -116,29 +159,15 @@ func (client *Client) do(req *http.Request) (
 	return resp, err
 }
 
-func (client *Client) getURL(args ...string) (str string) {
-	var buffer bytes.Buffer
-	buffer.WriteString(client.BaseURL)
-	buffer.WriteString("/in/")
-	for i := 0; i < len(args); i++ {
-		buffer.WriteString(args[i])
-		if i < len(args)-1 {
-			buffer.WriteString("/")
-		}
-	}
-	str = buffer.String()
-	return str
-}
-
 func (client *Client) putOrPost(
 	method string,
+	access vsec.AuthLevel,
 	content interface{},
 	urlArgs ...string) (err error) {
-
 	var data []byte
 	var resp *http.Response
 	data, err = json.Marshal(content)
-	apiURL := client.getURL(urlArgs...)
+	apiURL := client.CreateURL(access, urlArgs...)
 	req, err := http.NewRequest(method, apiURL, bytes.NewBuffer(data))
 	authHeader := fmt.Sprintf("Bearer %s", client.Token)
 	req.Header.Add("Authorization", authHeader)
