@@ -73,8 +73,8 @@ func (app *App) Exec(args []string) (err error) {
 	return err
 }
 
-//NewDefaultApp - creates a new application with default options
-func NewDefaultApp(
+//NewWebApp - creates a new web application with default options
+func NewWebApp(
 	name string,
 	appVersion vcmn.Version,
 	apiVersion string,

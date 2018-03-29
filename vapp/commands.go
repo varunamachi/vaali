@@ -145,7 +145,7 @@ func setupCmd() *cli.Command {
 							superID,
 							suname,
 							err != nil,
-							err,
+							vcmn.ErrString(err),
 							nil)
 					}()
 					if len(superPW) == 0 {
@@ -205,7 +205,7 @@ func resetCmd() *cli.Command {
 							superID,
 							suname,
 							err != nil,
-							err,
+							vcmn.ErrString(err),
 							nil)
 					}()
 					if len(superPW) == 0 {
@@ -274,7 +274,7 @@ func overridePasswordCmd() *cli.Command {
 						superID,
 						suname,
 						err != nil,
-						err,
+						vcmn.ErrString(err),
 						nil)
 				}()
 				if len(pw) == 0 {

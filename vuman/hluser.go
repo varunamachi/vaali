@@ -114,7 +114,7 @@ func registerUser(ctx echo.Context) (err error) {
 		Data: vlog.M{
 			"user": upw.User,
 		},
-		Err: err,
+		Err: vcmn.ErrString(err),
 	})
 	return vlog.LogError("Sec:Hdl", err)
 }
@@ -179,7 +179,7 @@ func deleteUser(ctx echo.Context) (err error) {
 			"id":   userID,
 			"user": user,
 		},
-		Err: err,
+		Err: vcmn.ErrString(err),
 	})
 	return vlog.LogError("Sec:Hdl", err)
 }
@@ -240,7 +240,7 @@ func getUsers(ctx echo.Context) (err error) {
 			TotalCount: total,
 			Data:       users,
 		},
-		Err: err,
+		Err: vcmn.ErrString(err),
 	})
 	return vlog.LogError("Sec:Hdl", err)
 }
@@ -361,7 +361,7 @@ func verify(ctx echo.Context) (err error) {
 			"userID":         hash,
 			"verificationID": verID,
 		},
-		Err: err,
+		Err: vcmn.ErrString(err),
 	})
 	return vlog.LogError("Sec:Hdl", err)
 }

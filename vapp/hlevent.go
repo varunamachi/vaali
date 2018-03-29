@@ -64,7 +64,7 @@ func getEvents(ctx echo.Context) (err error) {
 			TotalCount: total,
 			Data:       events,
 		},
-		Err: err,
+		Err: vcmn.ErrString(err),
 	})
 	return vlog.LogError("App:Events", err)
 }
