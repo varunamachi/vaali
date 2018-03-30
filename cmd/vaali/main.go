@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	app := vapp.NewDefaultApp(
+	app := vapp.NewWebApp(
 		"vaali",
 		vcmn.Version{
 			Major: 0,
