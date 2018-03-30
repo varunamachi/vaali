@@ -7,6 +7,11 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+//NoOpAuditor - auditor that does not audit
+func NoOpAuditor(event *vlog.Event) {
+	//-no-op-
+}
+
 //MongoAuditor - stores event logs into database
 func MongoAuditor(event *vlog.Event) {
 	conn := vdb.DefaultMongoConn()

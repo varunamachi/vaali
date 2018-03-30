@@ -2,7 +2,6 @@ package vapp
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -20,8 +19,10 @@ import (
 //App - the application itself
 type App struct {
 	cli.App
-	Modules    []*Module    `json:"modules"`
-	NetOptions vnet.Options `json:"netOptions"`
+	Modules       []*Module    `json:"modules"`
+	NetOptions    vnet.Options `json:"netOptions"`
+	IsService     bool         `json:"isService"`
+	RequiresMongo bool         `json:"requiresMongo"`
 }
 
 //FromAppDir - gives a absolute path from a path relative to
@@ -41,10 +42,11 @@ func (app *App) AddModule(module *Module) {
 
 //Exec - runs the applications
 func (app *App) Exec(args []string) (err error) {
-	fmt.Printf("Starting %s v.%v\n", app.Name, app.Version)
-	vnet.AddEndpoints(vnet.GetEndpoints()...)
-	vnet.AddEndpoints(vuman.GetEndpoints()...)
-	vnet.AddEndpoints(getEndpoints()...)
+	if app.IsService {
+		vnet.AddEndpoints(vnet.GetEndpoints()...)
+		vnet.AddEndpoints(vuman.GetEndpoints()...)
+		vnet.AddEndpoints(getEndpoints()...)
+	}
 	app.Commands = append(app.Commands, GetCommands()...)
 
 	for _, module := range app.Modules {
@@ -64,7 +66,9 @@ func (app *App) Exec(args []string) (err error) {
 				vdb.RegisterFactory(fc.DataType, fc.Func)
 			}
 		}
-		vnet.AddEndpoints(module.Endpoints...)
+		if app.IsService {
+			vnet.AddEndpoints(module.Endpoints...)
+		}
 	}
 	if err == nil {
 		vnet.InitWithOptions(app.NetOptions)
@@ -88,6 +92,8 @@ func NewWebApp(
 	})
 	vcmn.LoadConfig(name)
 	app = &App{
+		IsService:     true,
+		RequiresMongo: true,
 		App: cli.App{
 			Name:      name,
 			Commands:  make([]cli.Command, 0, 100),
@@ -109,24 +115,59 @@ func NewWebApp(
 	return app
 }
 
+//NewSimpleApp - an app that is not a service and does not use mongodb
+func NewSimpleApp(
+	name string,
+	appVersion vcmn.Version,
+	apiVersion string,
+	authors []cli.Author,
+	desc string) (app *App) {
+	vlog.InitWithOptions(vlog.LoggerConfig{
+		Logger:      vlog.NewDirectLogger(),
+		LogConsole:  true,
+		FilterLevel: vlog.TraceLevel,
+		EventLogger: NoOpAuditor,
+	})
+	vcmn.LoadConfig(name)
+	app = &App{
+		IsService:     false,
+		RequiresMongo: false,
+		App: cli.App{
+			Name:      name,
+			Commands:  make([]cli.Command, 0, 100),
+			Version:   appVersion.String(),
+			Authors:   authors,
+			Usage:     desc,
+			ErrWriter: ioutil.Discard,
+			Metadata:  map[string]interface{}{},
+		},
+		Modules: make([]*Module, 0, 10),
+	}
+	app.Metadata["vapp"] = app
+	return app
+}
+
 //Setup - sets up the application and the registered module. This is not
 //initialization and needs to be called when app/module configuration changes.
 //This is the place where mongoDB indices are expected to be created.
 func (app *App) Setup() (err error) {
-	err = vuman.CreateIndices()
-	if err != nil {
-		vlog.Error("App",
-			"Failed to create Mongo indeces for U-Man collections")
-		return err
+	if app.RequiresMongo {
+
+		err = vuman.CreateIndices()
+		if err != nil {
+			vlog.Error("App",
+				"Failed to create Mongo indeces for U-Man collections")
+			return err
+		}
+		vlog.Info("App", "Created indeces for User Management collections")
+		err = CreateIndices()
+		if err != nil {
+			vlog.Error("App",
+				"Failed to create Mongo indeces for applications collections")
+			return err
+		}
+		vlog.Info("App", "Created indeces for Application collections")
 	}
-	vlog.Info("App", "Created indeces for User Management collections")
-	err = CreateIndices()
-	if err != nil {
-		vlog.Error("App",
-			"Failed to create Mongo indeces for applications collections")
-		return err
-	}
-	vlog.Info("App", "Created indeces for Application collections")
 	for _, module := range app.Modules {
 		if module.Setup != nil {
 			err = module.Setup(app)
@@ -149,13 +190,15 @@ func (app *App) Setup() (err error) {
 //Reset - resets the application and module configuration and data.
 //USE WITH CAUTION
 func (app *App) Reset() (err error) {
-	err = vuman.CleanData()
-	if err != nil {
-		vlog.Error("App", "Failed to reset U-Man data")
+	if app.RequiresMongo {
+		err = vuman.CleanData()
+		if err != nil {
+			vlog.Error("App", "Failed to reset U-Man data")
+		}
 	}
 	for _, module := range app.Modules {
 		if module.Setup != nil {
-			err = module.Setup(app)
+			err = module.Reset(app)
 			if err != nil {
 				vlog.Error("App", "Failed to reset module %s",
 					module.Name)

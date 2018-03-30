@@ -65,3 +65,13 @@ var accessPos = 0
 var rootPath = ""
 var authenticator Authenticator
 var authorizer Authorizer
+
+//NoOpAuthenticator - authenticator that does not do anything
+func NoOpAuthenticator(params map[string]interface{}) (*vsec.User, error) {
+	return nil, nil
+}
+
+//NoOpAuthorizer - authorizer that does not do anything
+func NoOpAuthorizer(userID string) (vsec.AuthLevel, error) {
+	return vsec.Public, nil
+}
