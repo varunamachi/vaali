@@ -85,7 +85,8 @@ func (client *Client) Post(
 	content interface{},
 	access vsec.AuthLevel,
 	urlArgs ...string) (err error) {
-	return client.putOrPost("POST", access, content, urlArgs...)
+	var res Result
+	return client.putOrPost("POST", access, content, &res, urlArgs...)
 }
 
 //Put - performs a put request
@@ -93,7 +94,8 @@ func (client *Client) Put(
 	content interface{},
 	access vsec.AuthLevel,
 	urlArgs ...string) (err error) {
-	return client.putOrPost("PUT", access, content, urlArgs...)
+	var res Result
+	return client.putOrPost("PUT", access, content, &res, urlArgs...)
 }
 
 //CreateURL - constructs URL from base URL, access level and the given
@@ -128,12 +130,44 @@ func (client *Client) CreateURL(
 	return str
 }
 
+func (client *Client) Login(userID, password string) (err error) {
+	data := make(map[string]string)
+	data["userID"] = userID
+	data["password"] = password
+	err = client.Post(data, vsec.Public, "login")
+
+	var req *http.Request
+
+	// req, err = http.NewRequest("POST", url, strings.NewReader(form.Encode()))
+	// if err == nil {
+	// 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	// 	var resp *http.Response
+	// 	resp, err = client.Do(req)
+	// 	if err == nil {
+	// 		defer resp.Body.Close()
+	// 		decoder := json.NewDecoder(resp.Body)
+	// 		if resp.StatusCode == http.StatusOK {
+	// 			tmap := make(map[string]string)
+	// 			err = decoder.Decode(&tmap)
+	// 			client.Token = tmap["token"]
+	// 		} else {
+	// 			err = handleStatusCode(resp.StatusCode, decoder)
+	// 		}
+	// 	}
+	// }
+	// if err != nil {
+	// 	olog.PrintError("RESTClient", err)
+	// }
+	return err
+}
+
 func handleStatusCode(statusCode int, decoder *json.Decoder) (err error) {
 	var res Result
-	if statusCode == http.StatusOK {
-		err = decoder.Decode(&res)
-		vlog.Info("REST", "%s : %s", res.Op, res.Msg)
-	} else if statusCode == http.StatusInternalServerError ||
+	// if statusCode == http.StatusOK {
+	// 	err = decoder.Decode(&res)
+	// 	vlog.Info("REST", "%s : %s", res.Op, res.Msg)
+	// } else
+	if statusCode == http.StatusInternalServerError ||
 		statusCode == http.StatusBadRequest ||
 		statusCode == http.StatusUnauthorized {
 		err = decoder.Decode(&res)
@@ -143,11 +177,12 @@ func handleStatusCode(statusCode int, decoder *json.Decoder) (err error) {
 		} else if err != nil {
 			vlog.Error("RESTClient", "Result decode failed: ", err)
 		}
-	} else {
-		err = fmt.Errorf("Status Error: %d - %s", statusCode,
-			http.StatusText(statusCode))
-		// olog.PrintError("REST", err)
 	}
+	// else {
+	// 	err = fmt.Errorf("Status Error: %d - %s", statusCode,
+	// 		http.StatusText(statusCode))
+	// 	// olog.PrintError("REST", err)
+	// }
 	return err
 }
 
@@ -163,6 +198,7 @@ func (client *Client) putOrPost(
 	method string,
 	access vsec.AuthLevel,
 	content interface{},
+	resultOut interface{},
 	urlArgs ...string) (err error) {
 	var data []byte
 	var resp *http.Response
