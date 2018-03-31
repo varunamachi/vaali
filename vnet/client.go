@@ -136,7 +136,7 @@ func (client *Client) Login(userID, password string) (err error) {
 	data["password"] = password
 	err = client.Post(data, vsec.Public, "login")
 
-	var req *http.Request
+	// var req *http.Request
 
 	// req, err = http.NewRequest("POST", url, strings.NewReader(form.Encode()))
 	// if err == nil {
