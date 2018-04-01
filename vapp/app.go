@@ -47,7 +47,9 @@ func (app *App) Exec(args []string) (err error) {
 		vnet.AddEndpoints(vuman.GetEndpoints()...)
 		vnet.AddEndpoints(getEndpoints()...)
 	}
-	app.Commands = append(app.Commands, GetCommands()...)
+	if app.RequiresMongo {
+		app.Commands = append(app.Commands, GetCommands(app)...)
+	}
 
 	for _, module := range app.Modules {
 		if module.Initialize != nil {

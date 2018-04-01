@@ -18,9 +18,18 @@ import (
 )
 
 //GetCommands - gives commands related to HTTP networking
-func GetCommands() []cli.Command {
+func GetCommands(app *App) []cli.Command {
+	if app.IsService {
+		return []cli.Command{
+			*vdb.MakeRequireMongo(serviceStartCmd()),
+			*vdb.MakeRequireMongo(createUserCmd()),
+			*vdb.MakeRequireMongo(setupCmd()),
+			*vdb.MakeRequireMongo(resetCmd()),
+			*vdb.MakeRequireMongo(overridePasswordCmd()),
+			*testEMail(),
+		}
+	}
 	return []cli.Command{
-		*vdb.MakeRequireMongo(serviceStartCmd()),
 		*vdb.MakeRequireMongo(createUserCmd()),
 		*vdb.MakeRequireMongo(setupCmd()),
 		*vdb.MakeRequireMongo(resetCmd()),

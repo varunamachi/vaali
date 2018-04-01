@@ -3,23 +3,96 @@ package vnet
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"time"
 
 	"github.com/varunamachi/vaali/vsec"
-
-	"github.com/varunamachi/vaali/vlog"
 )
+
+//ResultReader - proto result, use it to read the Result with proper data struct
+type ResultReader struct {
+	RawData []byte
+	Err     error
+	Res     Result
+}
+
+//NewResultReader - creates a new result-reader from response body
+func NewResultReader(r *http.Response) (reader *ResultReader) {
+	reader = &ResultReader{}
+	loc, _ := r.Location()
+	url := "N/A"
+	if loc != nil {
+		url = loc.String()
+	}
+	if r.StatusCode == http.StatusNotFound {
+		reader.Err = fmt.Errorf("Not found. URL: %s", url)
+	} else if r.StatusCode == http.StatusUnauthorized {
+		reader.Err = fmt.Errorf("Not logged in. URL: %s", url)
+	} else if r.StatusCode == http.StatusForbidden {
+		reader.Err = fmt.Errorf("Unauthorized access. URL: %s", url)
+	} else {
+		defer r.Body.Close()
+		reader.RawData, reader.Err = ioutil.ReadAll(r.Body)
+	}
+	return reader
+}
+
+//Read - read result data from reader. The provided data object will be populatd
+//with result's data field
+func (rr *ResultReader) Read(data interface{}) (err error) {
+	if rr.Err == nil {
+		rr.Res = Result{
+			Data: data,
+		}
+		err = json.Unmarshal(rr.RawData, &rr.Res)
+	} else {
+		err = rr.Err
+	}
+	if err == nil {
+		if rr.Res.Status == http.StatusInternalServerError ||
+			rr.Res.Status == http.StatusBadRequest {
+			err = fmt.Errorf("%s : %s - %s",
+				rr.Res.Op,
+				rr.Res.Msg,
+				rr.Res.Err)
+		}
+	}
+	return err
+}
+
+//Finish - decodes the server response and returns error if it failed. Use this
+//method if data is not expected from server call
+func (rr *ResultReader) Finish() (err error) {
+	if rr.Err == nil {
+		rr.Res = Result{}
+		err = json.Unmarshal(rr.RawData, rr.Res)
+	} else {
+		err = rr.Err
+	}
+	if err == nil {
+		if rr.Res.Status == http.StatusNotFound ||
+			rr.Res.Status == http.StatusInternalServerError ||
+			rr.Res.Status == http.StatusBadRequest ||
+			rr.Res.Status == http.StatusUnauthorized {
+			err = fmt.Errorf("%s : %s - %s",
+				rr.Res.Op,
+				rr.Res.Msg,
+				rr.Res.Err)
+		}
+	}
+	return err
+}
 
 //Client - client for orek service
 type Client struct {
 	http.Client
 	Address    string
 	VersionStr string
-	Token      string
 	BaseURL    string
+	Token      string
+	User       *vsec.User
 }
 
 //NewClient - creates a new rest client
@@ -41,61 +114,61 @@ func NewClient(address, appName, versionStr string) *Client {
 func (client *Client) Get(
 	content interface{},
 	access vsec.AuthLevel,
-	urlArgs ...string) (err error) {
+	urlArgs ...string) (rr *ResultReader) {
 	var req *http.Request
 	var resp *http.Response
+	var err error
 	apiURL := client.CreateURL(access, urlArgs...)
 	req, err = http.NewRequest("GET", apiURL, nil)
 	authHeader := fmt.Sprintf("Bearer %s", client.Token)
 	req.Header.Add("Authorization", authHeader)
 	resp, err = client.Do(req)
 	if err == nil {
-		defer resp.Body.Close()
-		decoder := json.NewDecoder(resp.Body)
-		if resp.StatusCode == http.StatusOK {
-			err = decoder.Decode(content)
-		} else {
-			err = handleStatusCode(resp.StatusCode, decoder)
+		rr = NewResultReader(resp)
+	} else {
+		rr = &ResultReader{
+			Err: err,
 		}
 	}
-	return err
+	return rr
 }
 
 //Delete - performs a delete request
 func (client *Client) Delete(
 	access vsec.AuthLevel,
-	urlArgs ...string) (err error) {
+	urlArgs ...string) (rr *ResultReader) {
 	var req *http.Request
 	var resp *http.Response
+	var err error
 	apiURL := client.CreateURL(access, urlArgs...)
 	req, err = http.NewRequest("DELETE", apiURL, nil)
 	authHeader := fmt.Sprintf("Bearer %s", client.Token)
 	req.Header.Add("Authorization", authHeader)
 	resp, err = client.Do(req)
 	if err == nil {
-		defer resp.Body.Close()
-		decoder := json.NewDecoder(resp.Body)
-		err = handleStatusCode(resp.StatusCode, decoder)
+		rr = NewResultReader(resp)
+	} else {
+		rr = &ResultReader{
+			Err: err,
+		}
 	}
-	return err
+	return rr
 }
 
 //Post - performs a post request
 func (client *Client) Post(
 	content interface{},
 	access vsec.AuthLevel,
-	urlArgs ...string) (err error) {
-	var res Result
-	return client.putOrPost("POST", access, content, &res, urlArgs...)
+	urlArgs ...string) (rr *ResultReader) {
+	return client.putOrPost("POST", access, content, urlArgs...)
 }
 
 //Put - performs a put request
 func (client *Client) Put(
 	content interface{},
 	access vsec.AuthLevel,
-	urlArgs ...string) (err error) {
-	var res Result
-	return client.putOrPost("PUT", access, content, &res, urlArgs...)
+	urlArgs ...string) (rr *ResultReader) {
+	return client.putOrPost("PUT", access, content, urlArgs...)
 }
 
 //CreateURL - constructs URL from base URL, access level and the given
@@ -104,7 +177,6 @@ func (client *Client) CreateURL(
 	access vsec.AuthLevel,
 	args ...string) (str string) {
 	var buffer bytes.Buffer
-	// buffer.WriteString("/in/")
 	accessStr := ""
 	switch access {
 	case vsec.Super:
@@ -119,6 +191,7 @@ func (client *Client) CreateURL(
 		accessStr = ""
 	}
 	buffer.WriteString(client.BaseURL)
+	buffer.WriteString("/")
 	buffer.WriteString(accessStr)
 	for i := 0; i < len(args); i++ {
 		buffer.WriteString(args[i])
@@ -130,59 +203,23 @@ func (client *Client) CreateURL(
 	return str
 }
 
+//Login - login to a vaali based service with userID and password. If successful
+//client will have the session information and can perform REST calls that needs
+//authentication
 func (client *Client) Login(userID, password string) (err error) {
 	data := make(map[string]string)
 	data["userID"] = userID
 	data["password"] = password
-	err = client.Post(data, vsec.Public, "login")
-
-	// var req *http.Request
-
-	// req, err = http.NewRequest("POST", url, strings.NewReader(form.Encode()))
-	// if err == nil {
-	// 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	// 	var resp *http.Response
-	// 	resp, err = client.Do(req)
-	// 	if err == nil {
-	// 		defer resp.Body.Close()
-	// 		decoder := json.NewDecoder(resp.Body)
-	// 		if resp.StatusCode == http.StatusOK {
-	// 			tmap := make(map[string]string)
-	// 			err = decoder.Decode(&tmap)
-	// 			client.Token = tmap["token"]
-	// 		} else {
-	// 			err = handleStatusCode(resp.StatusCode, decoder)
-	// 		}
-	// 	}
-	// }
-	// if err != nil {
-	// 	olog.PrintError("RESTClient", err)
-	// }
-	return err
-}
-
-func handleStatusCode(statusCode int, decoder *json.Decoder) (err error) {
-	var res Result
-	// if statusCode == http.StatusOK {
-	// 	err = decoder.Decode(&res)
-	// 	vlog.Info("REST", "%s : %s", res.Op, res.Msg)
-	// } else
-	if statusCode == http.StatusInternalServerError ||
-		statusCode == http.StatusBadRequest ||
-		statusCode == http.StatusUnauthorized {
-		err = decoder.Decode(&res)
-		if err == nil && len(res.Err) != 0 {
-			vlog.Error("REST", "%s : %s - %s", res.Op, res.Msg, res.Err)
-			err = errors.New(res.Err)
-		} else if err != nil {
-			vlog.Error("RESTClient", "Result decode failed: ", err)
-		}
+	loginResult := struct {
+		Token string     `json:"token"`
+		User  *vsec.User `json:"user"`
+	}{}
+	rr := client.Post(data, vsec.Public, "login")
+	err = rr.Read(&loginResult)
+	if err == nil {
+		client.Token = loginResult.Token
+		client.User = loginResult.User
 	}
-	// else {
-	// 	err = fmt.Errorf("Status Error: %d - %s", statusCode,
-	// 		http.StatusText(statusCode))
-	// 	// olog.PrintError("REST", err)
-	// }
 	return err
 }
 
@@ -198,10 +235,10 @@ func (client *Client) putOrPost(
 	method string,
 	access vsec.AuthLevel,
 	content interface{},
-	resultOut interface{},
-	urlArgs ...string) (err error) {
+	urlArgs ...string) (rr *ResultReader) {
 	var data []byte
 	var resp *http.Response
+	var err error
 	data, err = json.Marshal(content)
 	apiURL := client.CreateURL(access, urlArgs...)
 	req, err := http.NewRequest(method, apiURL, bytes.NewBuffer(data))
@@ -210,9 +247,11 @@ func (client *Client) putOrPost(
 	req.Header.Set("Content-Type", "application/json")
 	resp, err = client.Do(req)
 	if err == nil {
-		defer resp.Body.Close()
-		decoder := json.NewDecoder(resp.Body)
-		err = handleStatusCode(resp.StatusCode, decoder)
+		rr = NewResultReader(resp)
+	} else {
+		rr = &ResultReader{
+			Err: err,
+		}
 	}
-	return err
+	return rr
 }
