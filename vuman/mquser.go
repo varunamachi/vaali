@@ -142,23 +142,21 @@ func setPasswordHash(conn *vdb.MongoConn, userID, hash string) (
 func ValidateUser(userID, password string) (err error) {
 	conn := vdb.DefaultMongoConn()
 	defer conn.Close()
+	secret := bson.M{}
+	err = conn.C("secret").
+		Find(bson.M{"userID": userID}).
+		Select(bson.M{"phash": 1, "_id": 0}).
+		One(&secret)
 	if err == nil {
-		secret := bson.M{}
-		err = conn.C("secret").
-			Find(bson.M{"userID": userID}).
-			Select(bson.M{"phash": 1, "_id": 0}).
-			One(&secret)
-		if err == nil {
-			storedHash, ok := secret["phash"].(string)
-			if ok {
-				var newHash string
-				newHash, err = passlib.Verify(password, storedHash)
-				if err == nil && newHash != "" {
-					err = setPasswordHash(conn, userID, newHash)
-				}
-			} else {
-				err = errors.New("Failed to varify password")
+		storedHash, ok := secret["phash"].(string)
+		if ok {
+			var newHash string
+			newHash, err = passlib.Verify(password, storedHash)
+			if err == nil && newHash != "" {
+				err = setPasswordHash(conn, userID, newHash)
 			}
+		} else {
+			err = errors.New("Failed to varify password")
 		}
 	}
 	return vlog.LogError("UMan:Mongo", err)
