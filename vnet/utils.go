@@ -84,6 +84,20 @@ func AuditedSend(ctx echo.Context, res *Result) (err error) {
 	return err
 }
 
+//AuditedSendSecret - Sends result to client and logs everything other than the
+//secret data field
+func AuditedSendSecret(ctx echo.Context, res *Result) (err error) {
+	err = ctx.JSON(res.Status, res)
+	vlog.LogEvent(
+		res.Op,
+		GetString(ctx, "userID"),
+		GetString(ctx, "userName"),
+		res.OK,
+		res.Err,
+		nil)
+	return err
+}
+
 //AuditedSendX - sends result as JSON while logging it as event. This method
 //logs event data which is seperate from result data
 func AuditedSendX(ctx echo.Context, data interface{}, res *Result) (err error) {
