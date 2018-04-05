@@ -63,8 +63,8 @@ type Param struct {
 	Name    string      `json:"name" bson:"name"`
 	Type    ParamType   `json:"type" bson:"type"`
 	Desc    string      `json:"desc" bson:"desc"`
-	Value   interface{} `json:"value" bson:"value"`
 	Range   Range       `json:"range" bson:"range"`
 	Choices []Pair      `json:"choices" bson:"choices"`
 	Default interface{} `json:"def" bson:"def"`
+	// Value   interface{} `json:"value" bson:"value"`
 }
