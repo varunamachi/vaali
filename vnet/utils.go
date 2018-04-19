@@ -6,8 +6,10 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo"
+	"github.com/varunamachi/vaali/vcmn"
 	"github.com/varunamachi/vaali/vlog"
 )
 
@@ -38,6 +40,18 @@ func GetOffsetLimit(ctx echo.Context) (offset, limit int, has bool) {
 	}
 	has = true
 	return
+}
+
+//GetDateRange - Retrieve date range from context, assuming that there exist 2
+//REST params with name from and to respectively
+func GetDateRange(ctx echo.Context) (dr vcmn.DateRange, err error) {
+	from := ctx.Param("from")
+	to := ctx.Param("to")
+	dr.From, err = time.Parse(time.RFC3339Nano, from)
+	if err == nil {
+		dr.To, err = time.Parse(time.RFC3339Nano, to)
+	}
+	return dr, err
 }
 
 //DefMS - gives default message and status, used for convenience
