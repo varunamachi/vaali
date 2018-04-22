@@ -82,7 +82,7 @@ func InitWithOptions(opts Options) {
 
 	//For checking token
 	in.Use(middleware.JWTWithConfig(middleware.JWTConfig{
-		SigningKey: getKey(),
+		SigningKey: GetJWTKey(),
 		ContextKey: "token",
 	}))
 

@@ -65,6 +65,7 @@ var accessPos = 0
 var rootPath = ""
 var authenticator Authenticator
 var authorizer Authorizer
+var jwtKey = ""
 
 //NoOpAuthenticator - authenticator that does not do anything
 func NoOpAuthenticator(params map[string]interface{}) (*vsec.User, error) {

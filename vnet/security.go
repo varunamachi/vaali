@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/satori/go.uuid"
+
 	"github.com/varunamachi/vaali/vcmn"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -14,15 +16,19 @@ import (
 	"github.com/varunamachi/vaali/vsec"
 )
 
+//GetJWTKey - gives a unique JWT key
+func GetJWTKey() string {
+	if len(jwtKey) == 0 {
+		jwtKey = uuid.NewV4().String()
+	}
+	return jwtKey
+}
+
 //JWTUserInfo - container for retrieving user information from JWT
 type JWTUserInfo struct {
 	UserID   string
 	UserName string
 	Role     vsec.AuthLevel
-}
-
-func getKey() []byte {
-	return []byte("valrrwwssffgsdgfksdjfghsdlgnsda")
 }
 
 func getAccessLevel(path string) (access vsec.AuthLevel, err error) {
@@ -120,7 +126,7 @@ func login(ctx echo.Context) (err error) {
 				claims["access"] = user.Auth
 				claims["userName"] = name
 				var signed string
-				signed, err = token.SignedString(getKey())
+				signed, err = token.SignedString(GetJWTKey())
 				if err == nil {
 					data = make(map[string]interface{})
 					data["token"] = signed
