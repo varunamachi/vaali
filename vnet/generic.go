@@ -39,7 +39,7 @@ func create(ctx echo.Context) (err error) {
 	}
 	AuditedSendX(ctx, &data, &Result{
 		Status: status,
-		Op:     "create_" + dtype,
+		Op:     dtype + "_create_",
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   nil,
@@ -73,7 +73,7 @@ func update(ctx echo.Context) (err error) {
 	}
 	AuditedSendX(ctx, &data, &Result{
 		Status: status,
-		Op:     "update_" + dtype,
+		Op:     dtype + "_update",
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   nil,
@@ -99,7 +99,7 @@ func delete(ctx echo.Context) (err error) {
 	}
 	err = AuditedSend(ctx, &Result{
 		Status: status,
-		Op:     "delete_" + dtype,
+		Op:     dtype + "_delete",
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   id,
@@ -129,7 +129,7 @@ func get(ctx echo.Context) (err error) {
 	}
 	err = SendAndAuditOnErr(ctx, &Result{
 		Status: status,
-		Op:     "get_" + dtype,
+		Op:     dtype + "_fetch",
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   data,
@@ -164,7 +164,7 @@ func getAll(ctx echo.Context) (err error) {
 	}
 	err = SendAndAuditOnErr(ctx, &Result{
 		Status: status,
-		Op:     "get_" + dtype,
+		Op:     dtype + "_fetch",
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   data,
@@ -198,7 +198,7 @@ func count(ctx echo.Context) (err error) {
 	}
 	err = SendAndAuditOnErr(ctx, &Result{
 		Status: status,
-		Op:     "get_" + dtype,
+		Op:     dtype + "_count",
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   count,
@@ -226,7 +226,7 @@ func getFilterValues(ctx echo.Context) (err error) {
 	}
 	err = SendAndAuditOnErr(ctx, &Result{
 		Status: status,
-		Op:     "get_" + dtype,
+		Op:     dtype + "_filter_fetch",
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   fdesc,

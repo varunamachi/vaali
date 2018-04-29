@@ -57,7 +57,7 @@ func getEvents(ctx echo.Context) (err error) {
 	}
 	err = vnet.SendAndAuditOnErr(ctx, &vnet.Result{
 		Status: status,
-		Op:     "fetch events",
+		Op:     "events_fetch",
 		Msg:    msg,
 		OK:     err == nil,
 		Data: vdb.CountList{
@@ -79,7 +79,7 @@ func getEventFilterModel(ctx echo.Context) (err error) {
 	}
 	err = vnet.SendAndAuditOnErr(ctx, &vnet.Result{
 		Status: status,
-		Op:     "event_filter_get",
+		Op:     "event_filter_fetch",
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   efm,
