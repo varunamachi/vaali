@@ -4,8 +4,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/varunamachi/vaali/vdb"
 	"github.com/varunamachi/vaali/vlog"
+	"github.com/varunamachi/vaali/vmgo"
 	"github.com/varunamachi/vaali/vsec"
 	passlib "gopkg.in/hlandau/passlib.v1"
 	mgo "gopkg.in/mgo.v2"
@@ -14,7 +14,7 @@ import (
 
 //CreateUser - creates user in database
 func CreateUser(user *vsec.User) (err error) {
-	conn := vdb.DefaultMongoConn()
+	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	// _, err = conn.C("users").Upsert(bson.M{"id": user.ID}, user)
 	err = conn.C("users").Insert(user)
@@ -23,7 +23,7 @@ func CreateUser(user *vsec.User) (err error) {
 
 //UpdateUser - updates user in database
 func UpdateUser(user *vsec.User) (err error) {
-	conn := vdb.DefaultMongoConn()
+	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C("users").Update(bson.M{"id": user.ID}, user)
 	return vlog.LogError("UMan:Mongo", err)
@@ -31,7 +31,7 @@ func UpdateUser(user *vsec.User) (err error) {
 
 //DeleteUser - deletes user with given user ID
 func DeleteUser(userID string) (err error) {
-	conn := vdb.DefaultMongoConn()
+	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C("users").Remove(bson.M{"id": userID})
 	return vlog.LogError("UMan:Mongo", err)
@@ -39,7 +39,7 @@ func DeleteUser(userID string) (err error) {
 
 //GetUser - gets details of the user corresponding to ID
 func GetUser(userID string) (user *vsec.User, err error) {
-	conn := vdb.DefaultMongoConn()
+	conn := vmgo.DefaultMongoConn()
 	user = &vsec.User{}
 	defer conn.Close()
 	err = conn.C("users").Find(bson.M{"id": userID}).One(user)
@@ -49,7 +49,7 @@ func GetUser(userID string) (user *vsec.User, err error) {
 //GetAllUsers - gets all users based on offset and limit
 func GetAllUsers(offset, limit int) (
 	total int, users []*vsec.User, err error) {
-	conn := vdb.DefaultMongoConn()
+	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	users = make([]*vsec.User, 0, limit)
 	q := conn.C("users").Find(bson.M{}).Sort("-created")
@@ -61,12 +61,12 @@ func GetAllUsers(offset, limit int) (
 }
 
 //GetUsers - gives a list of users based on their state
-func GetUsers(offset, limit int, filter *vdb.Filter) (
+func GetUsers(offset, limit int, filter *vmgo.Filter) (
 	total int, users []*vsec.User, err error) {
-	conn := vdb.DefaultMongoConn()
+	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	var selector bson.M
-	selector, err = vdb.GenerateSelector(filter)
+	selector, err = vmgo.GenerateSelector(filter)
 	if err == nil {
 		users = make([]*vsec.User, 0, limit)
 		q := conn.C("users").Find(selector).Sort("-created")
@@ -80,7 +80,7 @@ func GetUsers(offset, limit int, filter *vdb.Filter) (
 
 //ResetPassword - sets password of a unauthenticated user
 func ResetPassword(userID, oldPwd, newPwd string) (err error) {
-	conn := vdb.DefaultMongoConn()
+	conn := vmgo.DefaultMongoConn()
 	defer func() {
 		conn.Close()
 		vlog.LogError("UMan:Mongo", err)
@@ -116,14 +116,14 @@ func SetPassword(userID, newPwd string) (err error) {
 	var newHash string
 	newHash, err = passlib.Hash(newPwd)
 	if err == nil {
-		conn := vdb.DefaultMongoConn()
+		conn := vmgo.DefaultMongoConn()
 		defer conn.Close()
 		setPasswordHash(conn, userID, newHash)
 	}
 	return vlog.LogError("UMan:Mongo", err)
 }
 
-func setPasswordHash(conn *vdb.MongoConn, userID, hash string) (
+func setPasswordHash(conn *vmgo.MongoConn, userID, hash string) (
 	err error) {
 	_, err = conn.C("secret").Upsert(
 		bson.M{
@@ -140,7 +140,7 @@ func setPasswordHash(conn *vdb.MongoConn, userID, hash string) (
 
 //ValidateUser - validates user ID and password
 func ValidateUser(userID, password string) (err error) {
-	conn := vdb.DefaultMongoConn()
+	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	secret := bson.M{}
 	err = conn.C("secret").
@@ -164,7 +164,7 @@ func ValidateUser(userID, password string) (err error) {
 
 //GetUserAuthLevel - gets user authorization level
 func GetUserAuthLevel(userID string) (level vsec.AuthLevel, err error) {
-	conn := vdb.DefaultMongoConn()
+	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C("users").
 		Find(bson.M{"userID": userID}).
@@ -178,7 +178,7 @@ func CreateSuperUser(user *vsec.User, password string) (err error) {
 	defer func() {
 		vlog.LogError("UMan:Mongo", err)
 	}()
-	conn := vdb.DefaultMongoConn()
+	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	var count int
 	count, _ = conn.C("users").Find(bson.M{"auth": 0}).Count()
@@ -201,7 +201,7 @@ func CreateSuperUser(user *vsec.User, password string) (err error) {
 
 //SetUserState - sets state of an user account
 func SetUserState(userID string, state vsec.UserState) (err error) {
-	conn := vdb.DefaultMongoConn()
+	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C("users").Update(
 		bson.M{
@@ -218,7 +218,7 @@ func SetUserState(userID string, state vsec.UserState) (err error) {
 //VerifyUser - sets state of an user account to verified based on userID
 //and verification ID
 func VerifyUser(userID, verID string) (err error) {
-	conn := vdb.DefaultMongoConn()
+	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C("users").Update(
 		bson.M{
@@ -238,7 +238,7 @@ func VerifyUser(userID, verID string) (err error) {
 
 //CreateIndices - creates mongoDB indeces for tables used for user management
 func CreateIndices() (err error) {
-	conn := vdb.DefaultMongoConn()
+	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C("users").EnsureIndex(mgo.Index{
 		Key:        []string{"id", "varfnID"},
@@ -252,7 +252,7 @@ func CreateIndices() (err error) {
 
 //CleanData - cleans user management related data from database
 func CleanData() (err error) {
-	conn := vdb.DefaultMongoConn()
+	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	_, err = conn.C("users").RemoveAll(bson.M{})
 	return err

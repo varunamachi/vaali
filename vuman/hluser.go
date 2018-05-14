@@ -6,8 +6,7 @@ import (
 	"time"
 
 	"github.com/varunamachi/vaali/vcmn"
-
-	"github.com/varunamachi/vaali/vdb"
+	"github.com/varunamachi/vaali/vmgo"
 
 	"github.com/satori/go.uuid"
 	"gopkg.in/mgo.v2/bson"
@@ -215,7 +214,7 @@ func getUsers(ctx echo.Context) (err error) {
 	// us := vcmn.GetFirstValidStr(ctx.Param("status"), string(vsec.Active))
 	var users []*vsec.User
 	var total int
-	var filter vdb.Filter
+	var filter vmgo.Filter
 	err = vnet.LoadJSONFromArgs(ctx, "filter", &filter)
 	if has && err == nil {
 		total, users, err = GetUsers(offset, limit, &filter)
@@ -233,10 +232,10 @@ func getUsers(ctx echo.Context) (err error) {
 	}
 	err = vnet.SendAndAuditOnErr(ctx, &vnet.Result{
 		Status: status,
-		Op:     "multi_user_get",
+		Op:     "user_multi_fetch",
 		Msg:    msg,
 		OK:     err == nil,
-		Data: vdb.CountList{
+		Data: vmgo.CountList{
 			TotalCount: total,
 			Data:       users,
 		},
@@ -263,7 +262,7 @@ func setPassword(ctx echo.Context) (err error) {
 	}
 	err = vnet.AuditedSendX(ctx, vcmn.Hash(userID), &vnet.Result{
 		Status: status,
-		Op:     "password_set",
+		Op:     "user_password_set",
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   nil,
@@ -291,7 +290,7 @@ func resetPassword(ctx echo.Context) (err error) {
 	}
 	err = vnet.AuditedSendX(ctx, vcmn.Hash(userID), &vnet.Result{
 		Status: status,
-		Op:     "password_reset",
+		Op:     "user_password_reset",
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   nil,
@@ -354,7 +353,7 @@ func verify(ctx echo.Context) (err error) {
 	hash := vcmn.Hash(userID)
 	err = vnet.AuditedSendX(ctx, hash, &vnet.Result{
 		Status: status,
-		Op:     "verify_account",
+		Op:     "user_account_verify",
 		Msg:    msg,
 		OK:     err == nil,
 		Data: vlog.M{

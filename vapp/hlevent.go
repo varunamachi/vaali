@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/varunamachi/vaali/vcmn"
-	"github.com/varunamachi/vaali/vdb"
+	"github.com/varunamachi/vaali/vmgo"
 
 	"github.com/varunamachi/vaali/vlog"
 	"github.com/varunamachi/vaali/vsec"
@@ -40,7 +40,7 @@ func getEvents(ctx echo.Context) (err error) {
 	var events []*vlog.Event
 	var total int
 	offset, limit, has := vnet.GetOffsetLimit(ctx)
-	var filter vdb.Filter
+	var filter vmgo.Filter
 	err = vnet.LoadJSONFromArgs(ctx, "filter", &filter)
 	if err == nil && has {
 		total, events, err = GetEvents(offset, limit, &filter)
@@ -60,7 +60,7 @@ func getEvents(ctx echo.Context) (err error) {
 		Op:     "events_fetch",
 		Msg:    msg,
 		OK:     err == nil,
-		Data: vdb.CountList{
+		Data: vmgo.CountList{
 			TotalCount: total,
 			Data:       events,
 		},

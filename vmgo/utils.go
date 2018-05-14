@@ -1,4 +1,4 @@
-package vdb
+package vmgo
 
 import (
 	"gopkg.in/mgo.v2/bson"

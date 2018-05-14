@@ -1,4 +1,4 @@
-package vdb
+package vmgo
 
 import (
 	"bytes"

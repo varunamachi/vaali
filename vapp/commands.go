@@ -10,7 +10,7 @@ import (
 	"github.com/varunamachi/vaali/vuman"
 
 	"github.com/varunamachi/vaali/vcmn"
-	"github.com/varunamachi/vaali/vdb"
+	"github.com/varunamachi/vaali/vmgo"
 	"github.com/varunamachi/vaali/vnet"
 	"github.com/varunamachi/vaali/vsec"
 	"gopkg.in/mgo.v2/bson"
@@ -21,19 +21,19 @@ import (
 func GetCommands(app *App) []cli.Command {
 	if app.IsService {
 		return []cli.Command{
-			*vdb.MakeRequireMongo(serviceStartCmd()),
-			*vdb.MakeRequireMongo(createUserCmd()),
-			*vdb.MakeRequireMongo(setupCmd()),
-			*vdb.MakeRequireMongo(resetCmd()),
-			*vdb.MakeRequireMongo(overridePasswordCmd()),
+			*vmgo.MakeRequireMongo(serviceStartCmd()),
+			*vmgo.MakeRequireMongo(createUserCmd()),
+			*vmgo.MakeRequireMongo(setupCmd()),
+			*vmgo.MakeRequireMongo(resetCmd()),
+			*vmgo.MakeRequireMongo(overridePasswordCmd()),
 			*testEMail(),
 		}
 	}
 	return []cli.Command{
-		*vdb.MakeRequireMongo(createUserCmd()),
-		*vdb.MakeRequireMongo(setupCmd()),
-		*vdb.MakeRequireMongo(resetCmd()),
-		*vdb.MakeRequireMongo(overridePasswordCmd()),
+		*vmgo.MakeRequireMongo(createUserCmd()),
+		*vmgo.MakeRequireMongo(setupCmd()),
+		*vmgo.MakeRequireMongo(resetCmd()),
+		*vmgo.MakeRequireMongo(overridePasswordCmd()),
 		*testEMail(),
 	}
 }

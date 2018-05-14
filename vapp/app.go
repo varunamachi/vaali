@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/varunamachi/vaali/vdb"
+	"github.com/varunamachi/vaali/vmgo"
 
 	"github.com/varunamachi/vaali/vcmn"
 	"github.com/varunamachi/vaali/vlog"
@@ -65,7 +65,7 @@ func (app *App) Exec(args []string) (err error) {
 		}
 		if module.Factories != nil {
 			for _, fc := range module.Factories {
-				vdb.RegisterFactory(fc.DataType, fc.Func)
+				vmgo.RegisterFactory(fc.DataType, fc.Func)
 			}
 		}
 		if app.IsService {

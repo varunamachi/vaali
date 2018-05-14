@@ -10,19 +10,19 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/varunamachi/vaali/vcmn"
-	"github.com/varunamachi/vaali/vdb"
 	"github.com/varunamachi/vaali/vlog"
+	"github.com/varunamachi/vaali/vmgo"
 )
 
 func create(ctx echo.Context) (err error) {
 	dtype := ctx.Param("dataType")
 	status, msg := DefaultSM("Create", dtype)
-	var data vdb.StoredItem
+	var data vmgo.StoredItem
 	if len(dtype) != 0 {
 		data, err = bind(ctx, dtype)
 		if err == nil {
 			data.SetCreationInfo(time.Now(), GetString(ctx, "userID"))
-			err = vdb.Create(dtype, data)
+			err = vmgo.Create(dtype, data)
 			if err != nil {
 				msg = fmt.Sprintf("Failed to create %s in database", dtype)
 				status = http.StatusInternalServerError
@@ -51,12 +51,12 @@ func create(ctx echo.Context) (err error) {
 func update(ctx echo.Context) (err error) {
 	dtype := ctx.Param("dataType")
 	status, msg := DefaultSM("Update", dtype)
-	var data vdb.StoredItem
+	var data vmgo.StoredItem
 	if len(dtype) != 0 {
 		data, err = bind(ctx, dtype)
 		if err == nil {
 			data.SetModInfo(time.Now(), GetString(ctx, "userID"))
-			err = vdb.Update(dtype, bson.M{"_id": data.ID()}, data)
+			err = vmgo.Update(dtype, bson.M{"_id": data.ID()}, data)
 			if err != nil {
 				msg = fmt.Sprintf("Failed to update %s in database", dtype)
 				status = http.StatusInternalServerError
@@ -87,7 +87,7 @@ func delete(ctx echo.Context) (err error) {
 	status, msg := DefaultSM("Delete", dtype)
 	id := ctx.Param("id")
 	if len(dtype) != 0 {
-		err = vdb.Delete(dtype, bson.M{"_id": bson.ObjectId(id)})
+		err = vmgo.Delete(dtype, bson.M{"_id": bson.ObjectId(id)})
 		if err != nil {
 			msg = fmt.Sprintf("Failed to delete %s from database", dtype)
 			status = http.StatusInternalServerError
@@ -114,7 +114,7 @@ func get(ctx echo.Context) (err error) {
 	data := M{}
 	id := ctx.Param("id")
 	if len(dtype) != 0 {
-		err = vdb.Get(dtype, bson.M{"_id": bson.ObjectId(id)}, &data)
+		err = vmgo.Get(dtype, bson.M{"_id": bson.ObjectId(id)}, &data)
 		if err != nil {
 			msg = fmt.Sprintf(
 				"Failed to retrieve %s from database, entity with ID %s",
@@ -144,11 +144,11 @@ func getAll(ctx echo.Context) (err error) {
 	var data []*M
 	if len(dtype) != 0 {
 		offset, limit, has := GetOffsetLimit(ctx)
-		var filter vdb.Filter
+		var filter vmgo.Filter
 		err = LoadJSONFromArgs(ctx, "filter", &filter)
 		if has && err == nil {
 			data = make([]*M, 0, limit)
-			err = vdb.GetAll(dtype, "-createdAt", offset, limit, &filter, data)
+			err = vmgo.GetAll(dtype, "-createdAt", offset, limit, &filter, data)
 			if err != nil {
 				msg = fmt.Sprintf("Failed to retrieve %s from database", dtype)
 				status = http.StatusInternalServerError
@@ -180,9 +180,9 @@ func count(ctx echo.Context) (err error) {
 	count := 0
 	if len(dtype) != 0 {
 		if err == nil {
-			var filter vdb.Filter
+			var filter vmgo.Filter
 			err = LoadJSONFromArgs(ctx, "filter", &filter)
-			count, err = vdb.Count(dtype, &filter)
+			count, err = vmgo.Count(dtype, &filter)
 			if err != nil {
 				msg = fmt.Sprintf("Failed to retrieve %s from database", dtype)
 				status = http.StatusInternalServerError
@@ -210,11 +210,11 @@ func count(ctx echo.Context) (err error) {
 func getFilterValues(ctx echo.Context) (err error) {
 	dtype := ctx.Param("dataType")
 	status, msg := DefaultSM("Filter Values of", dtype)
-	var fdesc []*vdb.FilterDesc
+	var fdesc []*vmgo.FilterDesc
 	if len(dtype) != 0 {
 		err = LoadJSONFromArgs(ctx, "fdesc", &fdesc)
 		if err == nil {
-			fdesc = vdb.FillFilterValues(dtype, fdesc)
+			fdesc = vmgo.FillFilterValues(dtype, fdesc)
 		} else {
 			msg = "Failed to load filter description from URL"
 			status = http.StatusBadRequest
@@ -236,8 +236,8 @@ func getFilterValues(ctx echo.Context) (err error) {
 }
 
 func bind(ctx echo.Context, dataType string) (
-	data vdb.StoredItem, err error) {
-	data = vdb.Instance(dataType)
+	data vmgo.StoredItem, err error) {
+	data = vmgo.Instance(dataType)
 	if data == nil {
 		err = ctx.Bind(data)
 	} else {
