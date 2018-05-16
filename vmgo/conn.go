@@ -8,20 +8,6 @@ import (
 	mgo "gopkg.in/mgo.v2"
 )
 
-//MongoConnOpts - options for connecting to a mongodb instance
-type MongoConnOpts struct {
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	User     string `json:"user"`
-	Password string `json:"password"`
-}
-
-//store - holds mongodb connection handle and information
-type store struct {
-	session *mgo.Session
-	opts    []*MongoConnOpts
-}
-
 //MongoConn - represents a mongdb connection
 type MongoConn struct {
 	*mgo.Database

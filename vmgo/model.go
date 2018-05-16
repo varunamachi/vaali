@@ -3,10 +3,25 @@ package vmgo
 import (
 	"time"
 
+	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/varunamachi/vaali/vcmn"
 )
+
+//MongoConnOpts - options for connecting to a mongodb instance
+type MongoConnOpts struct {
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
+	User     string `json:"user"`
+	Password string `json:"password"`
+}
+
+//store - holds mongodb connection handle and information
+type store struct {
+	session *mgo.Session
+	opts    []*MongoConnOpts
+}
 
 //ArrayMatcher - matches elements of an array. If MatchAll set to true all
 //the elements of the Tags array needs to be matched, otherwise only one element
@@ -17,12 +32,20 @@ type ArrayMatcher struct {
 	Tags     []string `json:"tags" bson:"tags"`
 }
 
+//SearchField - contains search string and info for performing the search
+type SearchField struct {
+	MatchAll  bool   `json:"matchAll" bson:"matchAll"`
+	Regex     bool   `json:"regex" bson:"regex"`
+	SearchStr string `json:"searchStr" bson:"searchStr"`
+}
+
 //Filter - generic filter used to filter data in any mongodb collection
 type Filter struct {
 	Fields     map[string][]interface{}  `json:"fields" bson:"fields"`
 	BoolFields map[string]bool           `json:"boolFields" bson:"boolFields"`
 	Dates      map[string]vcmn.DateRange `json:"dates" bson:"dates"`
 	Lists      map[string]ArrayMatcher   `json:"lists" bson:"lists"`
+	Searches   map[string]SearchField    `json:"searches" bson:"searches"`
 }
 
 //CountList - paginated list returned from mongoDB along with total number of
@@ -46,6 +69,9 @@ const Date FilterType = "dateRange"
 
 //Boolean - filter for boolean field
 const Boolean FilterType = "boolean"
+
+//Search - filter for search text field
+const Search FilterType = "search"
 
 //FilterDesc - possible values for filters
 type FilterDesc struct {
