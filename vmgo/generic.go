@@ -73,38 +73,104 @@ func Count(dtype string, filter *Filter) (count int, err error) {
 
 //FillFilterValues - Fills given filter descriptors with possible values when
 //possible for a data type
-func FillFilterValues(dtype string, fds []*FilterDesc) (
-	out []*FilterDesc) {
-	conn := DefaultMongoConn()
-	defer conn.Close()
-	for _, fdesc := range fds {
-		switch fdesc.Type {
-		case Value:
-			fallthrough
-		case Array:
-			sdata := make([]string, 0, 100)
-			e := conn.C(dtype).Find(nil).Distinct(fdesc.Name, sdata)
-			fdesc.Data = sdata
-			vlog.LogError("DB:Mongo", e)
-		case Date:
-			var dr DateRange
-			e := conn.C(dtype).Pipe([]bson.M{
-				bson.M{
-					"$group": bson.M{
-						"_id": bson.M{},
-						"from": bson.M{
-							"$min": fdesc.Name,
-						},
-						"to": bson.M{
-							"$max": fdesc.Name,
-						},
-					},
-				},
-			}).One(&dr)
-			fdesc.Data = &dr
-			vlog.LogError("DB:Mongo", e)
+// func FillFilterValues(dtype string, fds []*FilterSpec) (
+// 	out []*FilterSpec) {
+// 	conn := DefaultMongoConn()
+// 	defer conn.Close()
+// 	for _, fdesc := range fds {
+// 		switch fdesc.Type {
+// 		case Value:
+// 			fallthrough
+// 		case Array:
+// 			sdata := make([]string, 0, 100)
+// 			e := conn.C(dtype).Find(nil).Distinct(fdesc.Name, sdata)
+// 			fdesc.Data = sdata
+// 			vlog.LogError("DB:Mongo", e)
+// 		case Date:
+// 			var dr DateRange
+// 			e := conn.C(dtype).Pipe([]bson.M{
+// 				bson.M{
+// 					"$group": bson.M{
+// 						"_id": bson.M{},
+// 						"from": bson.M{
+// 							"$min": fdesc.Name,
+// 						},
+// 						"to": bson.M{
+// 							"$max": fdesc.Name,
+// 						},
+// 					},
+// 				},
+// 			}).One(&dr)
+// 			fdesc.Data = &dr
+// 			vlog.LogError("DB:Mongo", e)
+// 		}
+// 	}
+// 	out = fds
+// 	return out
+// }
+
+//GenerateSelector - creates mongodb query for a generic filter
+func GenerateSelector(filter *Filter) (selector bson.M, err error) {
+	queries := make([]bson.M, 0, 100)
+	for key, values := range filter.Props {
+		if len(values) == 1 {
+			queries = append(queries, bson.M{key: values[0]})
+		} else if len(values) > 1 {
+			orProps := make([]bson.M, 0, len(values))
+			for _, val := range values {
+				orProps = append(orProps, bson.M{key: val})
+			}
+			queries = append(queries, bson.M{"$or": orProps})
 		}
 	}
-	out = fds
-	return out
+	for field, val := range filter.Bools {
+		queries = append(queries, bson.M{field: val})
+	}
+	for field, dateRange := range filter.Dates {
+		if dateRange.IsValid() {
+			queries = append(queries,
+				bson.M{
+					field: bson.M{
+						"$gte": dateRange.From,
+						"$lte": dateRange.To,
+					},
+				},
+			)
+		}
+	}
+	for field, matcher := range filter.Lists {
+		if len(matcher.Tags) != 0 {
+			mode := "$in"
+			if matcher.MatchAll {
+				mode = "$all"
+			}
+			queries = append(queries, bson.M{
+				field: bson.M{
+					mode: matcher.Tags,
+				},
+			})
+		}
+	}
+	if len(queries) != 0 {
+		selector = bson.M{
+			"$and": queries,
+		}
+	}
+	return selector, err
+}
+
+//GetFilterValues - provides values associated the fields defined in filter spec
+func GetFilterValues(
+	dtype string,
+	specs FilterSpecList) (values bson.M, err error) {
+	for _, spec := range specs {
+		switch spec.Type {
+		case Prop:
+		case Array:
+		case Date:
+		case Boolean:
+		case Search:
+		}
+	}
+	return values, vlog.LogError("DB:Mongo", err)
 }

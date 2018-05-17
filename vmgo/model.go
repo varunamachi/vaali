@@ -23,6 +23,38 @@ type store struct {
 	opts    []*MongoConnOpts
 }
 
+//CountList - paginated list returned from mongoDB along with total number of
+//items in the list counted without pagination
+type CountList struct {
+	TotalCount int         `json:"total" bson:"total"`
+	Data       interface{} `json:"data" bson:"data"`
+}
+
+//FilterType - Type of filter item
+type FilterType string
+
+//Prop - filter for a value
+const Prop FilterType = "prop"
+
+//Array - filter for an array
+const Array FilterType = "array'"
+
+//Date - filter for data range
+const Date FilterType = "dateRange"
+
+//Boolean - filter for boolean field
+const Boolean FilterType = "boolean"
+
+//Search - filter for search text field
+const Search FilterType = "search"
+
+//FilterSpec - filter specification
+type FilterSpec struct {
+	Field string     `json:"field" bson:"field"`
+	Name  string     `json:"field" bson:"field"`
+	Type  FilterType `json:"field" bson:"field"`
+}
+
 //ArrayMatcher - matches elements of an array. If MatchAll set to true all
 //the elements of the Tags array needs to be matched, otherwise only one element
 //needs to match (minimum)
@@ -41,44 +73,11 @@ type SearchField struct {
 
 //Filter - generic filter used to filter data in any mongodb collection
 type Filter struct {
-	Fields     map[string][]interface{}  `json:"fields" bson:"fields"`
-	BoolFields map[string]bool           `json:"boolFields" bson:"boolFields"`
-	Dates      map[string]vcmn.DateRange `json:"dates" bson:"dates"`
-	Lists      map[string]ArrayMatcher   `json:"lists" bson:"lists"`
-	Searches   map[string]SearchField    `json:"searches" bson:"searches"`
-}
-
-//CountList - paginated list returned from mongoDB along with total number of
-//items in the list counted without pagination
-type CountList struct {
-	TotalCount int         `json:"total" bson:"total"`
-	Data       interface{} `json:"data" bson:"data"`
-}
-
-//FilterType - Type of filter item
-type FilterType string
-
-//Value - filter for a value
-const Value FilterType = "value"
-
-//Array - filter for an array
-const Array FilterType = "array'"
-
-//Date - filter for data range
-const Date FilterType = "dateRange"
-
-//Boolean - filter for boolean field
-const Boolean FilterType = "boolean"
-
-//Search - filter for search text field
-const Search FilterType = "search"
-
-//FilterDesc - possible values for filters
-type FilterDesc struct {
-	Field string      `json:"field" bson:"field"`
-	Name  string      `json:"field" bson:"field"`
-	Type  FilterType  `json:"field" bson:"field"`
-	Data  interface{} `json:"data" bson:"data"`
+	Props    map[string][]interface{}  `json:"props" bson:"props"`
+	Bools    map[string]bool           `json:"bools" bson:"bools"`
+	Dates    map[string]vcmn.DateRange `json:"dates" bson:"dates"`
+	Lists    map[string]ArrayMatcher   `json:"lists" bson:"lists"`
+	Searches map[string]SearchField    `json:"searches" bson:"searches"`
 }
 
 //DateRange - represents a date range
@@ -96,6 +95,9 @@ type StoredItem interface {
 	SetCreationInfo(at time.Time, by string)
 	SetModInfo(at time.Time, by string)
 }
+
+//FilterSpecList - alias for array of filter specs
+type FilterSpecList []*FilterSpec
 
 //FactoryFunc - Function for creating an instance of data type
 type FactoryFunc func() StoredItem
