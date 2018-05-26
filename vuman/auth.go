@@ -11,6 +11,13 @@ import (
 	"github.com/varunamachi/vaali/vsec"
 )
 
+var storage vsec.UserStorage
+
+//SetStorageStrategy - sets user storage strategy
+func SetStorageStrategy(srg vsec.UserStorage) {
+	storage = srg
+}
+
 func getUserIDPassword(params map[string]interface{}) (
 	userID string, password string, err error) {
 	var aok, bok bool
@@ -33,9 +40,9 @@ func MongoAuthenticator(params map[string]interface{}) (
 	var userID, password string
 	userID, password, err = getUserIDPassword(params)
 	if err == nil {
-		err = ValidateUser(userID, password)
+		err = storage.ValidateUser(userID, password)
 		if err == nil {
-			user, err = GetUser(userID)
+			user, err = storage.GetUser(userID)
 		}
 	}
 	return user, vlog.LogError("UMan:Auth", err)

@@ -3,6 +3,7 @@ package vsec
 import (
 	"time"
 
+	"github.com/varunamachi/vaali/vmgo"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -80,4 +81,56 @@ func (a AuthLevel) String() string {
 
 	}
 	return "Unknown"
+}
+
+//UserStorage - interface representing strategy to store and manage user
+//information
+type UserStorage interface {
+	//CreateUser - creates user in database
+	CreateUser(user *User) (err error)
+
+	//UpdateUser - updates user in database
+	UpdateUser(user *User) (err error)
+
+	//DeleteUser - deletes user with given user ID
+	DeleteUser(userID string) (err error)
+
+	//GetUser - gets details of the user corresponding to ID
+	GetUser(userID string) (user *User, err error)
+
+	//GetAllUsers - gets all users based on offset and limit
+	GetAllUsers(offset, limit int) (total int, users []*User, err error)
+
+	//GetUsers - gives a list of users based on their state
+	GetUsers(offset, limit int, filter *vmgo.Filter) (
+		total int, users []*User, err error)
+
+	//ResetPassword - sets password of a unauthenticated user
+	ResetPassword(userID, oldPwd, newPwd string) (err error)
+
+	//SetPassword - sets password of a already authenticated user, old password
+	//is not required
+	SetPassword(userID, newPwd string) (err error)
+
+	//ValidateUser - validates user ID and password
+	ValidateUser(userID, password string) (err error)
+
+	//GetUserAuthLevel - gets user authorization level
+	GetUserAuthLevel(userID string) (level AuthLevel, err error)
+
+	//CreateSuperUser - creates the first super user for the application
+	CreateSuperUser(user *User, password string) (err error)
+
+	//SetUserState - sets state of an user account
+	SetUserState(userID string, state UserState) (err error)
+
+	//VerifyUser - sets state of an user account to verified based on userID
+	//and verification ID
+	VerifyUser(userID, verID string) (err error)
+
+	//CreateIndices - creates mongoDB indeces for tables used for user management
+	CreateIndices() (err error)
+
+	//CleanData - cleans user management related data from database
+	CleanData() (err error)
 }

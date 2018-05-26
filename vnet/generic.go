@@ -210,11 +210,12 @@ func count(ctx echo.Context) (err error) {
 func getFilterValues(ctx echo.Context) (err error) {
 	dtype := ctx.Param("dataType")
 	status, msg := DefaultSM("Filter Values of", dtype)
-	var fdesc []*vmgo.FilterDesc
+	var fdesc []*vmgo.FilterSpec
+	var values bson.M
 	if len(dtype) != 0 {
 		err = LoadJSONFromArgs(ctx, "fdesc", &fdesc)
 		if err == nil {
-			fdesc = vmgo.FillFilterValues(dtype, fdesc)
+			values, err = vmgo.GetFilterValues(dtype, fdesc)
 		} else {
 			msg = "Failed to load filter description from URL"
 			status = http.StatusBadRequest
@@ -229,7 +230,7 @@ func getFilterValues(ctx echo.Context) (err error) {
 		Op:     dtype + "_filter_fetch",
 		Msg:    msg,
 		OK:     err == nil,
-		Data:   fdesc,
+		Data:   values,
 		Err:    vcmn.ErrString(err),
 	})
 	return vlog.LogError("S:Entity", err)

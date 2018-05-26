@@ -1,4 +1,4 @@
-package vapp
+package vevt
 
 import (
 	"errors"

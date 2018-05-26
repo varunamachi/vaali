@@ -1,12 +1,7 @@
 package vlog
 
-import "time"
-
 //Level - gives log level
 type Level int
-
-//AuditFunc - takes a Event decriptor and writes to a sync
-type AuditFunc func(event *Event)
 
 //M - map of string to interface for representing event data
 type M map[string]interface{}
@@ -61,28 +56,15 @@ type Logger interface {
 	GetWriter(uniqueID string) (writer Writer)
 }
 
-//Event - represents a event initiated by a user while performing an operation
-type Event struct {
-	Op       string      `json:"op" bson:"op"`
-	UserID   string      `json:"userID" bson:"userID"`
-	UserName string      `json:"userName" bson:"userName"`
-	Success  bool        `json:"success" bson:"success"`
-	Error    string      `json:"error" bson:"error"`
-	Time     time.Time   `json:"time" bson:"time"`
-	Data     interface{} `json:"data" bson:"data"`
-}
-
 //LoggerConfig - configuration that is used to initialize the logger
 type LoggerConfig struct {
 	Logger      Logger
 	LogConsole  bool
 	FilterLevel Level
-	EventLogger AuditFunc
 }
 
 var lconf = LoggerConfig{
 	Logger:      NewDirectLogger(),
 	LogConsole:  false,
 	FilterLevel: InfoLevel,
-	EventLogger: defaultAuditor,
 }

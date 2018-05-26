@@ -1,6 +1,7 @@
 package vmgo
 
 import (
+	"github.com/varunamachi/vaali/vcmn"
 	"github.com/varunamachi/vaali/vlog"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -163,11 +164,32 @@ func GenerateSelector(filter *Filter) (selector bson.M, err error) {
 func GetFilterValues(
 	dtype string,
 	specs FilterSpecList) (values bson.M, err error) {
+	conn := DefaultMongoConn()
+	defer conn.Close()
+	values = bson.M{}
 	for _, spec := range specs {
 		switch spec.Type {
 		case Prop:
+			fallthrough
 		case Array:
+			out := bson.M{}
+			conn.C(dtype).Find(nil).Distinct(spec.Field, &out)
+			values[spec.Field] = out
 		case Date:
+			var drange vcmn.DateRange
+			conn.C(dtype).Pipe([]bson.M{
+				bson.M{
+					"$group": bson.M{
+						"_id": nil,
+						"from": bson.M{
+							"$max": spec.Field,
+						},
+						"to": bson.M{
+							"$min": spec.Field,
+						},
+					},
+				},
+			}).One(&drange)
 		case Boolean:
 		case Search:
 		}

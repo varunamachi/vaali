@@ -45,7 +45,7 @@ func createUser(ctx echo.Context) (err error) {
 			"admin-created": true,
 		}
 		updateUserInfo(&user)
-		err = CreateUser(&user)
+		err = storage.CreateUser(&user)
 		if err != nil {
 			msg = "Failed to create user in database"
 			status = http.StatusInternalServerError
@@ -83,13 +83,13 @@ func registerUser(ctx echo.Context) (err error) {
 	if err == nil {
 		upw.User.Auth = vsec.Normal
 		updateUserInfo(&upw.User)
-		err = CreateUser(&upw.User)
+		err = storage.CreateUser(&upw.User)
 		if err != nil {
 			msg = "Failed to register user in database"
 			status = http.StatusInternalServerError
 		} else {
 
-			err = SetPassword(upw.User.ID, upw.Password)
+			err = storage.SetPassword(upw.User.ID, upw.Password)
 			if err != nil {
 				msg = "Failed to set password"
 				status = http.StatusInternalServerError
@@ -123,7 +123,7 @@ func updateUser(ctx echo.Context) (err error) {
 	var user vsec.User
 	err = ctx.Bind(&user)
 	if err == nil {
-		err = UpdateUser(&user)
+		err = storage.UpdateUser(&user)
 		if err != nil {
 			msg = "Failed to update user in database"
 			status = http.StatusInternalServerError
@@ -147,7 +147,7 @@ func deleteUser(ctx echo.Context) (err error) {
 	status, msg := vnet.DefMS("Delete User")
 	userID := ctx.Param("userID")
 	var user *vsec.User
-	user, err = GetUser(userID)
+	user, err = storage.GetUser(userID)
 	if err == nil {
 		curID := vnet.GetString(ctx, "userID")
 		if userID == curID {
@@ -158,7 +158,7 @@ func deleteUser(ctx echo.Context) (err error) {
 			status = http.StatusBadRequest
 			err = errors.New(msg)
 		} else {
-			err = DeleteUser(userID)
+			err = storage.DeleteUser(userID)
 			if err != nil {
 				msg = "Failed to delete user from database"
 				status = http.StatusInternalServerError
@@ -188,7 +188,7 @@ func getUser(ctx echo.Context) (err error) {
 	userID := ctx.Param("userID")
 	var user *vsec.User
 	if len(userID) == 0 {
-		user, err = GetUser(userID)
+		user, err = storage.GetUser(userID)
 		if err != nil {
 			msg = "Failed to retrieve user info from database"
 			status = http.StatusInternalServerError
@@ -217,7 +217,7 @@ func getUsers(ctx echo.Context) (err error) {
 	var filter vmgo.Filter
 	err = vnet.LoadJSONFromArgs(ctx, "filter", &filter)
 	if has && err == nil {
-		total, users, err = GetUsers(offset, limit, &filter)
+		total, users, err = storage.GetUsers(offset, limit, &filter)
 		if err != nil {
 			msg = "Failed to retrieve user info from database"
 			status = http.StatusInternalServerError
@@ -251,7 +251,7 @@ func setPassword(ctx echo.Context) (err error) {
 	userID, ok1 := pinfo["userID"]
 	password, ok2 := pinfo["password"]
 	if err == nil && ok1 && ok2 {
-		err = SetPassword(userID, password)
+		err = storage.SetPassword(userID, password)
 		if err != nil {
 			msg = "Failed to set password in database"
 			status = http.StatusInternalServerError
@@ -279,7 +279,7 @@ func resetPassword(ctx echo.Context) (err error) {
 	oldPassword, ok2 := pinfo["oldPassword"]
 	newPassword, ok3 := pinfo["newPassword"]
 	if err == nil && ok2 && ok3 && len(userID) != 0 {
-		err = ResetPassword(userID, oldPassword, newPassword)
+		err = storage.ResetPassword(userID, oldPassword, newPassword)
 		if err != nil {
 			msg = "Failed to reset password in database"
 			status = http.StatusInternalServerError
@@ -334,9 +334,9 @@ func verify(ctx echo.Context) (err error) {
 	verID := ctx.Param("verID")
 	err = ctx.Bind(&params)
 	if len(userID) > 0 && len(verID) > 0 && err == nil {
-		err = VerifyUser(userID, verID)
+		err = storage.VerifyUser(userID, verID)
 		if err == nil {
-			err = SetPassword(userID, params["password"])
+			err = storage.SetPassword(userID, params["password"])
 			if err != nil {
 				msg = "Failed to set password"
 				status = http.StatusInternalServerError

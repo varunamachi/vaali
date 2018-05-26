@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/varunamachi/vaali/vsec"
+
 	"github.com/varunamachi/vaali/vmgo"
 
 	"github.com/varunamachi/vaali/vcmn"
@@ -15,15 +17,6 @@ import (
 	"github.com/varunamachi/vaali/vuman"
 	cli "gopkg.in/urfave/cli.v1"
 )
-
-//App - the application itself
-type App struct {
-	cli.App
-	Modules       []*Module    `json:"modules"`
-	NetOptions    vnet.Options `json:"netOptions"`
-	IsService     bool         `json:"isService"`
-	RequiresMongo bool         `json:"requiresMongo"`
-}
 
 //FromAppDir - gives a absolute path from a path relative to
 //app directory
@@ -85,15 +78,24 @@ func NewWebApp(
 	appVersion vcmn.Version,
 	apiVersion string,
 	authors []cli.Author,
-	desc string) (app *App) {
+	requiresMongo bool, desc string) (app *App) {
+	var store vsec.UserStorage
+	authr := vuman.MongoAuthenticator
+	audtr := MongoAuditor
+	store = &vuman.MongoStorage{}
+	if !requiresMongo {
+		store = &vuman.PGStorage{}
+	}
 	vlog.InitWithOptions(vlog.LoggerConfig{
 		Logger:      vlog.NewDirectLogger(),
 		LogConsole:  true,
 		FilterLevel: vlog.TraceLevel,
-		EventLogger: MongoAuditor,
+		EventLogger: audtr,
 	})
+
 	vcmn.LoadConfig(name)
 	app = &App{
+		UserStorage:   store,
 		IsService:     true,
 		RequiresMongo: true,
 		App: cli.App{
@@ -108,7 +110,7 @@ func NewWebApp(
 		NetOptions: vnet.Options{
 			RootName:      name,
 			APIVersion:    apiVersion,
-			Authenticator: vuman.MongoAuthenticator,
+			Authenticator: authr,
 			Authorizer:    nil,
 		},
 		Modules: make([]*Module, 0, 10),

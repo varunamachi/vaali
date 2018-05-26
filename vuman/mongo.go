@@ -12,8 +12,11 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+//MongoStorage - mongodb storage for user information
+type MongoStorage struct{}
+
 //CreateUser - creates user in database
-func CreateUser(user *vsec.User) (err error) {
+func (m *MongoStorage) CreateUser(user *vsec.User) (err error) {
 	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	// _, err = conn.C("users").Upsert(bson.M{"id": user.ID}, user)
@@ -22,7 +25,7 @@ func CreateUser(user *vsec.User) (err error) {
 }
 
 //UpdateUser - updates user in database
-func UpdateUser(user *vsec.User) (err error) {
+func (m *MongoStorage) UpdateUser(user *vsec.User) (err error) {
 	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C("users").Update(bson.M{"id": user.ID}, user)
@@ -30,7 +33,7 @@ func UpdateUser(user *vsec.User) (err error) {
 }
 
 //DeleteUser - deletes user with given user ID
-func DeleteUser(userID string) (err error) {
+func (m *MongoStorage) DeleteUser(userID string) (err error) {
 	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C("users").Remove(bson.M{"id": userID})
@@ -38,7 +41,7 @@ func DeleteUser(userID string) (err error) {
 }
 
 //GetUser - gets details of the user corresponding to ID
-func GetUser(userID string) (user *vsec.User, err error) {
+func (m *MongoStorage) GetUser(userID string) (user *vsec.User, err error) {
 	conn := vmgo.DefaultMongoConn()
 	user = &vsec.User{}
 	defer conn.Close()
@@ -47,7 +50,7 @@ func GetUser(userID string) (user *vsec.User, err error) {
 }
 
 //GetAllUsers - gets all users based on offset and limit
-func GetAllUsers(offset, limit int) (
+func (m *MongoStorage) GetAllUsers(offset, limit int) (
 	total int, users []*vsec.User, err error) {
 	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
@@ -61,7 +64,8 @@ func GetAllUsers(offset, limit int) (
 }
 
 //GetUsers - gives a list of users based on their state
-func GetUsers(offset, limit int, filter *vmgo.Filter) (
+func (m *MongoStorage) GetUsers(
+	offset, limit int, filter *vmgo.Filter) (
 	total int, users []*vsec.User, err error) {
 	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
@@ -79,7 +83,8 @@ func GetUsers(offset, limit int, filter *vmgo.Filter) (
 }
 
 //ResetPassword - sets password of a unauthenticated user
-func ResetPassword(userID, oldPwd, newPwd string) (err error) {
+func (m *MongoStorage) ResetPassword(
+	userID, oldPwd, newPwd string) (err error) {
 	conn := vmgo.DefaultMongoConn()
 	defer func() {
 		conn.Close()
@@ -93,7 +98,7 @@ func ResetPassword(userID, oldPwd, newPwd string) (err error) {
 	if err != nil {
 		return err
 	}
-	if err = ValidateUser(userID, oldPwd); err != nil {
+	if err = m.ValidateUser(userID, oldPwd); err != nil {
 		err = errors.New("Could not match old password")
 		return err
 	}
@@ -112,19 +117,19 @@ func ResetPassword(userID, oldPwd, newPwd string) (err error) {
 
 //SetPassword - sets password of a already authenticated user, old password
 //is not required
-func SetPassword(userID, newPwd string) (err error) {
+func (m *MongoStorage) SetPassword(userID, newPwd string) (err error) {
 	var newHash string
 	newHash, err = passlib.Hash(newPwd)
 	if err == nil {
 		conn := vmgo.DefaultMongoConn()
 		defer conn.Close()
-		setPasswordHash(conn, userID, newHash)
+		m.setPasswordHash(conn, userID, newHash)
 	}
 	return vlog.LogError("UMan:Mongo", err)
 }
 
-func setPasswordHash(conn *vmgo.MongoConn, userID, hash string) (
-	err error) {
+func (m *MongoStorage) setPasswordHash(conn *vmgo.MongoConn,
+	userID, hash string) (err error) {
 	_, err = conn.C("secret").Upsert(
 		bson.M{
 			"userID": userID,
@@ -139,7 +144,7 @@ func setPasswordHash(conn *vmgo.MongoConn, userID, hash string) (
 }
 
 //ValidateUser - validates user ID and password
-func ValidateUser(userID, password string) (err error) {
+func (m *MongoStorage) ValidateUser(userID, password string) (err error) {
 	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	secret := bson.M{}
@@ -153,7 +158,7 @@ func ValidateUser(userID, password string) (err error) {
 			var newHash string
 			newHash, err = passlib.Verify(password, storedHash)
 			if err == nil && newHash != "" {
-				err = setPasswordHash(conn, userID, newHash)
+				err = m.setPasswordHash(conn, userID, newHash)
 			}
 		} else {
 			err = errors.New("Failed to varify password")
@@ -163,7 +168,8 @@ func ValidateUser(userID, password string) (err error) {
 }
 
 //GetUserAuthLevel - gets user authorization level
-func GetUserAuthLevel(userID string) (level vsec.AuthLevel, err error) {
+func (m *MongoStorage) GetUserAuthLevel(
+	userID string) (level vsec.AuthLevel, err error) {
 	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C("users").
@@ -174,7 +180,8 @@ func GetUserAuthLevel(userID string) (level vsec.AuthLevel, err error) {
 }
 
 //CreateSuperUser - creates the first super user for the application
-func CreateSuperUser(user *vsec.User, password string) (err error) {
+func (m *MongoStorage) CreateSuperUser(
+	user *vsec.User, password string) (err error) {
 	defer func() {
 		vlog.LogError("UMan:Mongo", err)
 	}()
@@ -191,16 +198,17 @@ func CreateSuperUser(user *vsec.User, password string) (err error) {
 		return err
 	}
 	user.State = vsec.Active
-	err = CreateUser(user)
+	err = m.CreateUser(user)
 	if err != nil {
 		return err
 	}
-	err = SetPassword(user.ID, password)
+	err = m.SetPassword(user.ID, password)
 	return err
 }
 
 //SetUserState - sets state of an user account
-func SetUserState(userID string, state vsec.UserState) (err error) {
+func (m *MongoStorage) SetUserState(
+	userID string, state vsec.UserState) (err error) {
 	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C("users").Update(
@@ -217,7 +225,7 @@ func SetUserState(userID string, state vsec.UserState) (err error) {
 
 //VerifyUser - sets state of an user account to verified based on userID
 //and verification ID
-func VerifyUser(userID, verID string) (err error) {
+func (m *MongoStorage) VerifyUser(userID, verID string) (err error) {
 	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C("users").Update(
@@ -237,7 +245,7 @@ func VerifyUser(userID, verID string) (err error) {
 }
 
 //CreateIndices - creates mongoDB indeces for tables used for user management
-func CreateIndices() (err error) {
+func (m *MongoStorage) CreateIndices() (err error) {
 	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C("users").EnsureIndex(mgo.Index{
@@ -251,7 +259,7 @@ func CreateIndices() (err error) {
 }
 
 //CleanData - cleans user management related data from database
-func CleanData() (err error) {
+func (m *MongoStorage) CleanData() (err error) {
 	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	_, err = conn.C("users").RemoveAll(bson.M{})
