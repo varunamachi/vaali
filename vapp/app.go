@@ -160,7 +160,7 @@ func NewSimpleApp(
 func (app *App) Setup() (err error) {
 	if app.RequiresMongo {
 
-		err = vuman.CreateIndices()
+		err = vuman.GetStorage().CreateIndices()
 		if err != nil {
 			vlog.Error("App",
 				"Failed to create Mongo indeces for user storage")
@@ -198,7 +198,7 @@ func (app *App) Setup() (err error) {
 //USE WITH CAUTION
 func (app *App) Reset() (err error) {
 	if app.RequiresMongo {
-		err = vuman.CleanData()
+		err = vuman.GetStorage().CleanData()
 		if err != nil {
 			vlog.Error("App", "Failed to reset user storage")
 		}

@@ -114,7 +114,7 @@ func createUserCmd() *cli.Command {
 						PwdExpiry: time.Now().AddDate(1, 0, 0),
 						State:     vsec.Active,
 					}
-					err = vuman.CreateSuperUser(&user, one)
+					err = vuman.GetStorage().CreateSuperUser(&user, one)
 				}
 			}
 			return err
@@ -302,7 +302,7 @@ func overridePasswordCmd() *cli.Command {
 				if user.Auth != vsec.Super {
 					err = errors.New("User forcing reset is not a super user")
 				}
-				err = vuman.SetPassword(id, pw)
+				err = vuman.GetStorage().SetPassword(id, pw)
 				if err == nil {
 					vlog.Info("App", "Password for %s successfully reset", id)
 				}
