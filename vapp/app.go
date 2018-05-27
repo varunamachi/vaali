@@ -89,6 +89,7 @@ func NewWebApp(
 		store = &vuman.PGStorage{}
 		auditor = &vevt.PGAuditor{}
 	}
+	vuman.SetStorageStrategy(store)
 	vevt.SetEventAuditor(auditor)
 	vlog.InitWithOptions(vlog.LoggerConfig{
 		Logger:      vlog.NewDirectLogger(),
@@ -98,7 +99,6 @@ func NewWebApp(
 
 	vcmn.LoadConfig(name)
 	app = &App{
-		UserStorage:   store,
 		IsService:     true,
 		RequiresMongo: true,
 		App: cli.App{
@@ -128,17 +128,27 @@ func NewSimpleApp(
 	appVersion vcmn.Version,
 	apiVersion string,
 	authors []cli.Author,
+	requiresMongo bool,
 	desc string) (app *App) {
 	vlog.InitWithOptions(vlog.LoggerConfig{
 		Logger:      vlog.NewDirectLogger(),
 		LogConsole:  true,
 		FilterLevel: vlog.TraceLevel,
 	})
-	vevt.SetEventAuditor(&vevt.NoOpAuditor{})
+	var store vsec.UserStorage
+	var auditor vevt.EventAuditor
+	store = &vuman.MongoStorage{}
+	auditor = &vevt.MongoAuditor{}
+	if !requiresMongo {
+		store = &vuman.PGStorage{}
+		auditor = &vevt.PGAuditor{}
+	}
+	vuman.SetStorageStrategy(store)
+	vevt.SetEventAuditor(auditor)
 	vcmn.LoadConfig(name)
 	app = &App{
 		IsService:     false,
-		RequiresMongo: false,
+		RequiresMongo: requiresMongo,
 		App: cli.App{
 			Name:      name,
 			Commands:  make([]cli.Command, 0, 100),

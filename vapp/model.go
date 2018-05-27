@@ -3,18 +3,16 @@ package vapp
 import (
 	"github.com/varunamachi/vaali/vmgo"
 	"github.com/varunamachi/vaali/vnet"
-	"github.com/varunamachi/vaali/vsec"
 	"gopkg.in/urfave/cli.v1"
 )
 
 //App - the application itself
 type App struct {
 	cli.App
-	Modules       []*Module        `json:"modules"`
-	NetOptions    vnet.Options     `json:"netOptions"`
-	IsService     bool             `json:"isService"`
-	RequiresMongo bool             `json:"requiresMongo"`
-	UserStorage   vsec.UserStorage `json:"userStorage"`
+	Modules       []*Module    `json:"modules"`
+	NetOptions    vnet.Options `json:"netOptions"`
+	IsService     bool         `json:"isService"`
+	RequiresMongo bool         `json:"requiresMongo"`
 }
 
 //ModuleConfigFunc Signature used by functions that are used to configure a

@@ -11,13 +11,6 @@ import (
 	"github.com/varunamachi/vaali/vsec"
 )
 
-var storage vsec.UserStorage
-
-//SetStorageStrategy - sets user storage strategy
-func SetStorageStrategy(srg vsec.UserStorage) {
-	storage = srg
-}
-
 func getUserIDPassword(params map[string]interface{}) (
 	userID string, password string, err error) {
 	var aok, bok bool
