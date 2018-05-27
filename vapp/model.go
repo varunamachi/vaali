@@ -38,17 +38,3 @@ type Module struct {
 	Setup       ModuleConfigFunc
 	Reset       ModuleConfigFunc
 }
-
-//EventFilterModel - model for creating event filters for fields
-type EventFilterModel struct {
-	UserNames  []string `json:"userNames" bson:"userNames" sql:"userNames"`
-	EventTypes []string `json:"eventTypes" bson:"eventTypes" sql:"eventTypes"`
-}
-
-//NewEventFilterModel - creates a new event filter model
-func NewEventFilterModel() EventFilterModel {
-	return EventFilterModel{
-		UserNames:  make([]string, 0, 1000),
-		EventTypes: make([]string, 0, 100),
-	}
-}

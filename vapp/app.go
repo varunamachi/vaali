@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/varunamachi/vaali/vevt"
 	"github.com/varunamachi/vaali/vsec"
 
 	"github.com/varunamachi/vaali/vmgo"
@@ -80,17 +81,19 @@ func NewWebApp(
 	authors []cli.Author,
 	requiresMongo bool, desc string) (app *App) {
 	var store vsec.UserStorage
-	authr := vuman.MongoAuthenticator
-	audtr := MongoAuditor
+	var auditor vevt.EventAuditor
 	store = &vuman.MongoStorage{}
+	auditor = &vevt.MongoAuditor{}
+	authr := vuman.MongoAuthenticator
 	if !requiresMongo {
 		store = &vuman.PGStorage{}
+		auditor = &vevt.PGAuditor{}
 	}
+	vevt.SetEventAuditor(auditor)
 	vlog.InitWithOptions(vlog.LoggerConfig{
 		Logger:      vlog.NewDirectLogger(),
 		LogConsole:  true,
 		FilterLevel: vlog.TraceLevel,
-		EventLogger: audtr,
 	})
 
 	vcmn.LoadConfig(name)
@@ -130,8 +133,8 @@ func NewSimpleApp(
 		Logger:      vlog.NewDirectLogger(),
 		LogConsole:  true,
 		FilterLevel: vlog.TraceLevel,
-		EventLogger: NoOpAuditor,
 	})
+	vevt.SetEventAuditor(&vevt.NoOpAuditor{})
 	vcmn.LoadConfig(name)
 	app = &App{
 		IsService:     false,
@@ -160,17 +163,17 @@ func (app *App) Setup() (err error) {
 		err = vuman.CreateIndices()
 		if err != nil {
 			vlog.Error("App",
-				"Failed to create Mongo indeces for U-Man collections")
+				"Failed to create Mongo indeces for user storage")
 			return err
 		}
-		vlog.Info("App", "Created indeces for User Management collections")
-		err = CreateIndices()
+		vlog.Info("App", "Created indeces for user storage")
+		err = vevt.GetAuditor().CreateIndices()
 		if err != nil {
 			vlog.Error("App",
-				"Failed to create Mongo indeces for applications collections")
+				"Failed to create Mongo indeces for event storage")
 			return err
 		}
-		vlog.Info("App", "Created indeces for Application collections")
+		vlog.Info("App", "Created indeces for user storage")
 	}
 	for _, module := range app.Modules {
 		if module.Setup != nil {
@@ -197,7 +200,7 @@ func (app *App) Reset() (err error) {
 	if app.RequiresMongo {
 		err = vuman.CleanData()
 		if err != nil {
-			vlog.Error("App", "Failed to reset U-Man data")
+			vlog.Error("App", "Failed to reset user storage")
 		}
 	}
 	for _, module := range app.Modules {

@@ -22,6 +22,7 @@ func main() {
 				Name: "Varuna Amachi",
 			},
 		},
+		true,
 		"Default app for Vaali",
 	)
 	app.Exec(os.Args)

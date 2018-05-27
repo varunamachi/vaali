@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/varunamachi/vaali/vevt"
 	"github.com/varunamachi/vaali/vlog"
 
 	"github.com/varunamachi/vaali/vuman"
@@ -149,7 +150,7 @@ func setupCmd() *cli.Command {
 							suname = user.FirstName +
 								" " + user.LastName
 						}
-						vlog.LogEvent(
+						vevt.LogEvent(
 							"setup app",
 							superID,
 							suname,
@@ -209,7 +210,7 @@ func resetCmd() *cli.Command {
 							suname = user.FirstName +
 								" " + user.LastName
 						}
-						vlog.LogEvent(
+						vevt.LogEvent(
 							"setup app",
 							superID,
 							suname,
@@ -278,7 +279,7 @@ func overridePasswordCmd() *cli.Command {
 						suname = user.FirstName +
 							" " + user.LastName
 					}
-					vlog.LogEvent(
+					vevt.LogEvent(
 						"setup app",
 						superID,
 						suname,

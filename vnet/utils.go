@@ -10,6 +10,7 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/varunamachi/vaali/vcmn"
+	"github.com/varunamachi/vaali/vevt"
 	"github.com/varunamachi/vaali/vlog"
 )
 
@@ -88,7 +89,7 @@ func GetString(ctx echo.Context, key string) (value string) {
 //is same as the data present in the result
 func AuditedSend(ctx echo.Context, res *Result) (err error) {
 	err = ctx.JSON(res.Status, res)
-	vlog.LogEvent(
+	vevt.LogEvent(
 		res.Op,
 		GetString(ctx, "userID"),
 		GetString(ctx, "userName"),
@@ -102,7 +103,7 @@ func AuditedSend(ctx echo.Context, res *Result) (err error) {
 //secret data field
 func AuditedSendSecret(ctx echo.Context, res *Result) (err error) {
 	err = ctx.JSON(res.Status, res)
-	vlog.LogEvent(
+	vevt.LogEvent(
 		res.Op,
 		GetString(ctx, "userID"),
 		GetString(ctx, "userName"),
@@ -116,7 +117,7 @@ func AuditedSendSecret(ctx echo.Context, res *Result) (err error) {
 //logs event data which is seperate from result data
 func AuditedSendX(ctx echo.Context, data interface{}, res *Result) (err error) {
 	err = ctx.JSON(res.Status, res)
-	vlog.LogEvent(
+	vevt.LogEvent(
 		res.Op,
 		GetString(ctx, "userID"),
 		GetString(ctx, "userName"),
@@ -136,7 +137,7 @@ func SendAndAuditOnErr(ctx echo.Context, res *Result) (err error) {
 		if err != nil {
 			estr = err.Error()
 		}
-		vlog.LogEvent(
+		vevt.LogEvent(
 			res.Op,
 			GetString(ctx, "userID"),
 			GetString(ctx, "userName"),
