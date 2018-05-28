@@ -1,6 +1,7 @@
 package vlog
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"runtime"
@@ -99,6 +100,7 @@ func LogError(module string, err error) error {
 			err.Error(),
 			file,
 			line)
+		LogJSON(ErrorLevel, module, err)
 	}
 	return err
 }
@@ -117,4 +119,12 @@ func LogFatal(module string, err error) {
 func Print(module, fmtStr string, args ...interface{}) {
 	lconf.Logger.Log(PrintLevel, module, fmtStr, args)
 	fmt.Printf(fmtStr+"\n", args...)
+}
+
+//LogJSON - logs data as JSON
+func LogJSON(level Level, module string, data interface{}) {
+	b, err := json.MarshalIndent(data, "", "    ")
+	if err == nil {
+		lconf.Logger.Log(level, module, "%s", string(b))
+	}
 }

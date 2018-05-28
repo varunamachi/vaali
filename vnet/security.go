@@ -17,9 +17,9 @@ import (
 )
 
 //GetJWTKey - gives a unique JWT key
-func GetJWTKey() string {
+func GetJWTKey() []byte {
 	if len(jwtKey) == 0 {
-		jwtKey = uuid.NewV4().String()
+		jwtKey, _ = uuid.NewV4().MarshalBinary()
 	}
 	return jwtKey
 }
@@ -126,7 +126,8 @@ func login(ctx echo.Context) (err error) {
 				claims["access"] = user.Auth
 				claims["userName"] = name
 				var signed string
-				signed, err = token.SignedString(GetJWTKey())
+				key := GetJWTKey()
+				signed, err = token.SignedString(key)
 				if err == nil {
 					data = make(map[string]interface{})
 					data["token"] = signed
