@@ -66,7 +66,7 @@ func GetEndpoints() (endpoints []*Endpoint) {
 		},
 		&Endpoint{
 			Method:   echo.GET,
-			URL:      "gen/:dataType/fdesc",
+			URL:      "gen/:dataType/fspec",
 			Access:   vsec.Normal,
 			Category: "generic",
 			Func:     getFilterValues,
