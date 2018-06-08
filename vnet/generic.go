@@ -210,12 +210,12 @@ func count(ctx echo.Context) (err error) {
 func getFilterValues(ctx echo.Context) (err error) {
 	dtype := ctx.Param("dataType")
 	status, msg := DefaultSM("Filter Values of", dtype)
-	var fdesc []*vmgo.FilterSpec
+	var fspec []*vmgo.FilterSpec
 	var values bson.M
 	if len(dtype) != 0 {
-		err = LoadJSONFromArgs(ctx, "fdesc", &fdesc)
+		err = LoadJSONFromArgs(ctx, "fspec", &fspec)
 		if err == nil {
-			values, err = vmgo.GetFilterValues(dtype, fdesc)
+			values, err = vmgo.GetFilterValues(dtype, fspec)
 		} else {
 			msg = "Failed to load filter description from URL"
 			status = http.StatusBadRequest
