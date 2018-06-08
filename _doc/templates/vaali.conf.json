@@ -1,0 +1,11 @@
+{
+    "emailConfig": {
+        "appEMail": "me@example.com",
+        "appEMailPassword": "s3cr3t",
+        "smtpHost": "smtp.example.com",
+        "smtpPort": 465
+    },
+    "hostAddress": "http://localhost:4200",
+    "emailKey": "--------------------------------"
+} 
+
