@@ -43,7 +43,7 @@ func GetEndpoints() (endpoints []*Endpoint) {
 		&Endpoint{
 			Method:   echo.GET,
 			URL:      "gen/:dataType/:id",
-			Access:   vsec.Normal,
+			Access:   vsec.Monitor,
 			Category: "generic",
 			Func:     get,
 			Comment:  "retrieve a resource of given type",
@@ -51,7 +51,7 @@ func GetEndpoints() (endpoints []*Endpoint) {
 		&Endpoint{
 			Method:   echo.GET,
 			URL:      "gen/:dataType",
-			Access:   vsec.Normal,
+			Access:   vsec.Monitor,
 			Category: "generic",
 			Func:     getAll,
 			Comment:  "Retrieve a resource sub-list of given type",
@@ -59,7 +59,7 @@ func GetEndpoints() (endpoints []*Endpoint) {
 		&Endpoint{
 			Method:   echo.GET,
 			URL:      "gen/:dataType/count",
-			Access:   vsec.Normal,
+			Access:   vsec.Monitor,
 			Category: "generic",
 			Func:     count,
 			Comment:  "Get count of items of data type",
@@ -67,7 +67,7 @@ func GetEndpoints() (endpoints []*Endpoint) {
 		&Endpoint{
 			Method:   echo.GET,
 			URL:      "gen/:dataType/fspec",
-			Access:   vsec.Normal,
+			Access:   vsec.Monitor,
 			Category: "generic",
 			Func:     getFilterValues,
 			Comment:  "Get possible values for filter",
