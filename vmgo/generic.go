@@ -125,7 +125,9 @@ func GenerateSelector(filter *Filter) (selector bson.M, err error) {
 		}
 	}
 	for field, val := range filter.Bools {
-		queries = append(queries, bson.M{field: val})
+		if val != nil {
+			queries = append(queries, bson.M{field: val})
+		}
 	}
 	for field, dateRange := range filter.Dates {
 		if dateRange.IsValid() {
@@ -140,14 +142,14 @@ func GenerateSelector(filter *Filter) (selector bson.M, err error) {
 		}
 	}
 	for field, matcher := range filter.Lists {
-		if len(matcher.Tags) != 0 {
+		if len(matcher.Fields) != 0 {
 			mode := "$in"
 			if matcher.MatchAll {
 				mode = "$all"
 			}
 			queries = append(queries, bson.M{
 				field: bson.M{
-					mode: matcher.Tags,
+					mode: matcher.Fields,
 				},
 			})
 		}
@@ -172,9 +174,9 @@ func GetFilterValues(
 		case Prop:
 			fallthrough
 		case Array:
-			out := bson.M{}
-			conn.C(dtype).Find(nil).Distinct(spec.Field, &out)
-			values[spec.Field] = out
+			props := make([]string, 0, 100)
+			conn.C(dtype).Find(nil).Distinct(spec.Field, &props)
+			values[spec.Field] = props
 		case Date:
 			var drange vcmn.DateRange
 			conn.C(dtype).Pipe([]bson.M{
@@ -190,6 +192,7 @@ func GetFilterValues(
 					},
 				},
 			}).One(&drange)
+			values[spec.Field] = drange
 		case Boolean:
 		case Search:
 		}

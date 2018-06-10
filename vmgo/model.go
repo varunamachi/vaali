@@ -48,36 +48,41 @@ const Boolean FilterType = "boolean"
 //Search - filter for search text field
 const Search FilterType = "search"
 
+//Constant - constant filter value
+const Constant FilterType = "constant"
+
 //FilterSpec - filter specification
 type FilterSpec struct {
 	Field string     `json:"field" bson:"field"`
-	Name  string     `json:"field" bson:"field"`
-	Type  FilterType `json:"field" bson:"field"`
+	Name  string     `json:"name" bson:"name"`
+	Type  FilterType `json:"type" bson:"type"`
 }
 
-//ArrayMatcher - matches elements of an array. If MatchAll set to true all
-//the elements of the Tags array needs to be matched, otherwise only one element
+//Matcher - matches the given fields. If MatchAll set to true all
+//the elements of the fields array needs to be matched, otherwise only one element
 //needs to match (minimum)
-type ArrayMatcher struct {
-	// Name     string   `json:"name" bson:"name"`
+type Matcher struct {
 	MatchAll bool     `json:"matchAll" bson:"matchAll"`
-	Tags     []string `json:"tags" bson:"tags"`
+	Fields   []string `json:"fields" bson:"fields"`
 }
 
 //SearchField - contains search string and info for performing the search
-type SearchField struct {
-	MatchAll  bool   `json:"matchAll" bson:"matchAll"`
-	Regex     bool   `json:"regex" bson:"regex"`
-	SearchStr string `json:"searchStr" bson:"searchStr"`
-}
+// type SearchField struct {
+// 	MatchAll  bool   `json:"matchAll" bson:"matchAll"`
+// 	Regex     bool   `json:"regex" bson:"regex"`
+// 	SearchStr string `json:"searchStr" bson:"searchStr"`
+// }
+
+//PropMatcher - matches props
+type PropMatcher []interface{}
 
 //Filter - generic filter used to filter data in any mongodb collection
 type Filter struct {
-	Props    map[string][]interface{}  `json:"props" bson:"props"`
-	Bools    map[string]bool           `json:"bools" bson:"bools"`
+	Props    map[string]PropMatcher    `json:"props" bson:"props"`
+	Bools    map[string]interface{}    `json:"bools" bson:"bools"`
 	Dates    map[string]vcmn.DateRange `json:"dates" bson:"dates"`
-	Lists    map[string]ArrayMatcher   `json:"lists" bson:"lists"`
-	Searches map[string]SearchField    `json:"searches" bson:"searches"`
+	Lists    map[string]Matcher        `json:"lists" bson:"lists"`
+	Searches map[string]Matcher        `json:"searches" bson:"searches"`
 }
 
 //DateRange - represents a date range
