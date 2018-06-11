@@ -195,6 +195,7 @@ func GetFilterValues(
 			values[spec.Field] = drange
 		case Boolean:
 		case Search:
+		case Static:
 		}
 	}
 	return values, vlog.LogError("DB:Mongo", err)
