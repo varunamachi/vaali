@@ -39,7 +39,7 @@ func Get(dtype string, matcher bson.M, out interface{}) (err error) {
 	return vlog.LogError("DB:Mongo", err)
 }
 
-//GetAll - gets all the items from collection 'dtype'
+//GetAll - gets all the items from collection 'dtype' selected by filter & paged
 func GetAll(dtype string,
 	sortFiled string,
 	offset int,
@@ -62,14 +62,30 @@ func Count(dtype string, filter *Filter) (count int, err error) {
 	//@TODO handle filters
 	conn := DefaultMongoConn()
 	defer conn.Close()
-	var selector bson.M
-	selector, err = GenerateSelector(filter)
-	if err == nil {
-		count, err = conn.C(dtype).
-			Find(selector).
-			Count()
-	}
+	selector := GenerateSelector(filter)
+	count, err = conn.C(dtype).
+		Find(selector).
+		Count()
 	return count, vlog.LogError("DB:Mongo", err)
+}
+
+//GetAllWithCount - gets all the items from collection 'dtype' selected by
+//filter & paged also gives the total count of items selected by filter
+func GetAllWithCount(dtype string,
+	sortFiled string,
+	offset int,
+	limit int,
+	filter *Filter,
+	out interface{}) (err error) {
+	conn := DefaultMongoConn()
+	defer conn.Close()
+	err = conn.C(dtype).
+		Find(nil).
+		Sort(sortFiled).
+		Skip(offset).
+		Limit(limit).
+		All(out)
+	return vlog.LogError("DB:Mongo", err)
 }
 
 //FillFilterValues - Fills given filter descriptors with possible values when
@@ -111,7 +127,7 @@ func Count(dtype string, filter *Filter) (count int, err error) {
 // }
 
 //GenerateSelector - creates mongodb query for a generic filter
-func GenerateSelector(filter *Filter) (selector bson.M, err error) {
+func GenerateSelector(filter *Filter) (selector bson.M) {
 	queries := make([]bson.M, 0, 100)
 	for key, values := range filter.Props {
 		if len(values) == 1 {
@@ -159,7 +175,7 @@ func GenerateSelector(filter *Filter) (selector bson.M, err error) {
 			"$and": queries,
 		}
 	}
-	return selector, err
+	return selector
 }
 
 //GetFilterValues - provides values associated the fields defined in filter spec
@@ -175,11 +191,11 @@ func GetFilterValues(
 			fallthrough
 		case Array:
 			props := make([]string, 0, 100)
-			conn.C(dtype).Find(nil).Distinct(spec.Field, &props)
+			err = conn.C(dtype).Find(nil).Distinct(spec.Field, &props)
 			values[spec.Field] = props
 		case Date:
 			var drange vcmn.DateRange
-			conn.C(dtype).Pipe([]bson.M{
+			err = conn.C(dtype).Pipe([]bson.M{
 				bson.M{
 					"$group": bson.M{
 						"_id": nil,

@@ -3,7 +3,6 @@ package vsec
 import (
 	"time"
 
-	"github.com/varunamachi/vaali/vmgo"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -100,12 +99,16 @@ type UserStorage interface {
 	//GetUser - gets details of the user corresponding to ID
 	GetUser(userID string) (user *User, err error)
 
-	//GetAllUsers - gets all users based on offset and limit
-	GetAllUsers(offset, limit int) (total int, users []*User, err error)
+	// //GetAllUsers - gets all users based on offset and limit
+	// GetUsers(offset, limit int, filter *vmgo.Filter) (
+	// 	users []*User, err error)
 
-	//GetUsers - gives a list of users based on their state
-	GetUsers(offset, limit int, filter *vmgo.Filter) (
-		total int, users []*User, err error)
+	// //GetCount - gives the number of user selected by given filter
+	// GetCount(filter *vmgo.Filter) (count int, err error)
+
+	// //GetUsers - gives a list of users paged with total count
+	// GetUsersWithCount(offset, limit int, filter *vmgo.Filter) (
+	// 	total int, users []*User, err error)
 
 	//ResetPassword - sets password of a unauthenticated user
 	ResetPassword(userID, oldPwd, newPwd string) (err error)

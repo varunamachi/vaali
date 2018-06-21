@@ -49,35 +49,59 @@ func (m *MongoStorage) GetUser(userID string) (user *vsec.User, err error) {
 	return user, vlog.LogError("UMan:Mongo", err)
 }
 
-//GetAllUsers - gets all users based on offset and limit
-func (m *MongoStorage) GetAllUsers(offset, limit int) (
-	total int, users []*vsec.User, err error) {
+//GetUsers - gets all users based on offset, limit and filter
+func (m *MongoStorage) GetUsers(offset, limit int, filter *vmgo.Filter) (
+	users []*vsec.User, err error) {
 	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
+	selector := vmgo.GenerateSelector(filter)
 	users = make([]*vsec.User, 0, limit)
-	q := conn.C("users").Find(bson.M{}).Sort("-created")
-	total, err = q.Count()
-	if err == nil {
-		err = q.Skip(offset).Limit(limit).All(&users)
-	}
-	return total, users, vlog.LogError("UMan:Mongo", err)
+	err = conn.C("users").
+		Find(selector).
+		Sort("-created").
+		Skip(offset).
+		Limit(limit).
+		All(&users)
+	return users, vlog.LogError("UMan:Mongo", err)
 }
 
-//GetUsers - gives a list of users based on their state
-func (m *MongoStorage) GetUsers(
+//GetCount - gives the number of user selected by given filter
+func (m *MongoStorage) GetCount(filter *vmgo.Filter) (count int, err error) {
+	conn := vmgo.DefaultMongoConn()
+	defer conn.Close()
+	selector := vmgo.GenerateSelector(filter)
+	count, err = conn.C("users").Find(selector).Count()
+	return users, vlog.LogError("UMan:Mongo", err)
+}
+
+//GetAllUsersWithCount - gets all users based on offset and limit, total count
+//is also returned
+// func (m *MongoStorage) GetAllUsersWithCount(offset, limit int) (
+// 	total int, users []*vsec.User, err error) {
+// 	conn := vmgo.DefaultMongoConn()
+// 	defer conn.Close()
+// 	users = make([]*vsec.User, 0, limit)
+// 	q := conn.C("users").Find(bson.M{}).Sort("-created")
+// 	total, err = q.Count()
+// 	if err == nil {
+// 		err = q.Skip(offset).Limit(limit).All(&users)
+// 	}
+// 	return total, users, vlog.LogError("UMan:Mongo", err)
+// }
+
+//GetUsersWithCount - Get users with total count
+func (m *MongoStorage) GetUsersWithCount(
 	offset, limit int, filter *vmgo.Filter) (
 	total int, users []*vsec.User, err error) {
 	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	var selector bson.M
-	selector, err = vmgo.GenerateSelector(filter)
+	selector = vmgo.GenerateSelector(filter)
+	users = make([]*vsec.User, 0, limit)
+	q := conn.C("users").Find(selector).Sort("-created")
+	total, err = q.Count()
 	if err == nil {
-		users = make([]*vsec.User, 0, limit)
-		q := conn.C("users").Find(selector).Sort("-created")
-		total, err = q.Count()
-		if err == nil {
-			err = q.Skip(offset).Limit(limit).All(&users)
-		}
+		err = q.Skip(offset).Limit(limit).All(&users)
 	}
 	return total, users, vlog.LogError("UMan:Mongo", err)
 }

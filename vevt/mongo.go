@@ -24,14 +24,11 @@ func (m *MongoAuditor) GetEvents(offset, limit int, filter *vmgo.Filter) (
 	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	events = make([]*Event, 0, limit)
-	var selector bson.M
-	selector, err = vmgo.GenerateSelector(filter)
+	selector = vmgo.GenerateSelector(filter)
+	q := conn.C("events").Find(selector).Sort("-time")
+	total, err = q.Count()
 	if err == nil {
-		q := conn.C("events").Find(selector).Sort("-time")
-		total, err = q.Count()
-		if err == nil {
-			err = q.Skip(offset).Limit(limit).All(&events)
-		}
+		err = q.Skip(offset).Limit(limit).All(&events)
 	}
 	return total, events, vlog.LogError("App:Event", err)
 }

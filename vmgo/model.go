@@ -51,7 +51,7 @@ const Search FilterType = "search"
 //Constant - constant filter value
 const Constant FilterType = "constant"
 
-//Constant - constant filter value
+//Static - constant filter value
 const Static FilterType = "static"
 
 //FilterSpec - filter specification
