@@ -44,7 +44,7 @@ func GetAll(dtype string,
 	sortFiled string,
 	offset int,
 	limit int,
-	filter *Filter,
+	filter *vcmn.Filter,
 	out interface{}) (err error) {
 	conn := DefaultMongoConn()
 	defer conn.Close()
@@ -58,7 +58,7 @@ func GetAll(dtype string,
 }
 
 //Count - counts the number of items for data type
-func Count(dtype string, filter *Filter) (count int, err error) {
+func Count(dtype string, filter *vcmn.Filter) (count int, err error) {
 	//@TODO handle filters
 	conn := DefaultMongoConn()
 	defer conn.Close()
@@ -75,7 +75,7 @@ func GetAllWithCount(dtype string,
 	sortFiled string,
 	offset int,
 	limit int,
-	filter *Filter,
+	filter *vcmn.Filter,
 	out interface{}) (err error) {
 	conn := DefaultMongoConn()
 	defer conn.Close()
@@ -127,7 +127,7 @@ func GetAllWithCount(dtype string,
 // }
 
 //GenerateSelector - creates mongodb query for a generic filter
-func GenerateSelector(filter *Filter) (selector bson.M) {
+func GenerateSelector(filter *vcmn.Filter) (selector bson.M) {
 	queries := make([]bson.M, 0, 100)
 	for key, values := range filter.Props {
 		if len(values) == 1 {
@@ -181,19 +181,19 @@ func GenerateSelector(filter *Filter) (selector bson.M) {
 //GetFilterValues - provides values associated the fields defined in filter spec
 func GetFilterValues(
 	dtype string,
-	specs FilterSpecList) (values bson.M, err error) {
+	specs vcmn.FilterSpecList) (values bson.M, err error) {
 	conn := DefaultMongoConn()
 	defer conn.Close()
 	values = bson.M{}
 	for _, spec := range specs {
 		switch spec.Type {
-		case Prop:
+		case vcmn.Prop:
 			fallthrough
-		case Array:
+		case vcmn.Array:
 			props := make([]string, 0, 100)
 			err = conn.C(dtype).Find(nil).Distinct(spec.Field, &props)
 			values[spec.Field] = props
-		case Date:
+		case vcmn.Date:
 			var drange vcmn.DateRange
 			err = conn.C(dtype).Pipe([]bson.M{
 				bson.M{
@@ -209,9 +209,9 @@ func GetFilterValues(
 				},
 			}).One(&drange)
 			values[spec.Field] = drange
-		case Boolean:
-		case Search:
-		case Static:
+		case vcmn.Boolean:
+		case vcmn.Search:
+		case vcmn.Static:
 		}
 	}
 	return values, vlog.LogError("DB:Mongo", err)

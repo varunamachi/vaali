@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/varunamachi/vaali/vcmn"
-	"github.com/varunamachi/vaali/vmgo"
 
 	"github.com/satori/go.uuid"
 	"gopkg.in/mgo.v2/bson"
@@ -214,10 +213,10 @@ func getUsers(ctx echo.Context) (err error) {
 	// us := vcmn.GetFirstValidStr(ctx.Param("status"), string(vsec.Active))
 	var users []*vsec.User
 	var total int
-	var filter vmgo.Filter
+	var filter vcmn.Filter
 	err = vnet.LoadJSONFromArgs(ctx, "filter", &filter)
 	if has && err == nil {
-		total, users, err = storage.GetUsers(offset, limit, &filter)
+		total, users, err = storage.GetUsersWithCount(offset, limit, &filter)
 		if err != nil {
 			msg = "Failed to retrieve user info from database"
 			status = http.StatusInternalServerError
@@ -235,7 +234,7 @@ func getUsers(ctx echo.Context) (err error) {
 		Op:     "user_multi_fetch",
 		Msg:    msg,
 		OK:     err == nil,
-		Data: vmgo.CountList{
+		Data: vcmn.CountList{
 			TotalCount: total,
 			Data:       users,
 		},

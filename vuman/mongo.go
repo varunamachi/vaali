@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/varunamachi/vaali/vcmn"
 	"github.com/varunamachi/vaali/vlog"
 	"github.com/varunamachi/vaali/vmgo"
 	"github.com/varunamachi/vaali/vsec"
@@ -50,7 +51,7 @@ func (m *MongoStorage) GetUser(userID string) (user *vsec.User, err error) {
 }
 
 //GetUsers - gets all users based on offset, limit and filter
-func (m *MongoStorage) GetUsers(offset, limit int, filter *vmgo.Filter) (
+func (m *MongoStorage) GetUsers(offset, limit int, filter *vcmn.Filter) (
 	users []*vsec.User, err error) {
 	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
@@ -66,12 +67,12 @@ func (m *MongoStorage) GetUsers(offset, limit int, filter *vmgo.Filter) (
 }
 
 //GetCount - gives the number of user selected by given filter
-func (m *MongoStorage) GetCount(filter *vmgo.Filter) (count int, err error) {
+func (m *MongoStorage) GetCount(filter *vcmn.Filter) (count int, err error) {
 	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	selector := vmgo.GenerateSelector(filter)
 	count, err = conn.C("users").Find(selector).Count()
-	return users, vlog.LogError("UMan:Mongo", err)
+	return count, vlog.LogError("UMan:Mongo", err)
 }
 
 //GetAllUsersWithCount - gets all users based on offset and limit, total count
@@ -91,7 +92,7 @@ func (m *MongoStorage) GetCount(filter *vmgo.Filter) (count int, err error) {
 
 //GetUsersWithCount - Get users with total count
 func (m *MongoStorage) GetUsersWithCount(
-	offset, limit int, filter *vmgo.Filter) (
+	offset, limit int, filter *vcmn.Filter) (
 	total int, users []*vsec.User, err error) {
 	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()

@@ -1,8 +1,8 @@
 package vevt
 
 import (
+	"github.com/varunamachi/vaali/vcmn"
 	"github.com/varunamachi/vaali/vlog"
-	"github.com/varunamachi/vaali/vmgo"
 )
 
 //PGAuditor - handles application events and stores them in postgres for audit
@@ -15,7 +15,7 @@ func (m *PGAuditor) LogEvent(event *Event) {
 }
 
 //GetEvents - retrieves event entries based on filters
-func (m *PGAuditor) GetEvents(offset, limit int, filter *vmgo.Filter) (
+func (m *PGAuditor) GetEvents(offset, limit int, filter *vcmn.Filter) (
 	total int, events []*Event, err error) {
 	return total, events, vlog.LogError("App:Event:PG", err)
 }

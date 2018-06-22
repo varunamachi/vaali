@@ -144,7 +144,7 @@ func getAll(ctx echo.Context) (err error) {
 	var data []*M
 	if len(dtype) != 0 {
 		offset, limit, has := GetOffsetLimit(ctx)
-		var filter vmgo.Filter
+		var filter vcmn.Filter
 		err = LoadJSONFromArgs(ctx, "filter", &filter)
 		if has && err == nil {
 			data = make([]*M, 0, limit)
@@ -180,7 +180,7 @@ func count(ctx echo.Context) (err error) {
 	count := 0
 	if len(dtype) != 0 {
 		if err == nil {
-			var filter vmgo.Filter
+			var filter vcmn.Filter
 			err = LoadJSONFromArgs(ctx, "filter", &filter)
 			count, err = vmgo.Count(dtype, &filter)
 			if err != nil {
@@ -210,7 +210,7 @@ func count(ctx echo.Context) (err error) {
 func getFilterValues(ctx echo.Context) (err error) {
 	dtype := ctx.Param("dataType")
 	status, msg := DefaultSM("Filter Values of", dtype)
-	var fspec []*vmgo.FilterSpec
+	var fspec []*vcmn.FilterSpec
 	var values bson.M
 	if len(dtype) != 0 {
 		err = LoadJSONFromArgs(ctx, "fspec", &fspec)

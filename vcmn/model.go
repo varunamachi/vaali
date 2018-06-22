@@ -33,8 +33,8 @@ func (r *DateRange) IsValid() bool {
 type ParamType int
 
 const (
-	//Boolean - bool parameter
-	Boolean ParamType = iota
+	//Bool - bool parameter
+	Bool ParamType = iota
 
 	//NumberRange - number range parameter
 	NumberRange
@@ -68,3 +68,71 @@ type Param struct {
 	Default interface{} `json:"def" bson:"def" sql:"def"`
 	// Value   interface{} `json:"value" bson:"value"`
 }
+
+//CountList - paginated list returned from mongoDB along with total number of
+//items in the list counted without pagination
+type CountList struct {
+	TotalCount int         `json:"total" bson:"total"`
+	Data       interface{} `json:"data" bson:"data"`
+}
+
+//FilterType - Type of filter item
+type FilterType string
+
+//Prop - filter for a value
+const Prop FilterType = "prop"
+
+//Array - filter for an array
+const Array FilterType = "array'"
+
+//Date - filter for data range
+const Date FilterType = "dateRange"
+
+//Boolean - filter for boolean field
+const Boolean FilterType = "boolean"
+
+//Search - filter for search text field
+const Search FilterType = "search"
+
+//Constant - constant filter value
+const Constant FilterType = "constant"
+
+//Static - constant filter value
+const Static FilterType = "static"
+
+//FilterSpec - filter specification
+type FilterSpec struct {
+	Field string     `json:"field" bson:"field"`
+	Name  string     `json:"name" bson:"name"`
+	Type  FilterType `json:"type" bson:"type"`
+}
+
+//Matcher - matches the given fields. If MatchAll set to true all
+//the elements of the fields array needs to be matched, otherwise only one element
+//needs to match (minimum)
+type Matcher struct {
+	MatchAll bool     `json:"matchAll" bson:"matchAll"`
+	Fields   []string `json:"fields" bson:"fields"`
+}
+
+//SearchField - contains search string and info for performing the search
+// type SearchField struct {
+// 	MatchAll  bool   `json:"matchAll" bson:"matchAll"`
+// 	Regex     bool   `json:"regex" bson:"regex"`
+// 	SearchStr string `json:"searchStr" bson:"searchStr"`
+// }
+
+//PropMatcher - matches props
+type PropMatcher []interface{}
+
+//Filter - generic filter used to filter data in any mongodb collection
+type Filter struct {
+	Props    map[string]PropMatcher `json:"props" bson:"props"`
+	Bools    map[string]interface{} `json:"bools" bson:"bools"`
+	Dates    map[string]DateRange   `json:"dates" bson:"dates"`
+	Lists    map[string]Matcher     `json:"lists" bson:"lists"`
+	Searches map[string]Matcher     `json:"searches" bson:"searches"`
+}
+
+//FilterSpecList - alias for array of filter specs
+type FilterSpecList []*FilterSpec

@@ -9,7 +9,7 @@ func SetEventAuditor(auditor EventAuditor) {
 	eventAuditor = auditor
 }
 
-//SetEventAuditor - gets the event auditor
+//GetAuditor - gets the event auditor
 func GetAuditor() EventAuditor {
 	return eventAuditor
 }

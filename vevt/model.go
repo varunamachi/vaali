@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/varunamachi/vaali/vmgo"
+	"github.com/varunamachi/vaali/vcmn"
 )
 
 // //EventFilterModel - model for creating event filters for fields
@@ -38,9 +38,11 @@ type EventAuditor interface {
 	LogEvent(event *Event)
 
 	//GetEvents - retrieves event entries based on filters
-	GetEvents(
-		offset, limit int, filter *vmgo.Filter) (
-		total int, events []*Event, err error)
+	GetEvents(offset, limit int,
+		filter *vcmn.Filter) (
+		total int,
+		events []*Event,
+		err error)
 
 	//CreateIndices - creates mongoDB indeces for tables used for event logs
 	CreateIndices() (err error)
@@ -63,7 +65,7 @@ func (n *NoOpAuditor) LogEvent(event *Event) {
 
 //GetEvents - gives an empty list of events
 func (n *NoOpAuditor) GetEvents(
-	offset, limit int, filter *vmgo.Filter) (
+	offset, limit int, filter *vcmn.Filter) (
 	total int, events []*Event, err error) {
 	return total, events, err
 }

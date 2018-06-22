@@ -1,6 +1,7 @@
 package vevt
 
 import (
+	"github.com/varunamachi/vaali/vcmn"
 	"github.com/varunamachi/vaali/vlog"
 	"github.com/varunamachi/vaali/vmgo"
 	mgo "gopkg.in/mgo.v2"
@@ -19,12 +20,12 @@ func (m *MongoAuditor) LogEvent(event *Event) {
 }
 
 //GetEvents - retrieves event entries based on filters
-func (m *MongoAuditor) GetEvents(offset, limit int, filter *vmgo.Filter) (
+func (m *MongoAuditor) GetEvents(offset, limit int, filter *vcmn.Filter) (
 	total int, events []*Event, err error) {
 	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	events = make([]*Event, 0, limit)
-	selector = vmgo.GenerateSelector(filter)
+	selector := vmgo.GenerateSelector(filter)
 	q := conn.C("events").Find(selector).Sort("-time")
 	total, err = q.Count()
 	if err == nil {

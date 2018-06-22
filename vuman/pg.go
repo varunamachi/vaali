@@ -1,6 +1,7 @@
 package vuman
 
 import (
+	"github.com/varunamachi/vaali/vcmn"
 	"github.com/varunamachi/vaali/vlog"
 	"github.com/varunamachi/vaali/vmgo"
 	"github.com/varunamachi/vaali/vsec"
@@ -24,21 +25,45 @@ func (p *PGStorage) DeleteUser(userID string) (err error) {
 	return vlog.LogError("UMan:PGSQL", err)
 }
 
+// //GetUser - gets details of the user corresponding to ID
+// func (p *PGStorage) GetUser(userID string) (user *vsec.User, err error) {
+// 	return user, vlog.LogError("UMan:PGSQL", err)
+// }
+
+// //GetAllUsers - gets all users based on offset and limit
+// func (p *PGStorage) GetAllUsers(offset, limit int) (
+// 	total int, users []*vsec.User, err error) {
+// 	return total, users, vlog.LogError("UMan:PGSQL", err)
+// }
+
+// //GetUsers - gives a list of users based on their state
+// func (p *PGStorage) GetUsers(
+// 	offset, limit int, filter *vcmn.Filter) (
+// 	total int, users []*vsec.User, err error) {
+// 	return total, users, vlog.LogError("UMan:PGSQL", err)
+// }
+
 //GetUser - gets details of the user corresponding to ID
 func (p *PGStorage) GetUser(userID string) (user *vsec.User, err error) {
 	return user, vlog.LogError("UMan:PGSQL", err)
 }
 
-//GetAllUsers - gets all users based on offset and limit
-func (p *PGStorage) GetAllUsers(offset, limit int) (
-	total int, users []*vsec.User, err error) {
-	return total, users, vlog.LogError("UMan:PGSQL", err)
+//GetUsers - gets all users based on offset and limit
+func (p *PGStorage) GetUsers(offset int,
+	limit int,
+	filter *vcmn.Filter) (users []*vsec.User, err error) {
+	return users, vlog.LogError("UMan:PGSQL", err)
 }
 
-//GetUsers - gives a list of users based on their state
-func (p *PGStorage) GetUsers(
-	offset, limit int, filter *vmgo.Filter) (
-	total int, users []*vsec.User, err error) {
+//GetCount - gives the number of user selected by given filter
+func (p *PGStorage) GetCount(filter *vcmn.Filter) (count int, err error) {
+	return count, vlog.LogError("UMan:PGSQL", err)
+}
+
+//GetUsersWithCount - gives a list of users paged with total count
+func (p *PGStorage) GetUsersWithCount(offset int,
+	limit int,
+	filter *vcmn.Filter) (total int, users []*vsec.User, err error) {
 	return total, users, vlog.LogError("UMan:PGSQL", err)
 }
 

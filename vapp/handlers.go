@@ -7,7 +7,6 @@ import (
 	"github.com/varunamachi/vaali/vevt"
 
 	"github.com/varunamachi/vaali/vcmn"
-	"github.com/varunamachi/vaali/vmgo"
 	"github.com/varunamachi/vaali/vnet"
 
 	"github.com/varunamachi/vaali/vlog"
@@ -34,7 +33,7 @@ func getEvents(ctx echo.Context) (err error) {
 	var events []*vevt.Event
 	var total int
 	offset, limit, has := vnet.GetOffsetLimit(ctx)
-	var filter vmgo.Filter
+	var filter vcmn.Filter
 	err = vnet.LoadJSONFromArgs(ctx, "filter", &filter)
 	if err == nil && has {
 		total, events, err = vevt.GetAuditor().GetEvents(
@@ -55,7 +54,7 @@ func getEvents(ctx echo.Context) (err error) {
 		Op:     "events_fetch",
 		Msg:    msg,
 		OK:     err == nil,
-		Data: vmgo.CountList{
+		Data: vcmn.CountList{
 			TotalCount: total,
 			Data:       events,
 		},
