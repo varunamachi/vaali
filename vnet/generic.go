@@ -173,6 +173,51 @@ func getAll(ctx echo.Context) (err error) {
 	return vlog.LogError("S:Entity", err)
 }
 
+func getAllWithCount(ctx echo.Context) (err error) {
+	dtype := ctx.Param("dataType")
+	status, msg := DefaultSM("Get all with count", dtype)
+	var data []*M
+	cnt := 0
+	if len(dtype) != 0 {
+		offset, limit, has := GetOffsetLimit(ctx)
+		var filter vcmn.Filter
+		err = LoadJSONFromArgs(ctx, "filter", &filter)
+		if has && err == nil {
+			data = make([]*M, 0, limit)
+			cnt, err = vmgo.GetAllWithCount(
+				dtype,
+				"-createdAt",
+				offset,
+				limit,
+				&filter,
+				data)
+			if err != nil {
+				msg = fmt.Sprintf("Failed to retrieve %s from database", dtype)
+				status = http.StatusInternalServerError
+			}
+		} else {
+			msg = "Invalid offset, limit or filter given"
+			status = http.StatusBadRequest
+		}
+	} else {
+		msg = "Invalid empty data type given"
+		status = http.StatusBadRequest
+		err = errors.New(msg)
+	}
+	err = SendAndAuditOnErr(ctx, &Result{
+		Status: status,
+		Op:     dtype + "_fetch_n_count",
+		Msg:    msg,
+		OK:     err == nil,
+		Data: vcmn.CountList{
+			Data:       data,
+			TotalCount: cnt,
+		},
+		Err: vcmn.ErrString(err),
+	})
+	return vlog.LogError("S:Entity", err)
+}
+
 func count(ctx echo.Context) (err error) {
 	//@TODO - handle filters
 	dtype := ctx.Param("dataType")

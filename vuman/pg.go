@@ -25,24 +25,6 @@ func (p *PGStorage) DeleteUser(userID string) (err error) {
 	return vlog.LogError("UMan:PGSQL", err)
 }
 
-// //GetUser - gets details of the user corresponding to ID
-// func (p *PGStorage) GetUser(userID string) (user *vsec.User, err error) {
-// 	return user, vlog.LogError("UMan:PGSQL", err)
-// }
-
-// //GetAllUsers - gets all users based on offset and limit
-// func (p *PGStorage) GetAllUsers(offset, limit int) (
-// 	total int, users []*vsec.User, err error) {
-// 	return total, users, vlog.LogError("UMan:PGSQL", err)
-// }
-
-// //GetUsers - gives a list of users based on their state
-// func (p *PGStorage) GetUsers(
-// 	offset, limit int, filter *vcmn.Filter) (
-// 	total int, users []*vsec.User, err error) {
-// 	return total, users, vlog.LogError("UMan:PGSQL", err)
-// }
-
 //GetUser - gets details of the user corresponding to ID
 func (p *PGStorage) GetUser(userID string) (user *vsec.User, err error) {
 	return user, vlog.LogError("UMan:PGSQL", err)
