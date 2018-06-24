@@ -171,3 +171,12 @@ func Merge(epss ...[]*Endpoint) (eps []*Endpoint) {
 	}
 	return eps
 }
+
+//GetQueryParam - get query param if present otherwise return the default
+func GetQueryParam(ctx echo.Context, name string, def string) (val string) {
+	val = ctx.QueryParam(name)
+	if val == "" {
+		val = def
+	}
+	return val
+}

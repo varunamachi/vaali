@@ -79,13 +79,14 @@ func GetAllWithCount(dtype string,
 	out interface{}) (count int, err error) {
 	conn := DefaultMongoConn()
 	defer conn.Close()
-	q := conn.C(dtype).Find(nil)
-	err = q.Sort(sortFiled).
-		Skip(offset).
-		Limit(limit).
-		All(out)
+	selector := GenerateSelector(filter)
+	q := conn.C(dtype).Find(selector)
+	count, err = q.Count()
 	if err == nil {
-		count, err = q.Count()
+		err = q.Sort(sortFiled).
+			Skip(offset).
+			Limit(limit).
+			All(out)
 	}
 	return count, vlog.LogError("DB:Mongo", err)
 }

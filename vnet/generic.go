@@ -146,9 +146,16 @@ func getAll(ctx echo.Context) (err error) {
 		offset, limit, has := GetOffsetLimit(ctx)
 		var filter vcmn.Filter
 		err = LoadJSONFromArgs(ctx, "filter", &filter)
+		sortField := GetQueryParam(ctx, "sortField", "-createdAt")
 		if has && err == nil {
 			data = make([]*M, 0, limit)
-			err = vmgo.GetAll(dtype, "-createdAt", offset, limit, &filter, data)
+			err = vmgo.GetAll(
+				dtype,
+				sortField,
+				offset,
+				limit,
+				&filter,
+				&data)
 			if err != nil {
 				msg = fmt.Sprintf("Failed to retrieve %s from database", dtype)
 				status = http.StatusInternalServerError
@@ -180,17 +187,18 @@ func getAllWithCount(ctx echo.Context) (err error) {
 	cnt := 0
 	if len(dtype) != 0 {
 		offset, limit, has := GetOffsetLimit(ctx)
+		sortField := GetQueryParam(ctx, "sortField", "-createdAt")
 		var filter vcmn.Filter
 		err = LoadJSONFromArgs(ctx, "filter", &filter)
 		if has && err == nil {
 			data = make([]*M, 0, limit)
 			cnt, err = vmgo.GetAllWithCount(
 				dtype,
-				"-createdAt",
+				sortField,
 				offset,
 				limit,
 				&filter,
-				data)
+				&data)
 			if err != nil {
 				msg = fmt.Sprintf("Failed to retrieve %s from database", dtype)
 				status = http.StatusInternalServerError
