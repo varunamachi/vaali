@@ -26,6 +26,7 @@ func updateUserInfo(user *vsec.User) (err error) {
 	user.VerID = uuid.NewV4().String()
 	user.Created = time.Now()
 	user.State = vsec.Disabled
+	user.FullName = user.FirstName + " " + user.LastName
 	// @TODO create a key retrieving strategy -- local | remote etc
 	var emailKey string
 	err = vcmn.GetConfig("emailKey", &emailKey)

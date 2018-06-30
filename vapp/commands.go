@@ -108,6 +108,7 @@ func createUserCmd() *cli.Command {
 						Auth:      vsec.Super,
 						FirstName: first,
 						LastName:  last,
+						FullName:  first + " " + last,
 						Created:   time.Now(),
 						Modified:  time.Now(),
 						Props:     bson.M{},

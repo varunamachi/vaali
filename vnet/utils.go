@@ -130,7 +130,6 @@ func AuditedSendX(ctx echo.Context, data interface{}, res *Result) (err error) {
 //SendAndAuditOnErr - sends the result to client and puts an audit record in
 //audit log if the result is error OR sending failed
 func SendAndAuditOnErr(ctx echo.Context, res *Result) (err error) {
-	fmt.Println("one")
 	err = ctx.JSON(res.Status, res)
 	if len(res.Err) != 0 || err != nil {
 		estr := res.Err

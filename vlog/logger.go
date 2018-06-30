@@ -100,7 +100,7 @@ func LogError(module string, err error) error {
 			err.Error(),
 			file,
 			line)
-		LogJSON(ErrorLevel, module, err)
+		// LogJSON(ErrorLevel, module, err)
 	}
 	return err
 }

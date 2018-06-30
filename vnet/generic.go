@@ -39,7 +39,7 @@ func create(ctx echo.Context) (err error) {
 	}
 	AuditedSendX(ctx, &data, &Result{
 		Status: status,
-		Op:     dtype + "_create_",
+		Op:     dtype + "_create",
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   nil,
@@ -292,7 +292,7 @@ func getFilterValues(ctx echo.Context) (err error) {
 func bind(ctx echo.Context, dataType string) (
 	data vmgo.StoredItem, err error) {
 	data = vmgo.Instance(dataType)
-	if data == nil {
+	if data != nil {
 		err = ctx.Bind(data)
 	} else {
 		err = fmt.Errorf("Could not find factory function for data type %s",
