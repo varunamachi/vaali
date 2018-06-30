@@ -25,6 +25,14 @@ func getEndpoints() []*vnet.Endpoint {
 			Func:     getEvents,
 			Comment:  "Fetch all the events",
 		},
+		&vnet.Endpoint{
+			Method:   echo.GET,
+			URL:      "ping",
+			Access:   vsec.Public,
+			Category: "app",
+			Func:     ping,
+			Comment:  "Ping the server",
+		},
 	}
 }
 
@@ -57,6 +65,24 @@ func getEvents(ctx echo.Context) (err error) {
 		Data: vcmn.CountList{
 			TotalCount: total,
 			Data:       events,
+		},
+		Err: vcmn.ErrString(err),
+	})
+	return vlog.LogError("App:Events", err)
+}
+
+func ping(ctx echo.Context) (err error) {
+	userID := vnet.GetString(ctx, "userID")
+	userInfo, _ := vnet.RetrieveUserInfo(ctx)
+	err = vnet.SendAndAuditOnErr(ctx, &vnet.Result{
+		Status: http.StatusOK,
+		Op:     "ping",
+		Msg:    "ping",
+		OK:     err == nil,
+		Data: vnet.M{
+			"userID":   userID,
+			"loggedIn": false,
+			"userInfo": userInfo,
 		},
 		Err: vcmn.ErrString(err),
 	})

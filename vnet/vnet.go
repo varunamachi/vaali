@@ -26,7 +26,6 @@ func AddEndpoints(eps ...*Endpoint) {
 // ModifiedHTTPErrorHandler is the default HTTP error handler. It sends a
 // JSON response with status code. [Modefied from echo.DefaultHTTPErrorHandler]
 func ModifiedHTTPErrorHandler(err error, c echo.Context) {
-	fmt.Println("hello")
 	var (
 		code = http.StatusInternalServerError
 		msg  interface{}
