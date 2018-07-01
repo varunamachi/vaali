@@ -215,7 +215,7 @@ func (client *Client) Login(userID, password string) (err error) {
 		User  *vsec.User `json:"user"`
 	}{}
 	rr := client.Post(data, vsec.Public, "login")
-	err = rr.Read(loginResult)
+	err = rr.Read(&loginResult)
 	if err == nil {
 		client.Token = loginResult.Token
 		client.User = loginResult.User

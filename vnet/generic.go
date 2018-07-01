@@ -87,7 +87,7 @@ func delete(ctx echo.Context) (err error) {
 	status, msg := DefaultSM("Delete", dtype)
 	id := ctx.Param("id")
 	if len(dtype) != 0 {
-		err = vmgo.Delete(dtype, bson.M{"_id": bson.ObjectId(id)})
+		err = vmgo.Delete(dtype, bson.M{"_id": bson.ObjectIdHex(id)})
 		if err != nil {
 			msg = fmt.Sprintf("Failed to delete %s from database", dtype)
 			status = http.StatusInternalServerError

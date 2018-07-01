@@ -2,7 +2,6 @@ package vmgo
 
 import (
 	"github.com/varunamachi/vaali/vcmn"
-	"github.com/varunamachi/vaali/vlog"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -11,7 +10,7 @@ func Create(dtype string, value interface{}) (err error) {
 	conn := DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C(dtype).Insert(value)
-	return vlog.LogError("DB:Mongo", err)
+	return LogError("DB:Mongo", err)
 }
 
 //Update - updates the records in 'dtype' collection which are matched by
@@ -20,7 +19,7 @@ func Update(dtype string, matcher bson.M, value interface{}) (err error) {
 	conn := DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C(dtype).Update(matcher, value)
-	return vlog.LogError("DB:Mongo", err)
+	return LogError("DB:Mongo", err)
 }
 
 //Delete - deletes record matched by the matcher from collection 'dtype'
@@ -28,7 +27,7 @@ func Delete(dtype string, matcher bson.M) (err error) {
 	conn := DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C(dtype).Remove(matcher)
-	return vlog.LogError("DB:Mongo", err)
+	return LogError("DB:Mongo", err)
 }
 
 //Get - gets a record matched by given matcher from collection 'dtype'
@@ -36,7 +35,7 @@ func Get(dtype string, matcher bson.M, out interface{}) (err error) {
 	conn := DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C(dtype).Find(matcher).One(out)
-	return vlog.LogError("DB:Mongo", err)
+	return LogError("DB:Mongo", err)
 }
 
 //GetAll - gets all the items from collection 'dtype' selected by filter & paged
@@ -54,7 +53,7 @@ func GetAll(dtype string,
 		Skip(offset).
 		Limit(limit).
 		All(out)
-	return vlog.LogError("DB:Mongo", err)
+	return LogError("DB:Mongo", err)
 }
 
 //Count - counts the number of items for data type
@@ -66,7 +65,7 @@ func Count(dtype string, filter *vcmn.Filter) (count int, err error) {
 	count, err = conn.C(dtype).
 		Find(selector).
 		Count()
-	return count, vlog.LogError("DB:Mongo", err)
+	return count, LogError("DB:Mongo", err)
 }
 
 //GetAllWithCount - gets all the items from collection 'dtype' selected by
@@ -88,7 +87,7 @@ func GetAllWithCount(dtype string,
 			Limit(limit).
 			All(out)
 	}
-	return count, vlog.LogError("DB:Mongo", err)
+	return count, LogError("DB:Mongo", err)
 }
 
 //GenerateSelector - creates mongodb query for a generic filter
@@ -179,5 +178,5 @@ func GetFilterValues(
 		case vcmn.Static:
 		}
 	}
-	return values, vlog.LogError("DB:Mongo", err)
+	return values, LogError("DB:Mongo", err)
 }

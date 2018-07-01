@@ -152,7 +152,7 @@ func setupCmd() *cli.Command {
 								" " + user.LastName
 						}
 						vevt.LogEvent(
-							"setup app",
+							"app_setup",
 							superID,
 							suname,
 							err != nil,
@@ -185,8 +185,8 @@ func setupCmd() *cli.Command {
 
 func resetCmd() *cli.Command {
 	return &cli.Command{
-		Name:  "setup",
-		Usage: "Sets up the application",
+		Name:  "reset",
+		Usage: "Resets the application",
 		Flags: []cli.Flag{
 			cli.StringFlag{
 				Name:  "super-id",
@@ -212,7 +212,7 @@ func resetCmd() *cli.Command {
 								" " + user.LastName
 						}
 						vevt.LogEvent(
-							"setup app",
+							"app_reset",
 							superID,
 							suname,
 							err != nil,

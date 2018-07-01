@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/varunamachi/vaali/vcmn"
-	"github.com/varunamachi/vaali/vlog"
 	"github.com/varunamachi/vaali/vmgo"
 	"github.com/varunamachi/vaali/vsec"
 	passlib "gopkg.in/hlandau/passlib.v1"
@@ -22,7 +21,7 @@ func (m *MongoStorage) CreateUser(user *vsec.User) (err error) {
 	defer conn.Close()
 	// _, err = conn.C("users").Upsert(bson.M{"id": user.ID}, user)
 	err = conn.C("users").Insert(user)
-	return vlog.LogError("UMan:Mongo", err)
+	return vmgo.LogError("UMan:Mongo", err)
 }
 
 //UpdateUser - updates user in database
@@ -30,7 +29,7 @@ func (m *MongoStorage) UpdateUser(user *vsec.User) (err error) {
 	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C("users").Update(bson.M{"id": user.ID}, user)
-	return vlog.LogError("UMan:Mongo", err)
+	return vmgo.LogError("UMan:Mongo", err)
 }
 
 //DeleteUser - deletes user with given user ID
@@ -38,7 +37,7 @@ func (m *MongoStorage) DeleteUser(userID string) (err error) {
 	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C("users").Remove(bson.M{"id": userID})
-	return vlog.LogError("UMan:Mongo", err)
+	return vmgo.LogError("UMan:Mongo", err)
 }
 
 //GetUser - gets details of the user corresponding to ID
@@ -47,7 +46,7 @@ func (m *MongoStorage) GetUser(userID string) (user *vsec.User, err error) {
 	user = &vsec.User{}
 	defer conn.Close()
 	err = conn.C("users").Find(bson.M{"id": userID}).One(user)
-	return user, vlog.LogError("UMan:Mongo", err)
+	return user, vmgo.LogError("UMan:Mongo", err)
 }
 
 //GetUsers - gets all users based on offset, limit and filter
@@ -63,7 +62,7 @@ func (m *MongoStorage) GetUsers(offset, limit int, filter *vcmn.Filter) (
 		Skip(offset).
 		Limit(limit).
 		All(&users)
-	return users, vlog.LogError("UMan:Mongo", err)
+	return users, vmgo.LogError("UMan:Mongo", err)
 }
 
 //GetCount - gives the number of user selected by given filter
@@ -72,7 +71,7 @@ func (m *MongoStorage) GetCount(filter *vcmn.Filter) (count int, err error) {
 	defer conn.Close()
 	selector := vmgo.GenerateSelector(filter)
 	count, err = conn.C("users").Find(selector).Count()
-	return count, vlog.LogError("UMan:Mongo", err)
+	return count, vmgo.LogError("UMan:Mongo", err)
 }
 
 //GetAllUsersWithCount - gets all users based on offset and limit, total count
@@ -87,7 +86,7 @@ func (m *MongoStorage) GetCount(filter *vcmn.Filter) (count int, err error) {
 // 	if err == nil {
 // 		err = q.Skip(offset).Limit(limit).All(&users)
 // 	}
-// 	return total, users, vlog.LogError("UMan:Mongo", err)
+// 	return total, users, vmgo.LogError("UMan:Mongo", err)
 // }
 
 //GetUsersWithCount - Get users with total count
@@ -104,7 +103,7 @@ func (m *MongoStorage) GetUsersWithCount(
 	if err == nil {
 		err = q.Skip(offset).Limit(limit).All(&users)
 	}
-	return total, users, vlog.LogError("UMan:Mongo", err)
+	return total, users, vmgo.LogError("UMan:Mongo", err)
 }
 
 //ResetPassword - sets password of a unauthenticated user
@@ -113,7 +112,7 @@ func (m *MongoStorage) ResetPassword(
 	conn := vmgo.DefaultMongoConn()
 	defer func() {
 		conn.Close()
-		vlog.LogError("UMan:Mongo", err)
+		vmgo.LogError("UMan:Mongo", err)
 	}()
 	if err != nil {
 		return err
@@ -150,7 +149,7 @@ func (m *MongoStorage) SetPassword(userID, newPwd string) (err error) {
 		defer conn.Close()
 		m.setPasswordHash(conn, userID, newHash)
 	}
-	return vlog.LogError("UMan:Mongo", err)
+	return vmgo.LogError("UMan:Mongo", err)
 }
 
 func (m *MongoStorage) setPasswordHash(conn *vmgo.MongoConn,
@@ -189,7 +188,7 @@ func (m *MongoStorage) ValidateUser(userID, password string) (err error) {
 			err = errors.New("Failed to varify password")
 		}
 	}
-	return vlog.LogError("UMan:Mongo", err)
+	return vmgo.LogError("UMan:Mongo", err)
 }
 
 //GetUserAuthLevel - gets user authorization level
@@ -201,14 +200,14 @@ func (m *MongoStorage) GetUserAuthLevel(
 		Find(bson.M{"userID": userID}).
 		Select(bson.M{"auth": 1}).
 		One(&level)
-	return level, vlog.LogError("UMan:Mongo", err)
+	return level, vmgo.LogError("UMan:Mongo", err)
 }
 
 //CreateSuperUser - creates the first super user for the application
 func (m *MongoStorage) CreateSuperUser(
 	user *vsec.User, password string) (err error) {
 	defer func() {
-		vlog.LogError("UMan:Mongo", err)
+		vmgo.LogError("UMan:Mongo", err)
 	}()
 	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
@@ -245,7 +244,7 @@ func (m *MongoStorage) SetUserState(
 				"state": state,
 			},
 		})
-	return vlog.LogError("UMan:Mongo", err)
+	return vmgo.LogError("UMan:Mongo", err)
 }
 
 //VerifyUser - sets state of an user account to verified based on userID
@@ -264,9 +263,10 @@ func (m *MongoStorage) VerifyUser(userID, verID string) (err error) {
 			"$set": bson.M{
 				"state":    vsec.Active,
 				"verified": time.Now(),
+				"varfnID":  "",
 			},
 		})
-	return vlog.LogError("UMan:Mongo", err)
+	return vmgo.LogError("UMan:Mongo", err)
 }
 
 //CreateIndices - creates mongoDB indeces for tables used for user management
@@ -274,7 +274,7 @@ func (m *MongoStorage) CreateIndices() (err error) {
 	conn := vmgo.DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C("users").EnsureIndex(mgo.Index{
-		Key:        []string{"id", "varfnID"},
+		Key:        []string{"id", "email"},
 		Unique:     true,
 		DropDups:   true,
 		Background: true, // See notes.

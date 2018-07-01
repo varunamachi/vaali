@@ -2,7 +2,6 @@ package vevt
 
 import (
 	"github.com/varunamachi/vaali/vcmn"
-	"github.com/varunamachi/vaali/vlog"
 	"github.com/varunamachi/vaali/vmgo"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -31,7 +30,7 @@ func (m *MongoAuditor) GetEvents(offset, limit int, filter *vcmn.Filter) (
 	if err == nil {
 		err = q.Skip(offset).Limit(limit).All(&events)
 	}
-	return total, events, vlog.LogError("App:Event", err)
+	return total, events, vmgo.LogError("App:Event", err)
 }
 
 //CreateIndices - creates mongoDB indeces for tables used for event logs

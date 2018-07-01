@@ -28,6 +28,8 @@ func GetJWTKey() []byte {
 type JWTUserInfo struct {
 	UserID   string
 	UserName string
+	UserType string
+	Valid    bool
 	Role     vsec.AuthLevel
 }
 
@@ -63,6 +65,7 @@ func authMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 		var userInfo JWTUserInfo
 		userInfo, err = RetrieveUserInfo(ctx)
+		fmt.Println(err)
 		if err != nil {
 			err = &echo.HTTPError{
 				Code:    http.StatusForbidden,
@@ -125,6 +128,7 @@ func login(ctx echo.Context) (err error) {
 				claims["exp"] = time.Now().Add(time.Hour * 2).Unix()
 				claims["access"] = user.Auth
 				claims["userName"] = name
+				claims["userType"] = "normal"
 				var signed string
 				key := GetJWTKey()
 				signed, err = token.SignedString(key)
@@ -178,28 +182,56 @@ func DoLogin(userID string, password string) (*vsec.User, error) {
 	return user, err
 }
 
+//GetToken - gets token from context or from header
+func GetToken(ctx echo.Context) (token *jwt.Token, err error) {
+	itk := ctx.Get("token")
+	if itk != nil {
+		var ok bool
+		if token, ok = itk.(*jwt.Token); !ok {
+			err = fmt.Errorf("Invalid token found in context")
+		}
+	} else {
+		header := ctx.Request().Header.Get("Authorization")
+		authSchemeLen := len("Bearer")
+		if len(header) > authSchemeLen {
+			tokStr := header[authSchemeLen+1:]
+			keyFunc := func(t *jwt.Token) (interface{}, error) {
+				return GetJWTKey(), nil
+			}
+			token = new(jwt.Token)
+			token, err = jwt.Parse(tokStr, keyFunc)
+		} else {
+			err = fmt.Errorf("Unexpected auth scheme used to JWT")
+		}
+	}
+	return token, err
+}
+
 //RetrieveUserInfo - retrieves user information from JWT token
 func RetrieveUserInfo(ctx echo.Context) (uinfo JWTUserInfo, err error) {
-	success := false
-	itk := ctx.Get("token")
-	// vcmn.DumpJSON(itk)
-	if tkn, ok := itk.(*jwt.Token); ok {
-		if claims, ok := tkn.Claims.(jwt.MapClaims); ok {
-			var ok1, ok3 bool
-			uinfo.UserID, ok1 = claims["userID"].(string)
-			access, ok2 := claims["access"].(float64)
-			uinfo.UserName, ok3 = claims["userName"].(string)
-			uinfo.Role = vsec.AuthLevel(access)
-			success = ok1 && ok2
-			if !ok1 {
+	success := true
+	var token *jwt.Token
+	if token, err = GetToken(ctx); err == nil {
+		if claims, ok := token.Claims.(jwt.MapClaims); ok {
+			var access float64
+			if uinfo.UserID, ok = claims["userID"].(string); !ok {
 				vlog.Error("Net:Sec:API", "Invalid user ID in JWT")
+				success = false
 			}
-			if !ok2 {
-				vlog.Error("Net:Sec:API", "Invalid access level in JWT")
-			}
-			if !ok3 {
+			if uinfo.UserName, ok = claims["userName"].(string); !ok {
 				vlog.Error("Net:Sec:API", "Invalid user name in JWT")
 			}
+			if uinfo.UserType, ok = claims["userType"].(string); !ok {
+				vlog.Error("Net:Sec:API", "Invalid user type in JWT")
+				success = false
+			}
+			if access, ok = claims["access"].(float64); !ok {
+				vlog.Error("Net:Sec:API", "Invalid access level in JWT")
+				success = false
+			} else {
+				uinfo.Role = vsec.AuthLevel(access)
+			}
+			uinfo.Valid = token.Valid
 		}
 	}
 	if !success {

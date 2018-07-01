@@ -24,9 +24,10 @@ func main() {
 		"0",
 		[]cli.Author{
 			cli.Author{
-				Name: "Varuna Amachi",
+				Name: "varunamachi",
 			},
 		},
+		true,
 		"Simple vaali client",
 	)
 	app.Commands = append(app.Commands, cli.Command{
