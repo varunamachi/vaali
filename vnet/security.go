@@ -24,13 +24,13 @@ func GetJWTKey() []byte {
 	return jwtKey
 }
 
-//JWTUserInfo - container for retrieving user information from JWT
-type JWTUserInfo struct {
-	UserID   string
-	UserName string
-	UserType string
-	Valid    bool
-	Role     vsec.AuthLevel
+//Session - container for retrieving session & user information from JWT
+type Session struct {
+	UserID   string         `json:"userID"`
+	UserName string         `json:"userName"`
+	UserType string         `json:"userType"`
+	Valid    bool           `json:"valid"`
+	Role     vsec.AuthLevel `json:"role"`
 }
 
 func getAccessLevel(path string) (access vsec.AuthLevel, err error) {
@@ -63,8 +63,8 @@ func authMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			}
 			vlog.LogError("Net", err)
 		}
-		var userInfo JWTUserInfo
-		userInfo, err = RetrieveUserInfo(ctx)
+		var userInfo Session
+		userInfo, err = RetrieveSessionInfo(ctx)
 		fmt.Println(err)
 		if err != nil {
 			err = &echo.HTTPError{
@@ -207,8 +207,8 @@ func GetToken(ctx echo.Context) (token *jwt.Token, err error) {
 	return token, err
 }
 
-//RetrieveUserInfo - retrieves user information from JWT token
-func RetrieveUserInfo(ctx echo.Context) (uinfo JWTUserInfo, err error) {
+//RetrieveSessionInfo - retrieves session information from JWT token
+func RetrieveSessionInfo(ctx echo.Context) (uinfo Session, err error) {
 	success := true
 	var token *jwt.Token
 	if token, err = GetToken(ctx); err == nil {
@@ -243,7 +243,7 @@ func RetrieveUserInfo(ctx echo.Context) (uinfo JWTUserInfo, err error) {
 //IsAdmin - returns true if user associated with request is an admin
 func IsAdmin(ctx echo.Context) (yes bool) {
 	yes = false
-	uinfo, err := RetrieveUserInfo(ctx)
+	uinfo, err := RetrieveSessionInfo(ctx)
 	if err == nil {
 		yes = uinfo.Role <= vsec.Admin
 	}
@@ -253,7 +253,7 @@ func IsAdmin(ctx echo.Context) (yes bool) {
 //IsSuperUser - returns true if user is a super user
 func IsSuperUser(ctx echo.Context) (yes bool) {
 	yes = false
-	uinfo, err := RetrieveUserInfo(ctx)
+	uinfo, err := RetrieveSessionInfo(ctx)
 	vcmn.DumpJSON(uinfo)
 	if err == nil {
 		yes = uinfo.Role == vsec.Super
@@ -264,7 +264,7 @@ func IsSuperUser(ctx echo.Context) (yes bool) {
 //IsNormalUser - returns true if user is a normal user
 func IsNormalUser(ctx echo.Context) (yes bool) {
 	yes = false
-	uinfo, err := RetrieveUserInfo(ctx)
+	uinfo, err := RetrieveSessionInfo(ctx)
 	if err == nil {
 		yes = uinfo.Role <= vsec.Normal
 	}
