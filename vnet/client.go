@@ -112,7 +112,6 @@ func NewClient(address, appName, versionStr string) *Client {
 
 //Get - performs a get request
 func (client *Client) Get(
-	content interface{},
 	access vsec.AuthLevel,
 	urlArgs ...string) (rr *ResultReader) {
 	var req *http.Request

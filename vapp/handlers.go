@@ -72,13 +72,13 @@ func getEvents(ctx echo.Context) (err error) {
 }
 
 func ping(ctx echo.Context) (err error) {
-	userInfo, _ := vnet.RetrieveUserInfo(ctx)
+	session, _ := vnet.RetrieveSessionInfo(ctx)
 	err = vnet.SendAndAuditOnErr(ctx, &vnet.Result{
 		Status: http.StatusOK,
 		Op:     "ping",
 		Msg:    "ping",
 		OK:     err == nil,
-		Data:   userInfo,
+		Data:   session,
 		Err:    vcmn.ErrString(err),
 	})
 	return vlog.LogError("App:Events", err)
