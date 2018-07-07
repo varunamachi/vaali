@@ -51,7 +51,7 @@ type User struct {
 	FirstName   string        `json:"firstName" bson:"firstName"`
 	LastName    string        `json:"lastName" bson:"lastName"`
 	Title       string        `json:"title" bson:"title"`
-	FullName    string        `json:"fillName" bson:"fullName"`
+	FullName    string        `json:"fullName" bson:"fullName"`
 	State       UserState     `json:"state" bson:"state"`
 	VerID       string        `json:"verID" bson:"verID"`
 	PwdExpiry   time.Time     `json:"pwdExpiry" bson:"pwdExpiry"`
