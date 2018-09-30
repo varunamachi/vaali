@@ -111,7 +111,7 @@ func NewWebApp(
 			Metadata:  map[string]interface{}{},
 		},
 		NetOptions: vnet.Options{
-			RootName:      name,
+			RootName:      "",
 			APIVersion:    apiVersion,
 			Authenticator: authr,
 			Authorizer:    nil,

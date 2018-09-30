@@ -81,14 +81,14 @@ func Warn(module, fmtStr string, args ...interface{}) {
 func Error(module, fmtStr string, args ...interface{}) {
 	if ErrorLevel >= lconf.FilterLevel {
 		lconf.Logger.Log(ErrorLevel, module, fmtStr, args...)
-		Print(module, fmtStr, args...)
+		// Print(module, fmtStr, args...)
 	}
 }
 
 //Fatal - error logs
 func Fatal(module, fmtStr string, args ...interface{}) {
 	lconf.Logger.Log(FatalLevel, module, fmtStr, args...)
-	Print(module, fmtStr, args...)
+	// Print(module, fmtStr, args...)
 	os.Exit(-1)
 }
 
