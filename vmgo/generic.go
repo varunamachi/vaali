@@ -139,6 +139,7 @@ func GenerateSelector(filter *vcmn.Filter) (selector bson.M) {
 			"$and": queries,
 		}
 	}
+	// vcmn.DumpJSON(queries)
 	return selector
 }
 
