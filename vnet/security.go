@@ -56,12 +56,12 @@ func authMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		var userRole, access vsec.AuthLevel
 		access, err = getAccessLevel(ctx.Path())
 		if err != nil {
+			vlog.Error("Net", "URL: %s ERR: %v", ctx.Path(), err)
 			err = &echo.HTTPError{
 				Code:    http.StatusForbidden,
 				Message: "Invalid URL",
 				Inner:   err,
 			}
-			vlog.LogError("Net", err)
 		}
 		var userInfo Session
 		userInfo, err = RetrieveSessionInfo(ctx)
