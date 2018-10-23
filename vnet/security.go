@@ -44,9 +44,10 @@ func getAccessLevel(path string) (access vsec.AuthLevel, err error) {
 			access = vsec.Normal
 		case '3':
 			access = vsec.Monitor
+		default:
+			access = vsec.Public
+			err = fmt.Errorf("Invalid authorized URL: %s", path)
 		}
-		access = vsec.Public
-		err = fmt.Errorf("Invalid authorized URL: %s", path)
 	}
 	return access, err
 }
