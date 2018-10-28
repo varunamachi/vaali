@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/varunamachi/vaali/vcmn"
+	"github.com/varunamachi/vaali/vlog"
 	"github.com/varunamachi/vaali/vmgo"
 	"github.com/varunamachi/vaali/vsec"
 	passlib "gopkg.in/hlandau/passlib.v1"
@@ -136,7 +137,7 @@ func (m *MongoStorage) ResetPassword(
 			},
 		},
 	)
-	return err
+	return vlog.LogError("UMan:Mongo", err)
 }
 
 //SetPassword - sets password of a already authenticated user, old password
@@ -149,7 +150,7 @@ func (m *MongoStorage) SetPassword(userID, newPwd string) (err error) {
 		defer conn.Close()
 		m.setPasswordHash(conn, userID, newHash)
 	}
-	return vmgo.LogError("UMan:Mongo", err)
+	return vlog.LogError("UMan:Mongo", err)
 }
 
 func (m *MongoStorage) setPasswordHash(conn *vmgo.MongoConn,
@@ -188,7 +189,7 @@ func (m *MongoStorage) ValidateUser(userID, password string) (err error) {
 			err = errors.New("Failed to varify password")
 		}
 	}
-	return vmgo.LogError("UMan:Mongo", err)
+	return vlog.LogError("UMan:Mongo", err)
 }
 
 //GetUserAuthLevel - gets user authorization level
@@ -200,7 +201,7 @@ func (m *MongoStorage) GetUserAuthLevel(
 		Find(bson.M{"userID": userID}).
 		Select(bson.M{"auth": 1}).
 		One(&level)
-	return level, vmgo.LogError("UMan:Mongo", err)
+	return level, vlog.LogError("UMan:Mongo", err)
 }
 
 //CreateSuperUser - creates the first super user for the application
@@ -227,7 +228,7 @@ func (m *MongoStorage) CreateSuperUser(
 		return err
 	}
 	err = m.SetPassword(user.ID, password)
-	return err
+	return vlog.LogError("UMan:Mongo", err)
 }
 
 //SetUserState - sets state of an user account
@@ -244,7 +245,7 @@ func (m *MongoStorage) SetUserState(
 				"state": state,
 			},
 		})
-	return vmgo.LogError("UMan:Mongo", err)
+	return vlog.LogError("UMan:Mongo", err)
 }
 
 //VerifyUser - sets state of an user account to verified based on userID
@@ -266,7 +267,7 @@ func (m *MongoStorage) VerifyUser(userID, verID string) (err error) {
 				"varfnID":  "",
 			},
 		})
-	return vmgo.LogError("UMan:Mongo", err)
+	return vlog.LogError("UMan:Mongo", err)
 }
 
 //CreateIndices - creates mongoDB indeces for tables used for user management
