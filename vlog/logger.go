@@ -128,3 +128,21 @@ func LogJSON(level Level, module string, data interface{}) {
 		lconf.Logger.Log(level, module, "%s", string(b))
 	}
 }
+
+//HasError - logs the errors from the array that are not nil and return true if
+//there were one or more non nil errors
+func HasError(module string, errs ...error) (has bool) {
+	_, file, line, _ := runtime.Caller(1)
+	for _, e := range errs {
+		if e != nil {
+			if ErrorLevel >= lconf.FilterLevel {
+				lconf.Logger.Log(ErrorLevel, module, "%s -- %s @ %d",
+					e.Error(),
+					file,
+					line)
+			}
+			has = true
+		}
+	}
+	return has
+}
