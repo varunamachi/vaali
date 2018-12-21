@@ -105,6 +105,20 @@ func LogError(module string, err error) error {
 	return err
 }
 
+//LogErrorX - log error with a message
+func LogErrorX(module, msg string, err error) error {
+	if err != nil && ErrorLevel >= lconf.FilterLevel {
+		_, file, line, _ := runtime.Caller(1)
+		lconf.Logger.Log(ErrorLevel, module, "%s -- %s. ERROR: %s @ %d",
+			msg,
+			err.Error(),
+			file,
+			line)
+		// LogJSON(ErrorLevel, module, err)
+	}
+	return err
+}
+
 //LogFatal - logs before exit
 func LogFatal(module string, err error) {
 	if err != nil {
