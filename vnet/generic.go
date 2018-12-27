@@ -294,11 +294,11 @@ func getFilterValuesX(ctx echo.Context) (err error) {
 	status, msg := DefaultSM("Filter Values of", dtype)
 	var fspec []*vcmn.FilterSpec
 	var filter vcmn.Filter
-	var values map[string]*vcmn.FilterVal
+	var values bson.M
 	if len(dtype) != 0 {
 		err1 := LoadJSONFromArgs(ctx, "fspec", &fspec)
 		err2 := LoadJSONFromArgs(ctx, "filter", &filter)
-		if vlog.HasError("V:Generic", err1, err2) {
+		if !vlog.HasError("V:Generic", err1, err2) {
 			values, err = vmgo.GetFilterValuesX(dtype, &filter, fspec)
 		} else {
 			msg = "Failed to load filter description from URL"

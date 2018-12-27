@@ -186,16 +186,28 @@ func GetFilterValues(
 func GetFilterValuesX(
 	dtype string,
 	filter *vcmn.Filter,
-	specs vcmn.FilterSpecList) (values map[string]*vcmn.FilterVal, err error) {
+	specs vcmn.FilterSpecList) (values bson.M, err error) {
 	conn := DefaultMongoConn()
 	defer conn.Close()
 	facet := bson.M{}
 	for _, spec := range specs {
 		switch spec.Type {
 		case vcmn.Prop:
-			facet[spec.Field] = bson.M{"$sortByCount": "$" + spec.Field}
+			facet[spec.Field] = []bson.M{
+				bson.M{
+					"$sortByCount": "$" + spec.Field,
+				},
+			}
 		case vcmn.Array:
-			facet[spec.Field] = bson.M{"$sortByCount": "$" + spec.Field}
+			fd := "$" + spec.Field
+			facet[spec.Field] = []bson.M{
+				bson.M{
+					"$unwind": fd,
+				},
+				bson.M{
+					"$sortByCount": fd,
+				},
+			}
 		case vcmn.Date:
 		case vcmn.Boolean:
 		case vcmn.Search:
@@ -206,7 +218,7 @@ func GetFilterValuesX(
 	if filter != nil {
 		selector = GenerateSelector(filter)
 	}
-	values = make(map[string]*vcmn.FilterVal)
+	values = bson.M{}
 	err = conn.C(dtype).Pipe([]bson.M{
 		bson.M{
 			"$match": selector,
@@ -214,6 +226,6 @@ func GetFilterValuesX(
 		bson.M{
 			"$facet": facet,
 		},
-	}).All(&values)
+	}).One(&values)
 	return values, LogError("DB:Mongo", err)
 }
