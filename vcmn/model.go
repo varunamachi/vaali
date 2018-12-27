@@ -136,3 +136,9 @@ type Filter struct {
 
 //FilterSpecList - alias for array of filter specs
 type FilterSpecList []*FilterSpec
+
+//FilterVal - values for filter along with the count
+type FilterVal struct {
+	Name  string `json:"name" bson:"_id"`
+	Count int    `json:"count" bson:"count"`
+}

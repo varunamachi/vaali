@@ -181,3 +181,39 @@ func GetFilterValues(
 	}
 	return values, LogError("DB:Mongo", err)
 }
+
+//GetFilterValuesX - get values for filter based on given filter
+func GetFilterValuesX(
+	dtype string,
+	filter *vcmn.Filter,
+	specs vcmn.FilterSpecList) (values map[string]*vcmn.FilterVal, err error) {
+	conn := DefaultMongoConn()
+	defer conn.Close()
+	facet := bson.M{}
+	for _, spec := range specs {
+		switch spec.Type {
+		case vcmn.Prop:
+			facet[spec.Field] = bson.M{"$sortByCount": "$" + spec.Field}
+		case vcmn.Array:
+			facet[spec.Field] = bson.M{"$sortByCount": "$" + spec.Field}
+		case vcmn.Date:
+		case vcmn.Boolean:
+		case vcmn.Search:
+		case vcmn.Static:
+		}
+	}
+	var selector bson.M
+	if filter != nil {
+		selector = GenerateSelector(filter)
+	}
+	values = make(map[string]*vcmn.FilterVal)
+	err = conn.C(dtype).Pipe([]bson.M{
+		bson.M{
+			"$match": selector,
+		},
+		bson.M{
+			"$facet": facet,
+		},
+	}).All(&values)
+	return values, LogError("DB:Mongo", err)
+}

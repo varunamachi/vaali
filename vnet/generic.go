@@ -289,6 +289,38 @@ func getFilterValues(ctx echo.Context) (err error) {
 	return vlog.LogError("S:Entity", err)
 }
 
+func getFilterValuesX(ctx echo.Context) (err error) {
+	dtype := ctx.Param("dataType")
+	status, msg := DefaultSM("Filter Values of", dtype)
+	var fspec []*vcmn.FilterSpec
+	var filter vcmn.Filter
+	var values map[string]*vcmn.FilterVal
+	if len(dtype) != 0 {
+		err1 := LoadJSONFromArgs(ctx, "fspec", &fspec)
+		err2 := LoadJSONFromArgs(ctx, "filter", &filter)
+		if vlog.HasError("V:Generic", err1, err2) {
+			values, err = vmgo.GetFilterValuesX(dtype, &filter, fspec)
+		} else {
+			msg = "Failed to load filter description from URL"
+			err = errors.New(msg)
+			status = http.StatusBadRequest
+		}
+	} else {
+		msg = "Invalid empty data type given"
+		status = http.StatusBadRequest
+		err = errors.New(msg)
+	}
+	err = SendAndAuditOnErr(ctx, &Result{
+		Status: status,
+		Op:     dtype + "_filter_fetch",
+		Msg:    msg,
+		OK:     err == nil,
+		Data:   values,
+		Err:    vcmn.ErrString(err),
+	})
+	return vlog.LogError("S:Entity", err)
+}
+
 func bind(ctx echo.Context, dataType string) (
 	data vmgo.StoredItem, err error) {
 	data = vmgo.Instance(dataType)
