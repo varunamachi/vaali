@@ -185,33 +185,36 @@ func GetFilterValues(
 //GetFilterValuesX - get values for filter based on given filter
 func GetFilterValuesX(
 	dtype string,
-	filter *vcmn.Filter,
-	specs vcmn.FilterSpecList) (values bson.M, err error) {
+	field string,
+	specs vcmn.FilterSpecList,
+	filter *vcmn.Filter) (values bson.M, err error) {
 	conn := DefaultMongoConn()
 	defer conn.Close()
 	facet := bson.M{}
 	for _, spec := range specs {
-		switch spec.Type {
-		case vcmn.Prop:
-			facet[spec.Field] = []bson.M{
-				bson.M{
-					"$sortByCount": "$" + spec.Field,
-				},
+		if spec.Field != field {
+			switch spec.Type {
+			case vcmn.Prop:
+				facet[spec.Field] = []bson.M{
+					bson.M{
+						"$sortByCount": "$" + spec.Field,
+					},
+				}
+			case vcmn.Array:
+				fd := "$" + spec.Field
+				facet[spec.Field] = []bson.M{
+					bson.M{
+						"$unwind": fd,
+					},
+					bson.M{
+						"$sortByCount": fd,
+					},
+				}
+			case vcmn.Date:
+			case vcmn.Boolean:
+			case vcmn.Search:
+			case vcmn.Static:
 			}
-		case vcmn.Array:
-			fd := "$" + spec.Field
-			facet[spec.Field] = []bson.M{
-				bson.M{
-					"$unwind": fd,
-				},
-				bson.M{
-					"$sortByCount": fd,
-				},
-			}
-		case vcmn.Date:
-		case vcmn.Boolean:
-		case vcmn.Search:
-		case vcmn.Static:
 		}
 	}
 	var selector bson.M

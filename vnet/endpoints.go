@@ -82,11 +82,19 @@ func GetEndpoints() (endpoints []*Endpoint) {
 		},
 		&Endpoint{
 			Method:   echo.GET,
-			URL:      "gen/:dataType/fvals",
+			URL:      "gen/:dataType/fvals/:field",
 			Access:   vsec.Monitor,
 			Category: "generic",
 			Func:     getFilterValuesX,
 			Comment:  "Get possible values for filter",
+		},
+		&Endpoint{
+			Method:   echo.GET,
+			URL:      "gen/:dataType/fvals/",
+			Access:   vsec.Monitor,
+			Category: "generic",
+			Func:     getFilterValuesX,
+			Comment:  "Get possible values for filter without field",
 		},
 		// &Endpoint{
 		// 	Method:   echo.GET,
