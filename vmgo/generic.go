@@ -45,10 +45,11 @@ func GetAll(dtype string,
 	limit int,
 	filter *vcmn.Filter,
 	out interface{}) (err error) {
+	selector := GenerateSelector(filter)
 	conn := DefaultMongoConn()
 	defer conn.Close()
 	err = conn.C(dtype).
-		Find(nil).
+		Find(selector).
 		Sort(sortFiled).
 		Skip(offset).
 		Limit(limit).
