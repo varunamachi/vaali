@@ -1,6 +1,7 @@
 package vmgo
 
 import (
+	"github.com/jinzhu/now"
 	"github.com/varunamachi/vaali/vcmn"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -94,15 +95,30 @@ func GetAllWithCount(dtype string,
 //GenerateSelector - creates mongodb query for a generic filter
 func GenerateSelector(filter *vcmn.Filter) (selector bson.M) {
 	queries := make([]bson.M, 0, 100)
-	for key, values := range filter.Props {
-		if len(values) == 1 {
-			queries = append(queries, bson.M{key: values[0]})
-		} else if len(values) > 1 {
-			orProps := make([]bson.M, 0, len(values))
-			for _, val := range values {
-				orProps = append(orProps, bson.M{key: val})
+	// for key, values := range filter.Props {
+	// 	if len(values) == 1 {
+	// 		queries = append(queries, bson.M{key: values[0]})
+	// 	} else if len(values) > 1 {
+	// 		orProps := make([]bson.M, 0, len(values))
+	// 		for _, val := range values {
+	// 			orProps = append(orProps, bson.M{key: val})
+	// 		}
+	// 		queries = append(queries, bson.M{"$or": orProps})
+	// 	}
+	// }
+	for field, matcher := range filter.Props {
+		if len(matcher.Fields) != 0 {
+			mode := "$in"
+			if matcher.Strategy == vcmn.MatchAll {
+				mode = "$all"
+			} else if matcher.Strategy == vcmn.MatchNone {
+				mode = "$nin"
 			}
-			queries = append(queries, bson.M{"$or": orProps})
+			queries = append(queries, bson.M{
+				field: bson.M{
+					mode: matcher.Fields,
+				},
+			})
 		}
 	}
 	for field, val := range filter.Bools {
@@ -115,8 +131,8 @@ func GenerateSelector(filter *vcmn.Filter) (selector bson.M) {
 			queries = append(queries,
 				bson.M{
 					field: bson.M{
-						"$gte": dateRange.From,
-						"$lte": dateRange.To,
+						"$gte": now.New(dateRange.From).BeginningOfDay(),
+						"$lte": now.New(dateRange.To).EndOfDay(),
 					},
 				},
 			)
@@ -125,8 +141,10 @@ func GenerateSelector(filter *vcmn.Filter) (selector bson.M) {
 	for field, matcher := range filter.Lists {
 		if len(matcher.Fields) != 0 {
 			mode := "$in"
-			if matcher.MatchAll {
+			if matcher.Strategy == vcmn.MatchAll {
 				mode = "$all"
+			} else if matcher.Strategy == vcmn.MatchNone {
+				mode = "$nin"
 			}
 			queries = append(queries, bson.M{
 				field: bson.M{
@@ -140,7 +158,8 @@ func GenerateSelector(filter *vcmn.Filter) (selector bson.M) {
 			"$and": queries,
 		}
 	}
-	// vcmn.DumpJSON(queries)
+	// vcmn.DumpJSON(filter)
+	// vcmn.DumpJSON(selector)
 	return selector
 }
 

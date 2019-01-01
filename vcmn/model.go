@@ -100,6 +100,20 @@ const Constant FilterType = "constant"
 //Static - constant filter value
 const Static FilterType = "static"
 
+//MatchStrategy - strategy to match multiple fields passed as part of the
+//filters
+type MatchStrategy string
+
+//MatchAll - match all provided values while executing filter
+const MatchAll MatchStrategy = "all"
+
+//MatchOne - match atleast one of the  provided values while executing filter
+const MatchOne MatchStrategy = "one"
+
+//MatchNone - match values that are not part of the provided list while
+//executing filter
+const MatchNone MatchStrategy = "none"
+
 //FilterSpec - filter specification
 type FilterSpec struct {
 	Field string     `json:"field" bson:"field"`
@@ -107,12 +121,11 @@ type FilterSpec struct {
 	Type  FilterType `json:"type" bson:"type"`
 }
 
-//Matcher - matches the given fields. If MatchAll set to true all
-//the elements of the fields array needs to be matched, otherwise only one element
-//needs to match (minimum)
+//Matcher - matches the given fields. If multiple fileds are given the; the
+//joining condition is decided by the MatchStrategy given
 type Matcher struct {
-	MatchAll bool     `json:"matchAll" bson:"matchAll"`
-	Fields   []string `json:"fields" bson:"fields"`
+	Strategy MatchStrategy `json:"strategy" bson:"strategy"`
+	Fields   []interface{} `json:"fields" bson:"fields"`
 }
 
 //SearchField - contains search string and info for performing the search
@@ -127,7 +140,7 @@ type PropMatcher []interface{}
 
 //Filter - generic filter used to filter data in any mongodb collection
 type Filter struct {
-	Props    map[string]PropMatcher `json:"props" bson:"props"`
+	Props    map[string]Matcher     `json:"props" bson:"props"`
 	Bools    map[string]interface{} `json:"bools" bson:"bools"`
 	Dates    map[string]DateRange   `json:"dates" bson:"dates"`
 	Lists    map[string]Matcher     `json:"lists" bson:"lists"`
