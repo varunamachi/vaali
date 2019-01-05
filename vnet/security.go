@@ -21,6 +21,8 @@ func GetJWTKey() []byte {
 	if len(jwtKey) == 0 {
 		jwtKey, _ = uuid.NewV4().MarshalBinary()
 	}
+	//@TODO - remove later - Just for test
+	// jwtKey = []byte("sdhfjsdfhdskjghdfkjhgdf")
 	return jwtKey
 }
 
@@ -66,7 +68,7 @@ func authMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 		var userInfo Session
 		userInfo, err = RetrieveSessionInfo(ctx)
-		fmt.Println(err)
+		// fmt.Println(err)
 		if err != nil {
 			err = &echo.HTTPError{
 				Code:    http.StatusForbidden,

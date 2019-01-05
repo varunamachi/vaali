@@ -67,7 +67,7 @@ func InitWithOptions(opts Options) {
 	e.HTTPErrorHandler = ModifiedHTTPErrorHandler
 	e.Use(middleware.Recover())
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-		Format: "[ACCSS] [Net:HTTP] ${status} : ${method} => ${uri}\n",
+		Format: "[ACCSS] [Net:HTTP] ${status} : ${method} => ${path}\n",
 	}))
 	//Add middleware
 	authenticator = opts.Authenticator
