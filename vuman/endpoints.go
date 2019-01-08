@@ -81,15 +81,13 @@ func GetEndpoints() (endpoints []*vnet.Endpoint) {
 			Func:     verify,
 			Comment:  "Verify a registered account",
 		},
-		//@TODO implement BELOW - same as updateUser but can only update current
-		//user
-		// &vnet.Endpoint{
-		// 	Method:   echo.PUT,
-		// 	URL:      "/uman/user/self",
-		// 	Access:   vsec.Public,
-		// 	Category: "user management",
-		// 	Func:     updateUserProfile,
-		// },
+		&vnet.Endpoint{
+			Method:   echo.PUT,
+			URL:      "/uman/user/self",
+			Access:   vsec.Public,
+			Category: "user management",
+			Func:     updateProfile,
+		},
 	}
 	return endpoints
 

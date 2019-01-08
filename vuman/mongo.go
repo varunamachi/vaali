@@ -291,3 +291,25 @@ func (m *MongoStorage) CleanData() (err error) {
 	_, err = conn.C("users").RemoveAll(bson.M{})
 	return err
 }
+
+//UpdateProfile - updates user details - this should be used when user logged in
+//is updating own user account
+func (m *MongoStorage) UpdateProfile(user *vsec.User) (err error) {
+	conn := vmgo.DefaultMongoConn()
+	defer conn.Close()
+	err = conn.C("users").Update(
+		bson.M{
+			"id": user.ID,
+		}, bson.M{
+			"$set": bson.M{
+				"email":     user.Email,
+				"firstName": user.FirstName,
+				"lastName":  user.LastName,
+				"title":     user.Title,
+				"fullName":  user.FirstName + " " + user.LastName,
+				"modified":  time.Now(),
+			},
+		},
+	)
+	return vlog.LogError("UMan:Mongo", err)
+}

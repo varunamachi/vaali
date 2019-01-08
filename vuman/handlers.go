@@ -7,7 +7,7 @@ import (
 
 	"github.com/varunamachi/vaali/vcmn"
 
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/labstack/echo"
@@ -299,34 +299,6 @@ func resetPassword(ctx echo.Context) (err error) {
 	return vlog.LogError("Sec:Hdl", err)
 }
 
-// func verifyUser(ctx echo.Context) (err error) {
-// 	status, msg := vnet.DefMS("User verification")
-// 	userID := ctx.Param("userID")
-// 	verID := ctx.Param("verID")
-// 	if len(userID) != 0 && len(verID) != 0 {
-// 		err = VerifyUser(userID, verID)
-// 		if err != nil {
-// 			msg = "Failed to verify user"
-// 			status = http.StatusInternalServerError
-// 		}
-// 	} else {
-// 		status = http.StatusBadRequest
-// 		msg = "User information given is malformed"
-// 	}
-// 	vnet.AuditedSendX(ctx, userID, &vnet.Result{
-// 		Status: status,
-// 		Op:     "user_verify",
-// 		Msg:    msg,
-// 		OK:     err == nil,
-// 		Data: vlog.M{
-// 			"userID": userID,
-// 			"verID":  verID,
-// 		},
-// 		Err: err,
-// 	})
-// 	return vlog.LogError("Sec:Hdl", err)
-// }
-
 func verify(ctx echo.Context) (err error) {
 	status, msg := vnet.DefMS("Create Password")
 	params := make(map[string]string)
@@ -361,6 +333,36 @@ func verify(ctx echo.Context) (err error) {
 			"verificationID": verID,
 		},
 		Err: vcmn.ErrString(err),
+	})
+	return vlog.LogError("Sec:Hdl", err)
+}
+
+func updateProfile(ctx echo.Context) (err error) {
+	status, msg := vnet.DefMS("Update profile")
+	var user vsec.User
+	sessionUserID := vnet.GetString(ctx, "userID")
+	err = ctx.Bind(&user)
+	if err == nil && sessionUserID == user.ID {
+		err = storage.UpdateProfile(&user)
+		if err != nil {
+			msg = "Failed to update profile in database"
+			status = http.StatusInternalServerError
+		}
+	} else {
+		status = http.StatusBadRequest
+		if err != nil {
+			msg = "User information given is malformed"
+		} else {
+			msg = "Cannot update profile of another user"
+		}
+	}
+	err = vnet.AuditedSendX(ctx, user, &vnet.Result{
+		Status: status,
+		Op:     "user_profile_update",
+		Msg:    msg,
+		OK:     err == nil,
+		Data:   nil,
+		Err:    vcmn.ErrString(err),
 	})
 	return vlog.LogError("Sec:Hdl", err)
 }

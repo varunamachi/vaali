@@ -104,3 +104,9 @@ func (p *PGStorage) CreateIndices() (err error) {
 func (p *PGStorage) CleanData() (err error) {
 	return vlog.LogError("UMan:PGSQL", err)
 }
+
+//UpdateProfile - updates user details - this should be used when user logged in
+//is updating own user account
+func (p *PGStorage) UpdateProfile(user *vsec.User) (err error) {
+	return vlog.LogError("UMan:PGSQL", err)
+}

@@ -141,4 +141,8 @@ type UserStorage interface {
 
 	//CleanData - cleans user management related data from database
 	CleanData() (err error)
+
+	//UpdateProfile - updates user details - this should be used when user
+	//logged in is updating own user account
+	UpdateProfile(user *User) (err error)
 }
