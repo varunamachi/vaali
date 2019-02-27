@@ -15,21 +15,21 @@ import (
 	"github.com/varunamachi/vaali/vnet"
 	"github.com/varunamachi/vaali/vsec"
 	"gopkg.in/mgo.v2/bson"
-	"gopkg.in/urfave/cli.v1"
+	cli "gopkg.in/urfave/cli.v1"
 )
 
 //GetCommands - gives commands related to HTTP networking
 func GetCommands(app *App) []cli.Command {
-	if app.IsService {
-		return []cli.Command{
-			*vmgo.MakeRequireMongo(serviceStartCmd()),
-			*vmgo.MakeRequireMongo(createUserCmd()),
-			*vmgo.MakeRequireMongo(setupCmd()),
-			*vmgo.MakeRequireMongo(resetCmd()),
-			*vmgo.MakeRequireMongo(overridePasswordCmd()),
-			*testEMail(),
-		}
-	}
+	// if app.IsService {
+	// 	return []cli.Command{
+	// 		*vmgo.MakeRequireMongo(serviceStartCmd()),
+	// 		*vmgo.MakeRequireMongo(createUserCmd()),
+	// 		*vmgo.MakeRequireMongo(setupCmd()),
+	// 		*vmgo.MakeRequireMongo(resetCmd()),
+	// 		*vmgo.MakeRequireMongo(overridePasswordCmd()),
+	// 		*testEMail(),
+	// 	}
+	// }
 	return []cli.Command{
 		*vmgo.MakeRequireMongo(createUserCmd()),
 		*vmgo.MakeRequireMongo(setupCmd()),
@@ -39,7 +39,10 @@ func GetCommands(app *App) []cli.Command {
 	}
 }
 
-func serviceStartCmd() *cli.Command {
+//DefaultServiceStartCmd - give default service start command. If nothing
+//special needs to be done during server start this command should be added to
+//app.Commands array
+func DefaultServiceStartCmd() *cli.Command {
 	return &cli.Command{
 		Name:  "serve",
 		Usage: "Starts the HTTP service",
