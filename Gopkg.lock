@@ -8,6 +8,12 @@
   version = "v3.1.0"
 
 [[projects]]
+  name = "github.com/jinzhu/now"
+  packages = ["."]
+  revision = "1a6fdd4591d336a897120c50c69ed3c0e8033468"
+  version = "v1.0.1"
+
+[[projects]]
   name = "github.com/labstack/echo"
   packages = [".","middleware"]
   revision = "0473c51f1dbd83487effce00702571d19033a6e5"
@@ -42,6 +48,12 @@
   packages = ["."]
   revision = "879c5887cd475cd7864858769793b2ceb0d44feb"
   version = "v1.1.0"
+
+[[projects]]
+  name = "github.com/shirou/gopsutil"
+  packages = ["."]
+  revision = "5335e3fd506df4cb63de0a8239c7461d23063be6"
+  version = "v2.19.05"
 
 [[projects]]
   branch = "master"
@@ -100,6 +112,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "82145b1dcc75fcab086024d14abf303be76085637df643cd12ace1c32047906a"
+  inputs-digest = "9edda120ce0929c2f48b5f6914d4f2d6a9a8ffe834799f57ff3f80539a0b9f2d"
   solver-name = "gps-cdcl"
   solver-version = 1
