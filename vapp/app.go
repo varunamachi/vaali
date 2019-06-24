@@ -9,6 +9,7 @@ import (
 
 	"github.com/varunamachi/vaali/vevt"
 	"github.com/varunamachi/vaali/vsec"
+	"github.com/varunamachi/vaali/vsys"
 
 	"github.com/varunamachi/vaali/vmgo"
 
@@ -39,6 +40,7 @@ func (app *App) Exec(args []string) (err error) {
 	if app.IsService {
 		vnet.AddEndpoints(vnet.GetEndpoints()...)
 		vnet.AddEndpoints(vuman.GetEndpoints()...)
+		vnet.AddEndpoints(vsys.GetEndpoints()...)
 		vnet.AddEndpoints(getEndpoints()...)
 	}
 	if app.RequiresMongo {
