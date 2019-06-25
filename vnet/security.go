@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/varunamachi/vaali/vcmn"
 
@@ -128,7 +128,7 @@ func login(ctx echo.Context) (err error) {
 				claims := token.Claims.(jwt.MapClaims)
 				name = user.FirstName + " " + user.LastName
 				claims["userID"] = user.ID
-				claims["exp"] = time.Now().Add(time.Hour * 2).Unix()
+				claims["exp"] = time.Now().Add(time.Hour * 24 * 7).Unix()
 				claims["access"] = user.Auth
 				claims["userName"] = name
 				claims["userType"] = "normal"

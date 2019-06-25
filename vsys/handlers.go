@@ -15,7 +15,7 @@ func GetEndpoints() []*vnet.Endpoint {
 	return []*vnet.Endpoint{
 		&vnet.Endpoint{
 			Method:   echo.GET,
-			URL:      "stats/system",
+			URL:      "system/stats",
 			Access:   vsec.Admin,
 			Category: "monitoring",
 			Func:     getSystemStats,
