@@ -11,49 +11,106 @@ import (
 	"github.com/shirou/gopsutil/cpu"
 )
 
-//GetSystemStats - get system stats for the server
-func GetSystemStats() (sysStats *SysStat, err error) {
-	defer func() {
-		vlog.LogErrorX("Sys:Stat", "Failed to retrieve system stats", err)
-	}()
-	sysStats = &SysStat{
-		DiskStats: make([]DiskStats, 0, 20),
+//GetSysStats - get system statistics at the time of the call
+func GetSysStats() (sysStats *SysStat, err error) {
+	defer vlog.LogErrorX("Sys:Stat", "Failed to retrieve system stats", err)
+	sysStats = &SysStat{}
+	if sysStats.CPUStats, err = GetCPUStats(); err != nil {
+		sysStats = nil
+		return
+	}
+	if sysStats.MemoryStats, err = GetMemStats(); err != nil {
+		sysStats = nil
+		return
+	}
+	return
+}
+
+//GetSysInfo - gets system info
+func GetSysInfo() (sysInfo *SysInfo, err error) {
+	defer vlog.LogErrorX("Sys:Stat", "Failed to retrieve system stats", err)
+	sysInfo = &SysInfo{}
+	if sysInfo.DiskInfo, err = GetDiskInfo(); err != nil {
+		sysInfo = nil
+		return
 	}
 
-	if sysStats.CPUStats.NumPhysical, err = cpu.Counts(false); err != nil {
+	if sysInfo.CPUInfo, err = GetCPUInfo(); err != nil {
+		sysInfo = nil
 		return
 	}
-	if sysStats.CPUStats.NumLogical, err = cpu.Counts(true); err != nil {
+	return
+}
+
+//GetCPUStats - get system CPU stats, number of cores, usage...
+func GetCPUStats() (cpuStats *CPUStats, err error) {
+	defer vlog.LogErrorX("Sys:Stats", "Failed to retrieve CPU stats", err)
+	cpuStats = &CPUStats{}
+	//Per core usage:
+	if cpuStats.Usage, err = cpu.Percent(1*time.Millisecond, true); err != nil {
 		return
 	}
-	if sysStats.CPUStats.Usage, err = cpu.Percent(
-		1*time.Millisecond, true); err != nil {
+
+	//All core usage, combined
+	var combinedUsage []float64
+	if combinedUsage, err = cpu.Percent(
+		1*time.Millisecond, false); err != nil || len(combinedUsage) < 1 {
 		return
 	}
+	cpuStats.CombinedUsage = combinedUsage[0]
+	return
+}
+
+//GetMemStats - get memory stats
+func GetMemStats() (memStats *MemoryStats, err error) {
+	defer vlog.LogErrorX("Sys:Stats", "Failed to retrieve memory stats", err)
 	mem, err := mem.VirtualMemory()
 	if err != nil {
 		return
 	}
-	sysStats.MemoryStats.Total = mem.Total
-	sysStats.MemoryStats.Free = mem.Free
-	sysStats.MemoryStats.Usage = mem.Used
+	memStats = &MemoryStats{}
+	memStats.Total = mem.Total
+	memStats.Free = mem.Free
+	memStats.Usage = mem.Used
+	return
+}
 
+//GetDiskInfo - get stats for all the disks in the system
+func GetDiskInfo() (diskInfo []*DiskInfo, err error) {
+	defer vlog.LogErrorX("Sys:Stats", "Failed to retrieve disk stats", err)
 	partitions, err := disk.Partitions(false)
 	if err != nil {
 		return
 	}
+	diskInfo = make([]*DiskInfo, 0, len(partitions))
 	for _, ptn := range partitions {
 		usageStat, err := disk.Usage(ptn.Mountpoint)
 		if err != nil {
-			return sysStats, err
+			break
 		}
-		sysStats.DiskStats = append(sysStats.DiskStats, DiskStats{
+		diskInfo = append(diskInfo, &DiskInfo{
 			Path:   usageStat.Path,
 			Fstype: usageStat.Fstype,
 			Total:  usageStat.Total,
 			Free:   usageStat.Free,
 			Used:   usageStat.Used,
 		})
+	}
+	return
+}
+
+//GetCPUInfo - gives information about the CPU/CPUs of ther server
+func GetCPUInfo() (cpuInfo *CPUInfo, err error) {
+	defer vlog.LogErrorX("Sys:Stats", "Failed to retrieve CPU info", err)
+	cpuInfo = &CPUInfo{}
+
+	//Num physical cores:
+	if cpuInfo.NumPhysical, err = cpu.Counts(false); err != nil {
+		return
+	}
+	//Num threads:
+	if cpuInfo.NumLogical, err = cpu.Counts(true); err != nil {
+		return
 	}
 	return
 }

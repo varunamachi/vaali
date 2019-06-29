@@ -18,22 +18,104 @@ func GetEndpoints() []*vnet.Endpoint {
 			URL:      "system/stats",
 			Access:   vsec.Admin,
 			Category: "monitoring",
-			Func:     getSystemStats,
+			Func:     getSysStats,
 			Comment:  "Fetch system statistics",
+		},
+		&vnet.Endpoint{
+			Method:   echo.GET,
+			URL:      "system/info",
+			Access:   vsec.Admin,
+			Category: "monitoring",
+			Func:     getSysInfo,
+			Comment:  "Fetch disk usage info",
+		},
+		&vnet.Endpoint{
+			Method:   echo.GET,
+			URL:      "system/stats/cpu",
+			Access:   vsec.Admin,
+			Category: "monitoring",
+			Func:     getCPUUsage,
+			Comment:  "Fetch CPU usage info",
+		},
+		&vnet.Endpoint{
+			Method:   echo.GET,
+			URL:      "system/stats/memory",
+			Access:   vsec.Admin,
+			Category: "monitoring",
+			Func:     getMemoryUsage,
+			Comment:  "Fetch memory usage info",
 		},
 	}
 }
 
-func getSystemStats(ctx echo.Context) (err error) {
+func getSysStats(ctx echo.Context) (err error) {
 	status, msg := vnet.DefMS("Fetch System Stats")
-	stats, err := GetSystemStats()
+	var stats *SysStat
+	stats, err = GetSysStats()
 	if err != nil {
 		status = http.StatusInternalServerError
 		msg = "Failed to fetch system stats"
 	}
 	err = vnet.SendAndAuditOnErr(ctx, &vnet.Result{
 		Status: status,
-		Op:     "events_fetch",
+		Op:     "sys_stats_fetch",
+		Msg:    msg,
+		OK:     err == nil,
+		Data:   stats,
+		Err:    vcmn.ErrString(err),
+	})
+	return vlog.LogError("App:Events", err)
+}
+
+func getSysInfo(ctx echo.Context) (err error) {
+	status, msg := vnet.DefMS("Fetch system info")
+	var stats *SysInfo
+	stats, err = GetSysInfo()
+	if err != nil {
+		status = http.StatusInternalServerError
+		msg = "Failed to fetch system info"
+	}
+	err = vnet.SendAndAuditOnErr(ctx, &vnet.Result{
+		Status: status,
+		Op:     "sys_info_fetch",
+		Msg:    msg,
+		OK:     err == nil,
+		Data:   stats,
+		Err:    vcmn.ErrString(err),
+	})
+	return vlog.LogError("Sys:Stats", err)
+}
+
+func getCPUUsage(ctx echo.Context) (err error) {
+	status, msg := vnet.DefMS("Fetch cpu usage info")
+	var stats *CPUStats
+	stats, err = GetCPUStats()
+	if err != nil {
+		status = http.StatusInternalServerError
+		msg = "Failed to fetch cpu usage info"
+	}
+	err = vnet.SendAndAuditOnErr(ctx, &vnet.Result{
+		Status: status,
+		Op:     "stats_cpu_fetch",
+		Msg:    msg,
+		OK:     err == nil,
+		Data:   stats,
+		Err:    vcmn.ErrString(err),
+	})
+	return vlog.LogError("App:Events", err)
+}
+
+func getMemoryUsage(ctx echo.Context) (err error) {
+	status, msg := vnet.DefMS("Fetch memory usage info")
+	var stats *MemoryStats
+	stats, err = GetMemStats()
+	if err != nil {
+		status = http.StatusInternalServerError
+		msg = "Failed to fetch memory usage info"
+	}
+	err = vnet.SendAndAuditOnErr(ctx, &vnet.Result{
+		Status: status,
+		Op:     "stats_cpu_fetch",
 		Msg:    msg,
 		OK:     err == nil,
 		Data:   stats,
