@@ -3,7 +3,7 @@ package vsys
 //MemoryStats - memory statistics
 type MemoryStats struct {
 	Total uint64 `json:"total"`
-	Usage uint64 `json:"usage"`
+	Used  uint64 `json:"used"`
 	Free  uint64 `json:"free"`
 }
 
@@ -15,7 +15,7 @@ type CPUStats struct {
 
 //SysStat - system stats for the server
 type SysStat struct {
-	CPUStats    *CPUStats    `json:"cpuUsage"`
+	CPUStats    *CPUStats    `json:"cpuStats"`
 	MemoryStats *MemoryStats `json:"memoryStats"`
 }
 
