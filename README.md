@@ -18,4 +18,7 @@ Vaali provides following features using above mentioned libraries:
 * JSON based configuration system
 
 ## Installing
+* Using dep:
+```dep ensure add github.com/varunamachi/vaali```
+* Using go get:
 ```go get -v github.com/varunamachi/vaali```
