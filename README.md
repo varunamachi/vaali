@@ -1,7 +1,7 @@
 # vaali
 
 ## Dependencies
-Vaali is a golang based web/cli application framework with following which, with thin wrappers, integrates:
+Vaali is a golang based web/cli application framework which, with thin wrappers, integrates:
 * Command line interface with https://github.com/urfave/cli
 * MongoDB - with mgo
 * Web app framework with Labstack echo - https://github.com/labstack/echo
