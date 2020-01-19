@@ -47,7 +47,8 @@ func GetCPUStats() (cpuStats *CPUStats, err error) {
 	defer vlog.LogErrorX("Sys:Stats", "Failed to retrieve CPU stats", err)
 	cpuStats = &CPUStats{}
 	//Per core usage:
-	// if cpuStats.Usage, err = cpu.Percent(1*time.Millisecond, true); err != nil {
+	// if cpuStats.Usage,
+	// err = cpu.Percent(1*time.Millisecond, true); err != nil {
 	if cpuStats.Usage, err = cpu.Percent(0, true); err != nil {
 		return
 	}

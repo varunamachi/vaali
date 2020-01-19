@@ -67,7 +67,7 @@ func (rr *ResultReader) Read(data interface{}) (err error) {
 func (rr *ResultReader) Finish() (err error) {
 	if rr.Err == nil {
 		rr.Res = Result{}
-		err = json.Unmarshal(rr.RawData, rr.Res)
+		err = json.Unmarshal(rr.RawData, &rr.Res)
 	} else {
 		err = rr.Err
 	}

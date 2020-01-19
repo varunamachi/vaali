@@ -66,9 +66,12 @@ func InitWithOptions(opts Options) {
 	e.HideBanner = true
 	e.HTTPErrorHandler = ModifiedHTTPErrorHandler
 	e.Use(middleware.Recover())
-	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-		Format: "[ACCSS] [Net:HTTP] ${status} : ${method} => ${path}\n",
-	}))
+
+	// TODO - enable based on env variable - better implement a custom
+	// middleware to log only errors
+	// e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+	// 	Format: "[ACCSS] [Net:HTTP] ${status} : ${method} => ${path}\n",
+	// }))
 	//Add middleware
 	authenticator = opts.Authenticator
 	authorizer = opts.Authorizer

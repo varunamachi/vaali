@@ -96,7 +96,7 @@ func NewWebApp(
 	vlog.InitWithOptions(vlog.LoggerConfig{
 		Logger:      vlog.NewDirectLogger(),
 		LogConsole:  true,
-		FilterLevel: vlog.TraceLevel,
+		FilterLevel: vlog.ErrorLevel,
 	})
 
 	vcmn.LoadConfig(name)
@@ -135,7 +135,7 @@ func NewSimpleApp(
 	vlog.InitWithOptions(vlog.LoggerConfig{
 		Logger:      vlog.NewDirectLogger(),
 		LogConsole:  true,
-		FilterLevel: vlog.TraceLevel,
+		FilterLevel: vlog.InfoLevel,
 	})
 	var store vsec.UserStorage
 	var auditor vevt.EventAuditor

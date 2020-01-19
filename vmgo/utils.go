@@ -36,4 +36,4 @@ func LogError(module string, err error) (out error) {
 		err = nil
 	}
 	return out
-}
+} 
