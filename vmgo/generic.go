@@ -153,13 +153,29 @@ func GenerateSelector(filter *vcmn.Filter) (selector bson.M) {
 			})
 		}
 	}
+	for field, matchers := range filter.Searches {
+		if len(matchers) != 0 {
+			subQuery := make([]bson.M, 0, len(matchers))
+			for _, mtc := range matchers {
+				subQuery = append(subQuery, bson.M{
+					field: bson.M{
+						"$regex": mtc,
+					},
+				})
+			}
+			if len(subQuery) > 0 {
+				queries = append(queries, bson.M{
+					"$or": subQuery,
+				})
+			}
+		}
+	}
+
 	if len(queries) != 0 {
 		selector = bson.M{
 			"$and": queries,
 		}
 	}
-	// vcmn.DumpJSON(filter)
-	// vcmn.DumpJSON(selector)
 	return selector
 }
 

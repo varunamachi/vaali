@@ -140,11 +140,11 @@ type PropMatcher []interface{}
 
 //Filter - generic filter used to filter data in any mongodb collection
 type Filter struct {
-	Props    map[string]Matcher     `json:"props" bson:"props"`
-	Bools    map[string]interface{} `json:"bools" bson:"bools"`
-	Dates    map[string]DateRange   `json:"dates" bson:"dates"`
-	Lists    map[string]Matcher     `json:"lists" bson:"lists"`
-	Searches map[string]Matcher     `json:"searches" bson:"searches"`
+	Props    map[string]Matcher       `json:"props" bson:"props"`
+	Bools    map[string]interface{}   `json:"bools" bson:"bools"`
+	Dates    map[string]DateRange     `json:"dates" bson:"dates"`
+	Lists    map[string]Matcher       `json:"lists" bson:"lists"`
+	Searches map[string][]interface{} `json:"searches" bson:"searches"`
 }
 
 //FilterSpecList - alias for array of filter specs

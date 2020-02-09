@@ -19,7 +19,6 @@ func SendEmail(to, subject, meesage string) (err error) {
 	if err != nil {
 		return vlog.LogError("Net:EMail", err)
 	}
-	// vcmn.DumpJSON(emailConfig)
 	msg := "From: " + emailConfig.AppEMail + "\n" +
 		"To: " + to + "\n" +
 		"Subject: " + subject + "\n\n" +
